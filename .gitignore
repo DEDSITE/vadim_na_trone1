@@ -1,0 +1,13 @@
+.gradle/
+build/
+run/
+run2/
+.idea/
+*.iml
+out/
+.DS_Store
+.env
+build.log
+_для_друзей/
+*.zip
+_звуки_на_прослушку/

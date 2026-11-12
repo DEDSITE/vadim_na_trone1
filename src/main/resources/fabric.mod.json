@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "vadim_na_trone",
+	"version": "${version}",
+	"name": "Вадим на Троне",
+	"description": "Хочешь сыграть в игру?",
+	"authors": ["Дмитрий Титов"],
+	"license": "All-Rights-Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": ["ru.vadim.VadimNaTrone"],
+		"client": ["ru.vadim.client.VadimNaTroneClient"]
+	},
+	"depends": {
+		"fabricloader": ">=0.17.0",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": ">=0.141.0",
+		"geckolib": ">=5.4"
+	},
+	"suggests": {
+		"voicechat": "*"
+	}
+}

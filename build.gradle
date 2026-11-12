@@ -1,0 +1,106 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+}
+
+repositories {
+	maven { name = 'GeckoLib'; url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+	maven { name = 'Henkelmax'; url = 'https://maven.maxhenkel.de/repository/public' }
+	maven {
+		name = 'Modrinth'
+		url = 'https://api.modrinth.com/maven'
+		content { includeGroup 'maven.modrinth' }
+	}
+}
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"vadim_na_trone" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+
+	runs {
+		client {
+			configName = 'Dima'
+			programArgs '--username', 'Dima'
+		}
+		// Второй клиент: для друга (на его компе) и для теста мультиплеера на одном маке
+		client2 {
+			client()
+			configName = 'Друг'
+			programArgs '--username', 'Friend'
+			runDir 'run2'
+		}
+	}
+}
+
+configurations {
+	// готовые моды-зависимости для папки друзей (как есть, без remap)
+	friendsDeps { transitive = false }
+}
+
+dependencies {
+	friendsDeps "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	friendsDeps "software.bernie.geckolib:geckolib-fabric-1.21.11:${project.geckolib_version}"
+	friendsDeps "maven.modrinth:simple-voice-chat:${project.voicechat_version}"
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	modImplementation "software.bernie.geckolib:geckolib-fabric-1.21.11:${project.geckolib_version}"
+
+	compileOnly "de.maxhenkel.voicechat:voicechat-api:${project.voicechat_api_version}"
+	modRuntimeOnly "maven.modrinth:simple-voice-chat:${project.voicechat_version}"
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+	it.options.encoding = 'UTF-8'
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+// Папка для друзей: при запуске runClient заодно собирается боевой jar и кладётся в _для_друзей.
+tasks.register('friendsJar', Copy) {
+	dependsOn tasks.named('remapJar')
+	from tasks.named('remapJar').flatMap { it.archiveFile }
+	from configurations.friendsDeps
+	into layout.projectDirectory.dir('_для_друзей')
+}
+// Архив для друзей: jar лежат в корне, имя латиницей, чтобы не поехало на Windows.
+tasks.register('friendsZip', Zip) {
+	dependsOn 'friendsJar'
+	from layout.projectDirectory.dir('_для_друзей')
+	include '*.jar'
+	archiveFileName = 'vadim_mods.zip'
+	destinationDirectory = layout.projectDirectory
+}
+tasks.matching { it.name == 'runClient' }.configureEach { dependsOn 'friendsZip' }
+
+// Для Claude: при синхронизации Gradle складываем весь classpath в build/cpdump (компиляция в облаке)
+afterEvaluate {
+	def out = file("build/cpdump"); out.mkdirs()
+	def list = []
+	["compileClasspath", "clientCompileClasspath"].each { n ->
+		def c = configurations.findByName(n)
+		if (c != null) c.resolve().each { f -> if (f.isFile() && !list.contains(f)) list << f }
+	}
+	list.each { f -> java.nio.file.Files.copy(f.toPath(), new File(out, f.name).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING) }
+	new File(out, "_list.txt").text = list.collect { it.absolutePath }.join("\n")
+}
