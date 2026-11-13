@@ -54,6 +54,24 @@ dependencies {
 	modImplementation "software.bernie.geckolib:geckolib-fabric-1.21.11:${project.geckolib_version}"
 
 	compileOnly "de.maxhenkel.voicechat:voicechat-api:${project.voicechat_api_version}"
+
+	// Интерьер и город: мебель, лампы, гирлянды/бутылки, окна/шторы, двери (Macaw's, Fabric 1.21.11)
+	// Атмосфера: звук с эхом и глушением за стенами, шаги по материалу, покачивание камеры, анимации игроков
+	[
+		"maven.modrinth:macaws-furniture:xhmciaUD",          // 3.4.2
+		"maven.modrinth:macaws-lights-and-lamps:DXV1gXS5",   // 1.1.5
+		"maven.modrinth:macaws-holidays:kAEQwCkH",           // 1.1.2
+		"maven.modrinth:macaws-windows:uriWt4r9",            // 2.4.2
+		"maven.modrinth:macaws-doors:G56MgNgk",              // 1.1.5
+		"maven.modrinth:sound-physics-remastered:61lf1wKt",  // fabric-1.21.11-1.5.2
+		"maven.modrinth:presence-footsteps:xjmToylJ",        // 1.12.4+1.21.11
+		"maven.modrinth:cameraoverhaul:oBMVJtiE",            // 2.1.2
+		"maven.modrinth:cloth-config:xuX40TN5",              // 21.11.153 (нужен Camera Overhaul)
+		"maven.modrinth:not-enough-animations:qr1Bu9qK"      // 1.12.7
+	].each { dep ->
+		modRuntimeOnly(dep) { transitive = false }
+		friendsDeps dep
+	}
 	modRuntimeOnly "maven.modrinth:simple-voice-chat:${project.voicechat_version}"
 }
 

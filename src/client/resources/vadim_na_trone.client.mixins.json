@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "ru.vadim.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"FogRendererMixin",
+		"GameRendererMixin",
+		"LightTextureMixin",
+		"LevelRendererMixin",
+		"MusicManagerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

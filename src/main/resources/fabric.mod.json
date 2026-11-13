@@ -11,12 +11,22 @@
 		"main": ["ru.vadim.VadimNaTrone"],
 		"client": ["ru.vadim.client.VadimNaTroneClient"]
 	},
+	"mixins": [
+		{ "config": "vadim_na_trone.client.mixins.json", "environment": "client" }
+	],
 	"depends": {
 		"fabricloader": ">=0.17.0",
 		"minecraft": "~1.21.11",
 		"java": ">=21",
 		"fabric-api": ">=0.141.0",
 		"geckolib": ">=5.4"
+	},
+	"recommends": {
+		"mcwfurnitures": "*",
+		"mcwlights": "*",
+		"mcwholidays": "*",
+		"mcwwindows": "*",
+		"mcwdoors": "*"
 	},
 	"suggests": {
 		"voicechat": "*"

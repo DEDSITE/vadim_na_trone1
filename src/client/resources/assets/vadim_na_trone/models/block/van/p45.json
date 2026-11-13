@@ -1,0 +1,1 @@
+{"ambientocclusion": false, "textures": {"van": "vadim_na_trone:block/van", "particle": "vadim_na_trone:block/van"}, "elements": [{"from": [9, 0, 12], "to": [16, 3, 16], "faces": {"north": {"uv": [10.25, 4.0, 12.0, 5.2], "texture": "#van"}, "west": {"uv": [10.0, 4.0, 11.3333, 5.2], "texture": "#van"}, "up": {"uv": [10.0, 4.0, 11.75, 5.3333], "texture": "#van"}}, "shade": true}]}

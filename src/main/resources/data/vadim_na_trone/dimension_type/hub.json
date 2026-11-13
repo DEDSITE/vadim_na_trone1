@@ -1,0 +1,49 @@
+{
+ "ambient_light": 0.0,
+ "attributes": {
+  "minecraft:audio/ambient_sounds": {
+   "mood": {
+    "block_search_extent": 8,
+    "offset": 2.0,
+    "sound": "minecraft:ambient.cave",
+    "tick_delay": 6000
+   }
+  },
+  "minecraft:gameplay/bed_rule": {
+   "can_set_spawn": "never",
+   "can_sleep": "never",
+   "explodes": true
+  },
+  "minecraft:gameplay/respawn_anchor_works": false,
+  "minecraft:visual/cloud_color": "#cc191926",
+  "minecraft:visual/cloud_height": 192.33,
+  "minecraft:visual/fog_color": "#090b11",
+  "minecraft:visual/sky_color": "#05060a",
+  "minecraft:audio/firefly_bush_sounds": true,
+  "minecraft:gameplay/bees_stay_in_hive": true,
+  "minecraft:gameplay/cat_waking_up_gift_chance": 0.0,
+  "minecraft:gameplay/creaking_active": true,
+  "minecraft:gameplay/eyeblossom_open": true,
+  "minecraft:gameplay/monsters_burn": false,
+  "minecraft:gameplay/sky_light_level": 0.266667,
+  "minecraft:gameplay/turtle_egg_hatch_chance": 0.002,
+  "minecraft:visual/moon_angle": 360.0,
+  "minecraft:visual/sky_light_color": "#7a7aff",
+  "minecraft:visual/sky_light_factor": 0.24,
+  "minecraft:visual/star_angle": 180.0,
+  "minecraft:visual/star_brightness": 0.15,
+  "minecraft:visual/sun_angle": 180.0,
+  "minecraft:visual/sunrise_sunset_color": "#00b23333"
+ },
+ "coordinate_scale": 1.0,
+ "has_ceiling": false,
+ "has_skylight": true,
+ "height": 256,
+ "infiniburn": "#minecraft:infiniburn_overworld",
+ "logical_height": 256,
+ "min_y": 0,
+ "monster_spawn_block_light_limit": 0,
+ "monster_spawn_light_level": 0,
+ "has_fixed_time": true,
+ "timelines": "#minecraft:universal"
+}

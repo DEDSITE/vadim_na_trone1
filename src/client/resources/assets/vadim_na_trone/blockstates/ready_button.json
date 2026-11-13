@@ -1,0 +1,1 @@
+{"variants": {"facing=south": {"model": "vadim_na_trone:block/ready_button", "y": 0}, "facing=west": {"model": "vadim_na_trone:block/ready_button", "y": 90}, "facing=north": {"model": "vadim_na_trone:block/ready_button", "y": 180}, "facing=east": {"model": "vadim_na_trone:block/ready_button", "y": 270}}}
