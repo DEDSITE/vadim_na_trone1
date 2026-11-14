@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public final class Bar {
 	/** Поменял планировку — увеличь, и при следующем запуске хаб пересоберётся. */
-	public static final int VERSION = 1;
+	public static final int VERSION = 2;
 	public static final String TAG = "vadim_hub";
 	public static String versionTag() { return "vadim_hub_v" + VERSION; }
 
