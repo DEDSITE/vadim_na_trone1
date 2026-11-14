@@ -43,6 +43,7 @@ import java.util.UUID;
  */
 public final class Hub {
 	private static final Set<UUID> ready = new HashSet<>();
+	private static final java.util.Map<UUID, Integer> joining = new java.util.HashMap<>();
 	private static int countdown = -1;
 	private static Display.TextDisplay readyLabel;
 	private static String lastLabel = "";
@@ -52,8 +53,13 @@ public final class Hub {
 
 	public static void register() {
 		ServerLifecycleEvents.SERVER_STARTED.register(Hub::onStarted);
-		ServerPlayConnectionEvents.JOIN.register((h, s, server) -> server.execute(() -> sendToHub(h.getPlayer())));
-		ServerPlayConnectionEvents.DISCONNECT.register((h, server) -> ready.remove(h.getPlayer().getUUID()));
+		// перенос в бар — через несколько тиков после входа: межмировой телепорт прямо в момент JOIN
+		// ломает учёт чанков игрока, и ванилла падает с NPE в DistanceManager при выходе
+		ServerPlayConnectionEvents.JOIN.register((h, s, server) -> joining.put(h.getPlayer().getUUID(), 5));
+		ServerPlayConnectionEvents.DISCONNECT.register((h, server) -> {
+			ready.remove(h.getPlayer().getUUID());
+			joining.remove(h.getPlayer().getUUID());
+		});
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> sendToHub(newP));
 		// в баре никого не бьют и никто не умирает
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> e.level().dimension() != Places.HUB
@@ -161,6 +167,16 @@ public final class Hub {
 	}
 
 	private static void tick(MinecraftServer server) {
+		if (!joining.isEmpty()) {
+			var it = joining.entrySet().iterator();
+			while (it.hasNext()) {
+				var e = it.next();
+				if (e.getValue() > 1) { e.setValue(e.getValue() - 1); continue; }
+				it.remove();
+				ServerPlayer p = server.getPlayerList().getPlayer(e.getKey());
+				if (p != null && !p.hasDisconnected()) sendToHub(p);
+			}
+		}
 		List<ServerPlayer> all = everyone(server);
 		// сытость и здоровье в баре
 		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (Places.inHub(p)) {

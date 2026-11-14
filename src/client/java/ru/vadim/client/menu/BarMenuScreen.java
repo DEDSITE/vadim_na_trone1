@@ -26,8 +26,12 @@ import java.util.Random;
 public class BarMenuScreen extends TitleScreen {
 	private static final Identifier BG = VadimNaTrone.id("textures/gui/menu_bg.png");
 	private static final int BG_W = 1920, BG_H = 1080;
-	/** Окна в кадре: x0, y0, x1, y1 (доли ширины/высоты исходного кадра). Уточняются по скриншоту. */
-	static float[][] WINDOWS = {{0.08f, 0.30f, 0.92f, 0.62f}};
+	/** Стёкла четырёх окон в кадре menushot: x0, y0, x1, y1 (доли ширины/высоты кадра). */
+	static float[][] WINDOWS = {
+			{0.000f, 0.375f, 0.140f, 0.580f},
+			{0.197f, 0.392f, 0.312f, 0.576f},
+			{0.354f, 0.410f, 0.445f, 0.576f},
+			{0.475f, 0.420f, 0.568f, 0.566f}};
 	/** Где в окне дорога: доля высоты окна для ближней и дальней полосы. */
 	private static final float LANE_NEAR = 0.80f, LANE_FAR = 0.62f;
 	private static final String[] ITEMS = {"Одиночная игра", "Сетевая игра", "Настройки", "Выйти"};
@@ -78,12 +82,18 @@ public class BarMenuScreen extends TitleScreen {
 		if (aspect > (float) BG_W / BG_H) { uh = Math.round(BG_W / aspect); v = (BG_H - uh) / 2; }
 		else { uw = Math.round(BG_H * aspect); u = (BG_W - uw) / 2; }
 		g.blit(RenderPipelines.GUI_TEXTURED, BG, 0, 0, u, v, width, height, uw, uh, BG_W, BG_H);
-		// машины за стёклами
-		for (float[] w : WINDOWS) {
-			int x0 = Math.round((w[0] * BG_W - u) / uw * width), y0 = Math.round((w[1] * BG_H - v) / uh * height);
-			int x1 = Math.round((w[2] * BG_W - u) / uw * width), y1 = Math.round((w[3] * BG_H - v) / uh * height);
-			g.enableScissor(x0, y0, x1, y1);
-			for (Car c : cars) drawCar(g, c, t, x0, y0, x1, y1);
+		// машины за стёклами: едут одной линией через все окна, видны только в стёклах
+		int[][] rect = new int[WINDOWS.length][];
+		for (int k = 0; k < WINDOWS.length; k++) {
+			float[] w = WINDOWS[k];
+			rect[k] = new int[]{Math.round((w[0] * BG_W - u) / uw * width), Math.round((w[1] * BG_H - v) / uh * height),
+					Math.round((w[2] * BG_W - u) / uw * width), Math.round((w[3] * BG_H - v) / uh * height)};
+		}
+		float sx0 = rect[0][0], sx1 = rect[rect.length - 1][2];
+		for (int[] r : rect) {
+			if (r[2] <= r[0] || r[3] <= r[1]) continue;
+			g.enableScissor(Math.max(0, r[0]), r[1], r[2], r[3]);
+			for (Car c : cars) drawCar(g, c, t, sx0, sx1, r[0], r[1], r[2], r[3]);
 			g.disableScissor();
 		}
 		// тёплая виньетка
@@ -95,12 +105,12 @@ public class BarMenuScreen extends TitleScreen {
 	}
 
 	/** Машина в окне: силуэт кузова, светящиеся фары/габариты и пятно света на дороге. */
-	private void drawCar(GuiGraphics g, Car c, float t, int x0, int y0, int x1, int y1) {
-		float w = x1 - x0, h = y1 - y0;
-		float prog = (t - c.start) * c.speed;   // доля ширины окна
-		float carW = c.len * w * (c.near ? 1f : 0.8f), carH = carW * 0.32f;
+	private void drawCar(GuiGraphics g, Car c, float t, float sx0, float sx1, int x0, int y0, int x1, int y1) {
+		float span = sx1 - sx0, h = y1 - y0;
+		float prog = Math.abs((t - c.start) * c.speed);   // доля ширины всех окон
+		float carW = c.len * 7f * h * (c.near ? 1f : 0.8f), carH = carW * 0.32f;
 		float baseY = y0 + h * (c.near ? LANE_NEAR : LANE_FAR);
-		float x = c.speed > 0 ? x0 - carW + prog * (w + carW) / 1f : x1 + prog * (w + carW);
+		float x = c.speed > 0 ? sx0 - carW + prog * (span + carW) : sx1 - prog * (span + carW);
 		boolean right = c.speed > 0;
 		int dim = c.near ? 0xFF : 0xC0;
 		// свет фар на асфальте
