@@ -67,8 +67,8 @@ dependencies {
 		"maven.modrinth:presence-footsteps:xjmToylJ",        // 1.12.4+1.21.11
 		"maven.modrinth:kirin:REbB57c6",                     // 1.21.5+1.21.11 (нужен Presence Footsteps)
 		"maven.modrinth:cameraoverhaul:oBMVJtiE",            // 2.1.2
-		"maven.modrinth:cloth-config:xuX40TN5",              // 21.11.153 (нужен Camera Overhaul)
-		"maven.modrinth:not-enough-animations:qr1Bu9qK"      // 1.12.7
+		"maven.modrinth:cloth-config:xuX40TN5"               // 21.11.153 (нужен Camera Overhaul)
+		// Not Enough Animations убран: в среде разработки падает без своей библиотеки Transition
 	].each { dep ->
 		modRuntimeOnly(dep) { transitive = false }
 		friendsDeps dep
