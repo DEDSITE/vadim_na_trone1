@@ -46,6 +46,7 @@ public final class Hub {
 	private static int countdown = -1;
 	private static Display.TextDisplay readyLabel;
 	private static String lastLabel = "";
+	private static final java.util.Map<UUID, Long> lastPress = new java.util.HashMap<>();
 
 	private Hub() {}
 
@@ -55,7 +56,14 @@ public final class Hub {
 		ServerPlayConnectionEvents.DISCONNECT.register((h, server) -> ready.remove(h.getPlayer().getUUID()));
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> sendToHub(newP));
 		// в баре никого не бьют и никто не умирает
-		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> e.level().dimension() != Places.HUB);
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> e.level().dimension() != Places.HUB
+				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY));
+		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
+			if (level.dimension() != Places.HUB) return;
+			if (e.getTags().contains("vadim_ready") && e != readyLabel) e.discard();
+			else if (e.getTags().contains(Bar.TAG) && !e.getTags().contains(Bar.versionTag())) e.discard();
+		});
 		// двери, люки, кнопки и прочее в баре трогать нельзя — только нашу кнопку «Готов»
 		UseBlockCallback.EVENT.register((player, level, hand, hit) -> {
 			if (level.dimension() != Places.HUB || player.isCreative()) return InteractionResult.PASS;
@@ -110,8 +118,8 @@ public final class Hub {
 		d.setBackgroundColor(0x66000000);
 		d.setBrightnessOverride(Brightness.FULL_BRIGHT);
 		d.setViewRange(0.5f);
+		readyLabel = d;   // до добавления: ENTITY_LOAD удаляет всех «vadim_ready», кроме текущей
 		hub.addFreshEntity(d);
-		readyLabel = d;
 		lastLabel = "";
 	}
 
@@ -133,6 +141,9 @@ public final class Hub {
 
 	public static void pressReady(ServerPlayer p, BlockPos pos) {
 		if (!Places.inHub(p) || countdown >= 0) return;
+		long now = p.level().getGameTime();
+		Long last = lastPress.put(p.getUUID(), now);
+		if (last != null && now - last < 10) return;   // зажатая ПКМ не дёргает «готов/не готов»
 		ServerLevel l = (ServerLevel) p.level();
 		if (ready.add(p.getUUID())) {
 			p.displayClientMessage(Component.literal("Ты готов. Ждём остальных…").withStyle(ChatFormatting.GREEN), true);
@@ -152,9 +163,10 @@ public final class Hub {
 	private static void tick(MinecraftServer server) {
 		List<ServerPlayer> all = everyone(server);
 		// сытость и здоровье в баре
-		if (server.getTickCount() % 40 == 0) for (ServerPlayer p : all) if (Places.inHub(p)) {
+		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (Places.inHub(p)) {
 			p.getFoodData().setFoodLevel(20);
 			p.getFoodData().setSaturation(5f);
+			if (p.getY() < 50 && !p.isCreative()) sendToHub(p);   // вывалился из карты — обратно в бар
 		}
 		ready.removeIf(id -> all.stream().noneMatch(pl -> pl.getUUID().equals(id) && Places.inHub(pl)));
 		int total = (int) all.stream().filter(Places::inHub).count();
@@ -165,7 +177,7 @@ public final class Hub {
 			if (countdown % 20 == 0) {
 				int n = countdown / 20;
 				for (ServerPlayer p : all)
-					if (ServerPlayNetworking.canSend(p, HubPayloads.Countdown.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.Countdown(n));
+					if (Places.inHub(p) && ServerPlayNetworking.canSend(p, HubPayloads.Countdown.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.Countdown(n));
 				ServerLevel hub = Places.hub(server);
 				if (hub != null) hub.playSound(null, Bar.READY_BUTTON, n > 0 ? SoundEvents.NOTE_BLOCK_HAT.value() : SoundEvents.BELL_BLOCK,
 						SoundSource.BLOCKS, 1f, n > 0 ? 0.6f : 0.8f);

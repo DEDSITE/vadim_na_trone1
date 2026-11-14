@@ -1,4 +1,4 @@
 {
-  "bar_jazz": {"sounds": [{"name": "vadim_na_trone:bar_jazz", "stream": true}]},
+  "bar_jazz": {"sounds": [{"name": "vadim_na_trone:bar_jazz", "stream": true, "attenuation_distance": 22}]},
   "menu_jazz": {"sounds": [{"name": "vadim_na_trone:bar_jazz", "stream": true}]}
 }

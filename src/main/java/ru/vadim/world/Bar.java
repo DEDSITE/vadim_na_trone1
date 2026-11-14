@@ -47,6 +47,7 @@ public final class Bar {
 	/** Поменял планировку — увеличь, и при следующем запуске хаб пересоберётся. */
 	public static final int VERSION = 1;
 	public static final String TAG = "vadim_hub";
+	public static String versionTag() { return "vadim_hub_v" + VERSION; }
 
 	public static final BlockPos BARMAN = new BlockPos(0, 64, -8);
 	public static final BlockPos READY_BUTTON = new BlockPos(6, 65, 2);
@@ -186,13 +187,17 @@ public final class Bar {
 
 	/** Уличный фонарь Macaw's из четырёх частей (без мода — железная решётка и фонарь). */
 	private void lamp(int x, int z, Direction face) {
-		BlockState part = bs("mcwlights:double_street_lamp[facing=" + face.getSerializedName() + ",lit=true]", null);
-		if (part.isAir()) {
+		String base = "mcwlights:double_street_lamp[facing=" + face.getSerializedName() + ",lit=true,part=";
+		if (bs(base + "bottom]", null).isAir()) {
 			fill(x, 64, z, x, 67, z, "minecraft:iron_bars");
-			set(x, 68, z, "minecraft:lantern");
+			set(x, 68, z, "minecraft:lantern[hanging=true]");
+			set(x, 69, z, "minecraft:iron_bars");
 			return;
 		}
-		for (int y = 64; y <= 67; y++) setShaped(x, y, z, part);
+		set(x, 64, z, bs(base + "bottom]"));
+		set(x, 65, z, bs(base + "middle]"));
+		set(x, 66, z, bs(base + "middle]"));
+		set(x, 67, z, bs(base + "top]"));
 	}
 
 	// ======================================================================= дома
@@ -450,6 +455,7 @@ public final class Bar {
 		d.setPos(pos.x, pos.y, pos.z);
 		d.setYRot(face.toYRot());
 		d.addTag(TAG);
+		d.addTag(versionTag());
 		d.setTransformation(new Transformation(null, null, new Vector3f(scale, scale, scale), null));
 		d.setBillboardConstraints(Display.BillboardConstraints.FIXED);
 		d.setBackgroundColor(0);
@@ -466,6 +472,7 @@ public final class Bar {
 		d.setPos(pos.x, pos.y, pos.z);
 		d.setYRot(face.toYRot());
 		d.addTag(TAG);
+		d.addTag(versionTag());
 		d.setTransformation(new Transformation(null, null, new Vector3f(scale, scale, scale), null));
 		d.setBillboardConstraints(Display.BillboardConstraints.FIXED);
 		d.setBackgroundColor(0x00000000);
@@ -487,6 +494,7 @@ public final class Bar {
 			b.setYHeadRot(0f);
 			b.setYBodyRot(0f);
 			b.addTag(TAG);
+			b.addTag(versionTag());
 			l.addFreshEntity(b);
 		}
 		if (!fresh) return;
@@ -509,6 +517,7 @@ public final class Bar {
 					.getOrThrow(ResourceKey.create(Registries.PAINTING_VARIANT, VadimNaTrone.id("timofey")));
 			Painting p = new Painting(l, new BlockPos(9, 66, -6), Direction.WEST, v);
 			p.addTag(TAG);
+			p.addTag(versionTag());
 			l.addFreshEntity(p);
 		} catch (Exception e) {
 			VadimNaTrone.LOG.warn("Картина Тимофея не повесилась: {}", e.toString());

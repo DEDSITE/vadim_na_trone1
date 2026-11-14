@@ -50,6 +50,9 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT, ModBlocks.NOTES, ModBlocks.READY, ModBlocks.SPEAKER);
 		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.TRANSLUCENT, ModBlocks.GARLAND, ModBlocks.SHOWCASE, ModBlocks.VAN);
 
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.menu.MenuAudio::tick);
+		ClientTickEvents.END_CLIENT_TICK.register(MenuShot::tick);
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.MenuShot.TYPE, (p, ctx) -> MenuShot.start());
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			if (mc.level == null) {
 				BarJazz.stopAll();

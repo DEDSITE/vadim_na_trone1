@@ -61,6 +61,7 @@ public final class Traffic {
 		c.setPos(startX, y, z);
 		c.endX = -startX;
 		c.setSpeed(east ? speed : -speed);
+		c.markStart();
 		hub.addFreshEntity(c);
 		return c;
 	}

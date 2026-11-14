@@ -12,7 +12,8 @@ import ru.vadim.entity.CarEntity;
  * Отладка хаба (нужны права оператора / читы):
  *  /vadim rebuild           — пересобрать бар и квартал;
  *  /vadim hub               — вернуться в бар;
- *  /vadim car <тип> [восток] — пустить машину (sedan, taxi, truck, van, opel).
+ *  /vadim car <тип> [восток] — пустить машину (sedan, taxi, truck, van, opel);
+ *  /vadim menushot          — встать в точку съёмки и снять кадр для главного меню.
  */
 public final class HubCommands {
 	private HubCommands() {}
@@ -29,6 +30,12 @@ public final class HubCommands {
 					Hub.sendToHub(c.getSource().getPlayerOrException());
 					return 1;
 				}))
+				.then(Commands.literal("menushot").executes(c -> {
+					var p = c.getSource().getPlayerOrException();
+					p.teleportTo(Places.hub(c.getSource().getServer()), 0.5, 64, -5.2, java.util.Set.of(), 0f, 4f, true);
+					net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(p, new ru.vadim.net.HubPayloads.MenuShot());
+					return 1;
+				}))
 				.then(Commands.literal("car").then(Commands.argument("kind", StringArgumentType.word())
 						.executes(c -> car(c.getSource().getLevel(), StringArgumentType.getString(c, "kind"), true))
 						.then(Commands.argument("east", BoolArgumentType.bool())
@@ -37,6 +44,7 @@ public final class HubCommands {
 
 	private static int car(ServerLevel l, String kind, boolean east) {
 		ServerLevel hub = Places.hub(l.getServer());
+		if (hub == null) return 0;
 		try {
 			Traffic.spawn(hub, CarEntity.Kind.valueOf(kind.toUpperCase()), east);
 			return 1;

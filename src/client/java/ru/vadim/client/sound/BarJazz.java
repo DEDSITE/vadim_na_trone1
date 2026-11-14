@@ -19,7 +19,6 @@ import java.util.Set;
  * Все колонки запускаются в один тик, поэтому звучат синхронно. Тихо, фоном.
  */
 public final class BarJazz {
-	private static final float RANGE = 22f;
 	private static final float LOUD = 0.32f;
 	private static final List<Track> playing = new ArrayList<>();
 	private static Set<BlockPos> current = new HashSet<>();
@@ -69,7 +68,7 @@ public final class BarJazz {
 			looping = true;
 			delay = 0;
 			attenuation = Attenuation.LINEAR;
-			volume = RANGE / 16f;   // при старте задаёт слышимость (≈22 блока), дальше громкость убавляем
+			volume = 0.01f;         // дальность слышимости задана в sounds.json (attenuation_distance)
 			x = p.getX() + 0.5;
 			y = p.getY() + 0.5;
 			z = p.getZ() + 0.5;

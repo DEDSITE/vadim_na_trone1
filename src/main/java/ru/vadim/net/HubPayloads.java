@@ -16,4 +16,11 @@ public final class HubPayloads {
 				StreamCodec.composite(ByteBufCodecs.VAR_INT, Countdown::n, Countdown::new);
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/** Снять кадр для главного меню (клиент прячет интерфейс и делает скриншот). */
+	public record MenuShot() implements CustomPacketPayload {
+		public static final Type<MenuShot> TYPE = new Type<>(VadimNaTrone.id("menu_shot"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, MenuShot> CODEC = StreamCodec.unit(new MenuShot());
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

@@ -22,6 +22,9 @@ public class CarEntity extends Entity implements software.bernie.geckolib.animat
 	private static final EntityDataAccessor<Integer> KIND = SynchedEntityData.defineId(CarEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Float> SPEED = SynchedEntityData.defineId(CarEntity.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Integer> PAINT = SynchedEntityData.defineId(CarEntity.class, EntityDataSerializers.INT);
+	/** Откуда и когда поехала: позицию и сервер, и клиент считают сами по времени мира — без рывков в сетевой игре. */
+	private static final EntityDataAccessor<Float> START_X = SynchedEntityData.defineId(CarEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Long> START_T = SynchedEntityData.defineId(CarEntity.class, EntityDataSerializers.LONG);
 	private final software.bernie.geckolib.animatable.instance.AnimatableInstanceCache cache =
 			software.bernie.geckolib.util.GeckoLibUtil.createInstanceCache(this);
 	private static final software.bernie.geckolib.animation.RawAnimation SPIN =
@@ -48,6 +51,8 @@ public class CarEntity extends Entity implements software.bernie.geckolib.animat
 		b.define(KIND, 0);
 		b.define(SPEED, 0.5f);
 		b.define(PAINT, 0);
+		b.define(START_X, 0f);
+		b.define(START_T, 0L);
 	}
 
 	public Kind kind() { return Kind.values()[Math.floorMod(entityData.get(KIND), Kind.values().length)]; }
@@ -62,13 +67,21 @@ public class CarEntity extends Entity implements software.bernie.geckolib.animat
 		yRotO = getYRot();
 	}
 
+	/** Запомнить старт (вызывать на сервере после setPos). */
+	public void markStart() {
+		entityData.set(START_X, (float) getX());
+		entityData.set(START_T, level().getGameTime());
+	}
+
 	@Override
 	public void tick() {
 		super.tick();
 		float s = speed();
 		setYRot(s >= 0 ? -90f : 90f);
 		Vec3 p = position();
-		setPos(p.x + s, p.y, p.z);
+		long t0 = entityData.get(START_T);
+		double x = t0 > 0 ? entityData.get(START_X) + s * (level().getGameTime() - t0) : p.x + s;
+		setPos(x, p.y, p.z);
 		setDeltaMovement(s, 0, 0);
 		if (!level().isClientSide() && ((s > 0 && getX() > endX) || (s < 0 && getX() < endX) || tickCount > 20 * 90)) discard();
 	}

@@ -27,6 +27,7 @@ public class VadimNaTrone implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Countdown.TYPE, HubPayloads.Countdown.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.MenuShot.TYPE, HubPayloads.MenuShot.CODEC);
 		ModSounds.init();
 		ModParticles.init();
 		ModItems.init();
