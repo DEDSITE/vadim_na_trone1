@@ -18,7 +18,7 @@ import ru.vadim.entity.CarEntity;
  * Перед буханки — сторона x=0 модели; едет туда, куда смотрит.
  */
 public class VanCarRenderer extends EntityRenderer<CarEntity, VanCarRenderer.State> {
-	private static final float SCALE = 0.42f;
+	private static final float SCALE = 0.6f;
 
 	public static class State extends EntityRenderState {
 		float dir = 1f;

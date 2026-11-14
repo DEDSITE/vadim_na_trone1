@@ -23,7 +23,7 @@ public final class ModEntities {
 	/** Буханка — та же машина, но рисуется из блочных моделей Стрипухоеда (VanCarRenderer). */
 	public static final EntityType<CarEntity> VAN = Registry.register(BuiltInRegistries.ENTITY_TYPE, VadimNaTrone.id("van"),
 			EntityType.Builder.<CarEntity>of(CarEntity::new, MobCategory.MISC)
-					.sized(4.5f, 3f).clientTrackingRange(12).updateInterval(2).noSummon().fireImmune()
+					.sized(6f, 4f).clientTrackingRange(12).updateInterval(2).noSummon().fireImmune()
 					.build(ResourceKey.create(Registries.ENTITY_TYPE, VadimNaTrone.id("van"))));
 
 	private ModEntities() {}

@@ -28,7 +28,7 @@ public final class CarLights {
 			float dir = Math.signum(c.speed());
 			if (dir == 0) continue;
 			Vec3 p = c.getPosition(pt);
-			double front = c.kind() == CarEntity.Kind.TRUCK ? 2.8 : c.kind() == CarEntity.Kind.VAN ? 2.4 : 2.3;
+			double front = c.kind() == CarEntity.Kind.TRUCK ? 2.8 : c.kind() == CarEntity.Kind.VAN ? 3.2 : 2.3;
 			Vec3 o = p.add(dir * front, 0.65, 0);
 			int i = from + n;
 			a[i][0] = (float) (o.x - cam.x);
