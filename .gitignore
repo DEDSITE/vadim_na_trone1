@@ -11,3 +11,7 @@ build.log
 _для_друзей/
 *.zip
 _звуки_на_прослушку/
+_video/node_modules/
+_video/.node/
+_video/out/
+_video/*.txt

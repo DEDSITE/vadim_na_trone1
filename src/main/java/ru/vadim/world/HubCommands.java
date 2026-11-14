@@ -13,7 +13,9 @@ import ru.vadim.entity.CarEntity;
  *  /vadim rebuild           — пересобрать бар и квартал;
  *  /vadim hub               — вернуться в бар;
  *  /vadim car <тип> [восток] — пустить машину (sedan, taxi, truck, van, opel);
- *  /vadim menushot          — встать в точку съёмки и снять кадр для главного меню.
+ *  /vadim menushot          — встать в точку съёмки и снять кадр для главного меню;
+ *  /vadim news [stop]       — запустить катсцену с новостями без кнопки «Готов» / прервать её;
+ *  /vadim zavod             — сразу ко входу в заброшку.
  */
 public final class HubCommands {
 	private HubCommands() {}
@@ -28,6 +30,19 @@ public final class HubCommands {
 				}))
 				.then(Commands.literal("hub").executes(c -> {
 					Hub.sendToHub(c.getSource().getPlayerOrException());
+					return 1;
+				}))
+				.then(Commands.literal("news")
+						.executes(c -> {
+							News.start(c.getSource().getServer());
+							return 1;
+						})
+						.then(Commands.literal("stop").executes(c -> {
+							News.stop(c.getSource().getServer());
+							return 1;
+						})))
+				.then(Commands.literal("zavod").executes(c -> {
+					News.sendToZavod(c.getSource().getPlayerOrException());
 					return 1;
 				}))
 				.then(Commands.literal("menushot").executes(c -> {

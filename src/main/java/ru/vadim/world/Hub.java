@@ -39,7 +39,7 @@ import java.util.UUID;
 /**
  * Хаб-бар: все появляются тут при заходе, режим приключения, без урона и голода, выйти нельзя.
  * Старт: каждый жмёт кнопку «Готов» у двери; когда готовы все — отсчёт 3-2-1.
- * (Что будет после отсчёта — катсцена с новостями — следующий блок; пока просто сообщение.)
+ * После отсчёта — катсцена с новостями по телеку (News).
  */
 public final class Hub {
 	private static final Set<UUID> ready = new HashSet<>();
@@ -60,9 +60,13 @@ public final class Hub {
 			ready.remove(h.getPlayer().getUUID());
 			joining.remove(h.getPlayer().getUUID());
 		});
-		ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> sendToHub(newP));
+		ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> {
+			if (News.goesToZavod(newP)) News.sendToZavod(newP);
+			else sendToHub(newP);
+		});
 		// в баре никого не бьют и никто не умирает
-		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> e.level().dimension() != Places.HUB
+		// (заброшка пока заглушка — там тоже без урона)
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> (e.level().dimension() != Places.HUB && e.level().dimension() != Places.ZAVOD)
 				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY));
 		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
@@ -146,7 +150,7 @@ public final class Hub {
 	}
 
 	public static void pressReady(ServerPlayer p, BlockPos pos) {
-		if (!Places.inHub(p) || countdown >= 0) return;
+		if (!Places.inHub(p) || countdown >= 0 || News.active()) return;
 		long now = p.level().getGameTime();
 		Long last = lastPress.put(p.getUUID(), now);
 		if (last != null && now - last < 10) return;   // зажатая ПКМ не дёргает «готов/не готов»
@@ -174,7 +178,9 @@ public final class Hub {
 				if (e.getValue() > 1) { e.setValue(e.getValue() - 1); continue; }
 				it.remove();
 				ServerPlayer p = server.getPlayerList().getPlayer(e.getKey());
-				if (p != null && !p.hasDisconnected()) sendToHub(p);
+				if (p == null || p.hasDisconnected()) continue;
+				if (News.goesToZavod(p)) News.sendToZavod(p);   // катсцена уже прошла / шла без него
+				else sendToHub(p);
 			}
 		}
 		List<ServerPlayer> all = everyone(server);
@@ -184,9 +190,11 @@ public final class Hub {
 			p.getFoodData().setSaturation(5f);
 			if (p.getY() < 50 && !p.isCreative()) sendToHub(p);   // вывалился из карты — обратно в бар
 		}
+		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all)
+			if (p.level().dimension() == Places.ZAVOD && p.getY() < 40 && !p.isCreative()) News.sendToZavod(p);   // упал с площадки
 		ready.removeIf(id -> all.stream().noneMatch(pl -> pl.getUUID().equals(id) && Places.inHub(pl)));
 		int total = (int) all.stream().filter(Places::inHub).count();
-		boolean allReady = total > 0 && ready.size() == total;
+		boolean allReady = total > 0 && ready.size() == total && !News.active();
 		if (allReady && countdown < 0) countdown = 60;
 		if (!allReady && countdown > 0) countdown = -1;
 		if (countdown >= 0) {
@@ -201,10 +209,10 @@ public final class Hub {
 			if (countdown-- == 0) {
 				ready.clear();
 				countdown = -1;
-				server.getPlayerList().broadcastSystemMessage(Component.literal("[Хаб готов] Дальше — катсцена с новостями по телеку (следующий блок).")
-						.withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC), false);
+				News.start(server);
 			}
 		}
+		News.tick(server);
 		if (readyLabel == null || server.getTickCount() % 5 != 0) return;
 		String s = countdown >= 0 ? "c" + (countdown / 20 + 1) : ready.size() + "/" + total;
 		if (s.equals(lastLabel)) return;

@@ -28,12 +28,17 @@ public class VadimNaTrone implements ModInitializer {
 	public void onInitialize() {
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Countdown.TYPE, HubPayloads.Countdown.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.MenuShot.TYPE, HubPayloads.MenuShot.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.NewsStart.TYPE, HubPayloads.NewsStart.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.NewsVotes.TYPE, HubPayloads.NewsVotes.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.NewsEnd.TYPE, HubPayloads.NewsEnd.CODEC);
+		PayloadTypeRegistry.playC2S().register(HubPayloads.NewsSkip.TYPE, HubPayloads.NewsSkip.CODEC);
 		ModSounds.init();
 		ModParticles.init();
 		ModItems.init();
 		ModBlocks.init();
 		ModEntities.init();
 		Hub.register();
+		ru.vadim.world.News.register();
 		Traffic.register();
 		HubCommands.register();
 		LOG.info("Вадим сел на трон. Хочешь сыграть в игру?");

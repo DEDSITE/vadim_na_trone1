@@ -18,6 +18,12 @@ public abstract class GameRendererMixin {
 		HorrorPost.render(deltaTracker.getGameTimeDeltaTicks());
 	}
 
+	/** Катсцена с новостями: постоянный угол обзора, чтобы кадр с телеком был у всех одинаковый. */
+	@com.llamalad7.mixinextras.injector.ModifyReturnValue(method = "getFov", at = @At("RETURN"))
+	private float vadim$newsFov(float fov, net.minecraft.client.Camera camera, float partialTick, boolean useFovSetting) {
+		return useFovSetting && ru.vadim.client.news.ClientNews.active() ? 60f : fov;
+	}
+
 	/** Рука в первом лице рисуется в другой системе координат — гасим для неё фонари. */
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE",
 			target = "Lnet/minecraft/client/renderer/GameRenderer;renderItemInHand(FZLorg/joml/Matrix4f;)V"))

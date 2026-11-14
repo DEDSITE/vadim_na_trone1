@@ -78,7 +78,7 @@ public final class BarJazz {
 		public void tick() {
 			age++;
 			// плавно вступает за пару секунд
-			volume = LOUD * Math.min(1f, age / 40f);
+			volume = LOUD * Math.min(1f, age / 40f) * Math.max(0.001f, ru.vadim.client.news.ClientNews.jazzFactor());
 		}
 	}
 }

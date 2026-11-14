@@ -23,4 +23,35 @@ public final class HubPayloads {
 		public static final StreamCodec<RegistryFriendlyByteBuf, MenuShot> CODEC = StreamCodec.unit(new MenuShot());
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/** Катсцена с новостями: старт (или пересинхронизация после пропуска) — тик мира, от которого клиент считает время. */
+	public record NewsStart(long startTick, boolean skipped) implements CustomPacketPayload {
+		public static final Type<NewsStart> TYPE = new Type<>(VadimNaTrone.id("news_start"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, NewsStart> CODEC =
+				StreamCodec.composite(ByteBufCodecs.VAR_LONG, NewsStart::startTick, ByteBufCodecs.BOOL, NewsStart::skipped, NewsStart::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Сколько игроков уже проголосовали за пропуск. */
+	public record NewsVotes(int votes, int total) implements CustomPacketPayload {
+		public static final Type<NewsVotes> TYPE = new Type<>(VadimNaTrone.id("news_votes"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, NewsVotes> CODEC =
+				StreamCodec.composite(ByteBufCodecs.VAR_INT, NewsVotes::votes, ByteBufCodecs.VAR_INT, NewsVotes::total, NewsVotes::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Конец катсцены: moved = игроков перенесли ко входу в заброшку (иначе — отменили, остаёмся в баре). */
+	public record NewsEnd(boolean moved) implements CustomPacketPayload {
+		public static final Type<NewsEnd> TYPE = new Type<>(VadimNaTrone.id("news_end"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, NewsEnd> CODEC =
+				StreamCodec.composite(ByteBufCodecs.BOOL, NewsEnd::moved, NewsEnd::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Клиент → сервер: голос за пропуск катсцены. */
+	public record NewsSkip() implements CustomPacketPayload {
+		public static final Type<NewsSkip> TYPE = new Type<>(VadimNaTrone.id("news_skip"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, NewsSkip> CODEC = StreamCodec.unit(new NewsSkip());
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

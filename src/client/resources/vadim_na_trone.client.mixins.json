@@ -8,7 +8,11 @@
 		"LightTextureMixin",
 		"LevelRendererMixin",
 		"MusicManagerMixin",
-		"MinecraftMenuMixin"
+		"MinecraftMenuMixin",
+		"NewsCameraMixin",
+		"NewsInputMixin",
+		"NewsGuiMixin",
+		"NewsHandMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -13,6 +13,9 @@ import net.minecraft.world.level.Level;
  * Диалог открывается на клиенте по ПКМ (BarmanScreen).
  */
 public class BarmanEntity extends Mob {
+	/** Катсцена с новостями: стоит спиной к залу и смотрит в телек над стойкой. */
+	private boolean watchTv = false;
+
 	public BarmanEntity(EntityType<? extends Mob> type, Level level) {
 		super(type, level);
 		setNoAi(true);
@@ -22,10 +25,26 @@ public class BarmanEntity extends Mob {
 
 	public static AttributeSupplier.Builder attributes() { return Mob.createMobAttributes(); }
 
+	public void setWatchTv(boolean on) {
+		watchTv = on;
+		float yaw = on ? 180f : 0f;
+		setYRot(yaw);
+		setYBodyRot(yaw);
+		setYHeadRot(yaw);
+		setXRot(0);
+	}
+
 	@Override
 	public void tick() {
 		super.tick();
 		if (level().isClientSide()) return;
+		if (watchTv) {
+			setYRot(180f);
+			setYBodyRot(180f);
+			setYHeadRot(180f);
+			setXRot(-14f);   // телек висит выше головы
+			return;
+		}
 		Player p = level().getNearestPlayer(this, 7);
 		float baseYaw = getYRot();
 		if (p != null) {

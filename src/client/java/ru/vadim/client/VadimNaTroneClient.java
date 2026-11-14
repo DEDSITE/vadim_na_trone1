@@ -33,7 +33,7 @@ import ru.vadim.entity.ModEntities;
 import ru.vadim.net.HubPayloads;
 import ru.vadim.particle.ModParticles;
 
-/** Клиент: свет и туман, рендеры бара, джаз из колонок, диалог с барменом, отсчёт старта. */
+/** Клиент: свет и туман, рендеры бара, джаз из колонок, диалог с барменом, отсчёт старта, катсцена с новостями. */
 public class VadimNaTroneClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
@@ -64,6 +64,12 @@ public class VadimNaTroneClient implements ClientModInitializer {
 			BarJazz.tick(mc);
 			Countdown.tick();
 		});
+		// катсцена с новостями (этап 2)
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.news.ClientNews::tick);
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.NewsStart.TYPE, (p, ctx) -> ru.vadim.client.news.ClientNews.onStart(p));
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.NewsVotes.TYPE, (p, ctx) -> ru.vadim.client.news.ClientNews.onVotes(p));
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.NewsEnd.TYPE, (p, ctx) -> ru.vadim.client.news.ClientNews.onEnd(p));
+		HudRenderCallback.EVENT.register(ru.vadim.client.news.ClientNews::render);
 
 		// ПКМ по бармену — разговор (только на клиенте, сервер не нужен)
 		UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> {

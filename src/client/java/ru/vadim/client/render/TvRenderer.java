@@ -16,10 +16,12 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import ru.vadim.VadimNaTrone;
 import ru.vadim.block.ModBlocks;
+import ru.vadim.client.news.ClientNews;
+import ru.vadim.client.news.TvVideo;
 
 /**
- * Телевизор над баром: корпус 2.4×1.45 блока, тёмный экран с бликом. В катсцене на него выведем новости
- * (метод screen() — сюда потом подставим кадр репортажа).
+ * Телевизор над баром: корпус 2.4×1.45 блока, тёмный экран с бликом. В катсцене с новостями поверх стекла
+ * идёт ролик (TvVideo), кадр выбирается по общему времени катсцены.
  */
 public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRenderer.State> {
 	private static final Identifier TEX = VadimNaTrone.id("textures/block/tv.png");
@@ -27,6 +29,7 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 
 	public static class State extends BlockEntityRenderState {
 		float time;
+		boolean video;
 	}
 
 	public TvRenderer(BlockEntityRendererProvider.Context ctx) {}
@@ -39,6 +42,10 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 	public void extractRenderState(ModBlocks.TvEntity be, State s, float pt, Vec3 cam, ModelFeatureRenderer.CrumblingOverlay crumble) {
 		BlockEntityRenderer.super.extractRenderState(be, s, pt, cam, crumble);
 		s.time = (be.getLevel() != null ? be.getLevel().getGameTime() : 0) + pt;
+		// катсцена: свежий кадр ролика в текстуру (мы на потоке рендера)
+		s.video = ClientNews.tvOn();
+		if (s.video) TvVideo.upload();
+		s.video = s.video && TvVideo.hasFrame();
 	}
 
 	@Override
@@ -53,6 +60,7 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 		// корпус: рамка (u 0..0.5) и экран (u 0.5..1) в одной текстуре tv.png 32×16
 		box(out, ps, -W / 2, -H / 2 + 0.25f, z0, W / 2, H / 2 + 0.25f, z1, light);
 		screen(out, ps, -W / 2 + 0.08f, -H / 2 + 0.33f, W / 2 - 0.08f, H / 2 + 0.17f, z1 + 0.002f, light, s.time);
+		if (s.video) video(out, ps, -W / 2 + 0.08f, -H / 2 + 0.33f, W / 2 - 0.08f, H / 2 + 0.17f, z1 + 0.004f);
 		ps.popPose();
 	}
 
@@ -81,6 +89,16 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 			Matrix4f m = p.pose();
 			v(vc, m, p, x0, y0, z, 0.5f, 1f, light, 0, 0, 1); v(vc, m, p, x1, y0, z, 1f, 1f, light, 0, 0, 1);
 			v(vc, m, p, x1, y1, z, 1f, 0f, light, 0, 0, 1); v(vc, m, p, x0, y1, z, 0.5f, 0f, light, 0, 0, 1);
+		});
+	}
+
+	/** Ролик новостей поверх тёмного стекла: светится сам (без освещения), как настоящий экран. */
+	private void video(SubmitNodeCollector out, PoseStack ps, float x0, float y0, float x1, float y1, float z) {
+		out.submitCustomGeometry(ps, RenderTypes.eyes(TvVideo.TEX), (p, vc) -> {
+			Matrix4f m = p.pose();
+			int full = 0xF000F0;
+			v(vc, m, p, x0, y0, z, 0f, 1f, full, 0, 0, 1); v(vc, m, p, x1, y0, z, 1f, 1f, full, 0, 0, 1);
+			v(vc, m, p, x1, y1, z, 1f, 0f, full, 0, 0, 1); v(vc, m, p, x0, y1, z, 0f, 0f, full, 0, 0, 1);
 		});
 	}
 

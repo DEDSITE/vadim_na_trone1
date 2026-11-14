@@ -72,7 +72,7 @@ public final class LampLights {
 			a[i][0] = (float) (head.x - cam.x);
 			a[i][1] = (float) (head.y - cam.y);
 			a[i][2] = (float) (head.z - cam.z);
-			a[i][3] = k == 2 ? 1f : 0.75f;
+			a[i][3] = (k == 2 ? 1f : 0.75f) * (k == 1 ? ru.vadim.client.news.ClientNews.lampFactor() : 1f);
 			b[i][0] = 0f;
 			b[i][1] = -1f;
 			b[i][2] = 0f;

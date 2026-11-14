@@ -27,4 +27,12 @@ public abstract class LightTextureMixin {
 		if (ClientZone.hub()) return -1f - brightness;
 		return brightness;
 	}
+
+	/** Катсцена с новостями: свет в баре приглушается (blockFactor = flicker + 1.5 умножаем на коэффициент). */
+	@ModifyExpressionValue(method = "updateLightTexture",
+			at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LightTexture;blockLightRedFlicker:F"))
+	private float vadim$newsDim(float flicker) {
+		float k = ru.vadim.client.news.ClientNews.blockLightFactor();
+		return k >= 1f ? flicker : (flicker + 1.5f) * k - 1.5f;
+	}
 }

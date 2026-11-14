@@ -1,4 +1,8 @@
 {
   "bar_jazz": {"sounds": [{"name": "vadim_na_trone:bar_jazz", "stream": true, "attenuation_distance": 22}]},
-  "menu_jazz": {"sounds": [{"name": "vadim_na_trone:bar_jazz", "stream": true}]}
+  "menu_jazz": {"sounds": [{"name": "vadim_na_trone:bar_jazz", "stream": true}]},
+  "news_tv": {"sounds": [{"name": "vadim_na_trone:news_tv", "stream": true, "attenuation_distance": 30}]},
+  "tv_click": {"sounds": [{"name": "vadim_na_trone:tv_click", "attenuation_distance": 12}]},
+  "tv_on": {"sounds": [{"name": "vadim_na_trone:tv_on", "attenuation_distance": 24}]},
+  "tv_static": {"sounds": [{"name": "vadim_na_trone:tv_static", "attenuation_distance": 24}]}
 }
