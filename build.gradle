@@ -67,12 +67,16 @@ dependencies {
 		"maven.modrinth:presence-footsteps:xjmToylJ",        // 1.12.4+1.21.11
 		"maven.modrinth:kirin:REbB57c6",                     // 1.21.5+1.21.11 (нужен Presence Footsteps)
 		"maven.modrinth:cameraoverhaul:oBMVJtiE",            // 2.1.2
-		"maven.modrinth:cloth-config:xuX40TN5"               // 21.11.153 (нужен Camera Overhaul)
-		// Not Enough Animations убран: в среде разработки падает без своей библиотеки Transition
+		"maven.modrinth:cloth-config:xuX40TN5",              // 21.11.153 (нужен Camera Overhaul)
+		"maven.modrinth:not-enough-animations:qr1Bu9qK"      // 1.12.7 — анимации игроков от 3-го лица
 	].each { dep ->
 		modRuntimeOnly(dep) { transitive = false }
 		friendsDeps dep
 	}
+	// В среде разработки Loom не распаковывает моды, вложенные внутрь других модов (jar-in-jar).
+	// Кладём их отдельно: Kirin (выше) — для Presence Footsteps, TRansition/TRender — для Not Enough Animations.
+	// Друзьям не нужны: в обычном лаунчере Fabric достаёт их из jar сам.
+	modRuntimeOnly files("libs/TRansition-1.0.28-1.21.11-fabric-SNAPSHOT.jar", "libs/TRender-1.0.17-1.21.11-fabric-SNAPSHOT.jar")
 	modRuntimeOnly "maven.modrinth:simple-voice-chat:${project.voicechat_version}"
 }
 

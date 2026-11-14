@@ -77,6 +77,9 @@ public final class FlashlightLights {
 		ByteBuffer buf = raw.duplicate().order(java.nio.ByteOrder.nativeOrder());
 		int o = pos + offset();
 		for (int i = 0; i < EXTRA; i += 4) buf.putFloat(o + i, 0f);
+		// буфер «без тумана» создаётся по flip() — двигаем позицию за хвост, иначе он короче нашего размера
+		// и FogRenderer.getBuffer падает на slice(0, fogSize)
+		raw.position(Math.max(raw.position(), pos + fogSize()));
 	}
 
 	/** Запомнить, какой туман записан в мир в этом кадре (для копии под руку). */
