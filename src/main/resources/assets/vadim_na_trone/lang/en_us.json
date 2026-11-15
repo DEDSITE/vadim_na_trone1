@@ -29,5 +29,7 @@
   "entity.vadim_na_trone.barman": "Тимофей, бармен",
   "entity.vadim_na_trone.car": "Машина",
   "entity.vadim_na_trone.van": "Буханка «Влог конченных»",
-  "item.vadim_na_trone.crowbar": "Crowbar"
+  "item.vadim_na_trone.crowbar": "Crowbar",
+  "item.vadim_na_trone.scissors": "Nail scissors",
+  "item.vadim_na_trone.cutters": "Bolt cutter"
 }

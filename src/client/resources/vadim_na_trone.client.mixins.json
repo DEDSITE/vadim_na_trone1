@@ -15,7 +15,8 @@
 		"NewsCameraMixin",
 		"NewsInputMixin",
 		"NewsGuiMixin",
-		"NewsHandMixin"
+		"NewsHandMixin",
+		"Room1TurnMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

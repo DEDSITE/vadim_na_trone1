@@ -9,6 +9,7 @@ import net.minecraft.network.chat.FontDescription;
 import ru.vadim.VadimNaTrone;
 import ru.vadim.client.ClientZone;
 import ru.vadim.net.HubPayloads;
+import ru.vadim.world.Room1;
 import ru.vadim.world.ZavodDoor;
 
 /**
@@ -37,7 +38,7 @@ public final class ZavodHud {
 	}
 
 	public static void tick() {
-		if (!ClientZone.zavod()) { hint = 0; alpha = 0f; return; }
+		if (!ClientZone.zavod() && !ClientZone.rooms()) { hint = 0; alpha = 0f; return; }
 		alpha += ((hint != 0 ? 1f : 0f) - alpha) * 0.25f;
 		shown += (progress - shown) * 0.4f;
 	}
@@ -53,12 +54,31 @@ public final class ZavodHud {
 			case ZavodDoor.H_NEED -> new Line("НУЖЕН ВТОРОЙ", RED, null, "Одному не сломать — пусть кто-то тоже зажмёт ПКМ по цепи", true);
 			case ZavodDoor.H_PRY -> new Line("ДЕРЖИТЕ", GOLD, null, "Не отпускайте — цепь поддаётся", true);
 			case ZavodDoor.H_DONE -> new Line("ГОТОВО", GOLD, null, "Цепь сбита. Дверь открыта", false);
+			// комната 1 «Стулья» (тексты — артборд «Подсказки» макета «Комната 1 — ассеты»)
+			case Room1.H_ROPE -> new Line("ВЕРЁВКИ", RED, null, "Сам не выберешься. Пусть сосед в цепях перережет верёвки", false);
+			case Room1.H_TAKE_SC -> new Line("ЦЕПИ", GOLD, "ПКМ", "взять ножницы у стула", false);
+			case Room1.H_USE_SC -> new Line("НОЖНИЦЫ", GOLD, "ПКМ", "зажми по соседу в верёвках", false);
+			case Room1.H_CUT -> new Line("РЕЖЕШЬ", GOLD, null, "Не отпускай — верёвка поддаётся", true);
+			case Room1.H_CODE -> new Line("КОД", GOLD, null, "Цифры кровью видишь только ты. Продиктуй их свободному", false);
+			case Room1.H_FREE -> new Line("СВОБОДЕН", GOLD, null, "Болторез в кладовке. Код знают те, кто в цепях", false);
+			case Room1.H_PAD -> new Line("ЗАМОК", GOLD, "ПКМ", "кодовый замок", false);
+			case Room1.H_TAKE_CUT -> new Line("РЯДОМ", GOLD, "ПКМ", "взять болторез", false);
+			case Room1.H_USE_CUT -> new Line("БОЛТОРЕЗ", GOLD, "ПКМ", "зажми по цепям соседа", false);
+			case Room1.H_BITE -> new Line("КУСАЕШЬ", GOLD, null, "Не отпускай — цепь поддаётся", true);
+			case Room1.H_NO_CHAIN -> new Line("НЕЛЬЗЯ", RED, null, "Ножницы не берут цепь. Режь верёвки", false);
+			case Room1.H_NO_SELF -> new Line("НЕЛЬЗЯ", RED, null, "Себя не достать — режет только сосед", false);
+			case Room1.H_NO_ROPE_CUT -> new Line("НЕЛЬЗЯ", RED, null, "Верёвку болторез не возьмёт — тут нужны ножницы", false);
+			case Room1.H_WRONG -> new Line("НЕВЕРНЫЙ КОД", RED, null, "−15 секунд", false);
+			case Room1.H_WON -> new Line("СВОБОДНЫ", GOLD, null, "Дверь открыта. Уходите, пока Вадим не передумал", false);
+			case Room1.H_BEING_CUT -> new Line("ДЕРЖИСЬ", GOLD, null, "Тебя освобождают — сиди смирно", true);
+			case Room1.H_WAIT -> new Line("ЖДИ", GOLD, null, "Тебя освободит тот, у кого болторез", false);
+			case Room1.H_HANDS -> new Line("НЕЛЬЗЯ", RED, null, "Голыми руками не развязать", false);
 			default -> null;
 		};
 	}
 
 	public static void render(GuiGraphics g, DeltaTracker dt) {
-		if (alpha < 0.02f || !ClientZone.zavod()) return;
+		if (alpha < 0.02f || (!ClientZone.zavod() && !ClientZone.rooms())) return;
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.options.hideGui) return;
 		Line ln = line(hint != 0 ? hint : lastHint);

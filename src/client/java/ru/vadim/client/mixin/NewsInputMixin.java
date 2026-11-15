@@ -15,7 +15,7 @@ import ru.vadim.client.news.ClientNews;
 public abstract class NewsInputMixin extends ClientInput {
 	@Inject(method = "tick", at = @At("TAIL"))
 	private void vadim$freeze(CallbackInfo ci) {
-		if (!ClientNews.active() && !ru.vadim.client.zavod.ZavodFinalClient.locked()) return;
+		if (!ClientNews.active() && !ru.vadim.client.zavod.ZavodFinalClient.locked() && !ru.vadim.client.room.Room1Client.frozen()) return;
 		this.keyPresses = Input.EMPTY;
 		this.moveVector = Vec2.ZERO;
 	}

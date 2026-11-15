@@ -28,6 +28,8 @@ public final class ZavodFinalClient {
 	private static int shake;
 	private static boolean heart;
 	private static float side = 1f;
+	/** Комната 1: очнулись сидя на стуле — голова свешена, без «лежим на полу». */
+	private static boolean seated;
 	private static SoundInstance gasSound;
 
 	private ZavodFinalClient() {}
@@ -51,6 +53,7 @@ public final class ZavodFinalClient {
 				gasSound = null;
 				gasStart = -1;
 				wakeStart = ticks;
+				seated = p.elapsed() == 1;
 			}
 			default -> {}
 		}
@@ -125,8 +128,13 @@ public final class ZavodFinalClient {
 		float w = wake(partial);
 		if (w >= 0) {
 			float up = smooth((w - WAKE_LIE) / (WAKE_LEN - WAKE_LIE));
-			roll += side * 78f * (1f - up) + (float) Math.sin(w * 1.1) * 2f * (1f - up);
-			pitch += -12f * (1f - up);
+			if (seated) {
+				roll += side * 22f * (1f - up) + (float) Math.sin(w * 1.1) * 2f * (1f - up);
+				pitch += 38f * (1f - up);
+			} else {
+				roll += side * 78f * (1f - up) + (float) Math.sin(w * 1.1) * 2f * (1f - up);
+				pitch += -12f * (1f - up);
+			}
 		}
 		if (roll != 0f) pose.mulPose(Axis.ZP.rotationDegrees(roll));
 		if (pitch != 0f) pose.mulPose(Axis.XP.rotationDegrees(pitch));
@@ -140,7 +148,7 @@ public final class ZavodFinalClient {
 			return DROP * a * a;
 		}
 		float w = wake(partial);
-		if (w >= 0) return DROP * (1f - smooth((w - WAKE_LIE) / (WAKE_LEN - WAKE_LIE)));
+		if (w >= 0 && !seated) return DROP * (1f - smooth((w - WAKE_LIE) / (WAKE_LEN - WAKE_LIE)));
 		return 0;
 	}
 

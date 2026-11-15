@@ -15,7 +15,9 @@ import ru.vadim.entity.CarEntity;
  *  /vadim car <тип> [восток] — пустить машину (sedan, taxi, truck, van, opel);
  *  /vadim menushot          — встать в точку съёмки и снять кадр для главного меню;
  *  /vadim news [stop]       — запустить катсцену с новостями без кнопки «Готов» / прервать её;
- *  /vadim zavod [break|reset] — ко входу в заброшку (break — сразу сбить цепь, reset — вернуть цепь и лом, закрыть дверь).
+ *  /vadim zavod [break|reset] — ко входу в заброшку (break — сразу сбить цепь, reset — вернуть цепь и лом, закрыть дверь);
+ *  /vadim room1 [skip|cutters|code|win|reset|info] — комната 1: заново с вступлением / без него, выдать болторез,
+ *                                                     код в чат, сразу победа, сбросить «пройдена», состояние.
  */
 public final class HubCommands {
 	private HubCommands() {}
@@ -62,6 +64,33 @@ public final class HubCommands {
 				})).then(Commands.literal("reset").executes(c -> {
 					ZavodDoor.reset(c.getSource().getServer());
 					c.getSource().sendSuccess(() -> Component.literal("Цепь на месте, лом на столе, дверь закрыта, гермодверь поднята"), true);
+					return 1;
+				})))
+				.then(Commands.literal("room1").executes(c -> {
+					Room1.restart(c.getSource().getServer(), true);
+					c.getSource().sendSuccess(() -> Component.literal("Комната 1: заново, с вступлением"), true);
+					return 1;
+				}).then(Commands.literal("skip").executes(c -> {
+					Room1.restart(c.getSource().getServer(), false);
+					c.getSource().sendSuccess(() -> Component.literal("Комната 1: заново, без вступления"), true);
+					return 1;
+				})).then(Commands.literal("reset").executes(c -> {
+					Room1.restart(c.getSource().getServer(), true);
+					c.getSource().sendSuccess(() -> Component.literal("Комната 1 сброшена"), true);
+					return 1;
+				})).then(Commands.literal("cutters").executes(c -> {
+					Room1.giveCutters(c.getSource().getPlayerOrException());
+					return 1;
+				})).then(Commands.literal("code").executes(c -> {
+					String code = Room1.codeString();
+					c.getSource().sendSuccess(() -> Component.literal("Код кладовки: " + code), false);
+					return 1;
+				})).then(Commands.literal("win").executes(c -> {
+					Room1.forceWin(c.getSource().getServer());
+					return 1;
+				})).then(Commands.literal("info").executes(c -> {
+					String info = Room1.debug();
+					c.getSource().sendSuccess(() -> Component.literal(info), false);
 					return 1;
 				})))
 				.then(Commands.literal("menushot").executes(c -> {

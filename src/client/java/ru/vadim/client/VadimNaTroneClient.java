@@ -93,6 +93,12 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		HudRenderCallback.EVENT.register(ru.vadim.client.zavod.ZavodFinalClient::render);
 		HudRenderCallback.EVENT.register(ru.vadim.client.zavod.ZavodHud::render);
 
+		// комната 1 «Стулья» (этап 4)
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Room1State.TYPE, (p, ctx) -> ru.vadim.client.room.Room1Client.onState(p));
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Room1Keypad.TYPE, (p, ctx) -> ru.vadim.client.room.KeypadScreen.onResult(p));
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room1Client::tick);
+		HudRenderCallback.EVENT.register(ru.vadim.client.room.Room1Client::render);
+
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Countdown.TYPE, (p, ctx) -> Countdown.show(p.n()));
 		HudRenderCallback.EVENT.register(Countdown::render);
 		VadimNaTrone.LOG.info("Клиент Вадима готов.");

@@ -77,4 +77,40 @@ public final class HubPayloads {
 				StreamCodec.composite(ByteBufCodecs.VAR_INT, ZavodFinal::phase, ByteBufCodecs.VAR_INT, ZavodFinal::elapsed, ZavodFinal::new);
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/**
+	 * Комната 1 (этап 4): состояние для клиента. phase — Room1.P_*, phaseTick — тиков от начала фазы,
+	 * timeLeft — тиков до конца таймера, seatYaw — куда смотрит стул (NaN — не сидишь), tied — привязан (встать нельзя),
+	 * intro — с полным вступлением (false — перезапуск после проигрыша).
+	 */
+	public record Room1State(int phase, int phaseTick, int timeLeft, float seatYaw, boolean tied, boolean intro) implements CustomPacketPayload {
+		public static final Type<Room1State> TYPE = new Type<>(VadimNaTrone.id("room1_state"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room1State> CODEC = StreamCodec.composite(
+				ByteBufCodecs.VAR_INT, Room1State::phase, ByteBufCodecs.VAR_INT, Room1State::phaseTick, ByteBufCodecs.VAR_INT, Room1State::timeLeft,
+				ByteBufCodecs.FLOAT, Room1State::seatYaw, ByteBufCodecs.BOOL, Room1State::tied, ByteBufCodecs.BOOL, Room1State::intro, Room1State::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Комната 1: открыть экран кодового замка (result: 0 — открыть, 1 — код верный, 2 — неверный). */
+	public record Room1Keypad(int result) implements CustomPacketPayload {
+		public static final Type<Room1Keypad> TYPE = new Type<>(VadimNaTrone.id("room1_keypad"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room1Keypad> CODEC =
+				StreamCodec.composite(ByteBufCodecs.VAR_INT, Room1Keypad::result, Room1Keypad::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Клиент → сервер: набранный на замке код. */
+	public record Room1Code(String code) implements CustomPacketPayload {
+		public static final Type<Room1Code> TYPE = new Type<>(VadimNaTrone.id("room1_code"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room1Code> CODEC =
+				StreamCodec.composite(ByteBufCodecs.stringUtf8(8), Room1Code::code, Room1Code::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Клиент → сервер: голос за пропуск вступления комнаты 1. */
+	public record Room1Skip() implements CustomPacketPayload {
+		public static final Type<Room1Skip> TYPE = new Type<>(VadimNaTrone.id("room1_skip"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room1Skip> CODEC = StreamCodec.unit(new Room1Skip());
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

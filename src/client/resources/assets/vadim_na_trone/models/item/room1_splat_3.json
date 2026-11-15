@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "vadim_na_trone:item/room1/splat_3"
+ }
+}

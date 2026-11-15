@@ -16,6 +16,12 @@ public final class ModItems {
 	public static final Item CROWBAR = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("crowbar"),
 			new Item(Ids.item("crowbar").stacksTo(1)));
 
+	/** Комната 1 «Стулья» (этап 4): маникюрные ножницы (режут только верёвки) и болторез из кладовки (перекусывает цепи). */
+	public static final Item SCISSORS = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("scissors"),
+			new Item(Ids.item("scissors").stacksTo(1)));
+	public static final Item CUTTERS = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("cutters"),
+			new Item(Ids.item("cutters").stacksTo(1)));
+
 	private ModItems() {}
 
 	private static Item reg(String name) {

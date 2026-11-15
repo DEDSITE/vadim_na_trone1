@@ -12,6 +12,7 @@
 		"client": ["ru.vadim.client.VadimNaTroneClient"]
 	},
 	"mixins": [
+		"vadim_na_trone.mixins.json",
 		{ "config": "vadim_na_trone.client.mixins.json", "environment": "client" }
 	],
 	"depends": {

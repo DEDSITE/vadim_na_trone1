@@ -34,6 +34,7 @@ public abstract class GameRendererMixin {
 	@Inject(method = "bobHurt", at = @At("HEAD"))
 	private void vadim$finalPose(com.mojang.blaze3d.vertex.PoseStack pose, float partial, CallbackInfo ci) {
 		ru.vadim.client.zavod.ZavodFinalClient.applyPose(pose, partial);
+		ru.vadim.client.room.Room1Client.applyPose(pose, partial);
 	}
 
 	/** Рука в первом лице рисуется в другой системе координат — гасим для неё фонари. */

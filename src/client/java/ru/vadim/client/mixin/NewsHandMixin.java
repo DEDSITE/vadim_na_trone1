@@ -15,6 +15,6 @@ import ru.vadim.client.news.ClientNews;
 public abstract class NewsHandMixin {
 	@Inject(method = "renderHandsWithItems", at = @At("HEAD"), cancellable = true)
 	private void vadim$hideHand(float pt, PoseStack pose, SubmitNodeCollector buf, LocalPlayer player, int light, CallbackInfo ci) {
-		if (ClientNews.active() || ru.vadim.client.zavod.ZavodFinalClient.locked()) ci.cancel();
+		if (ClientNews.active() || ru.vadim.client.zavod.ZavodFinalClient.locked() || ru.vadim.client.room.Room1Client.cinematic()) ci.cancel();
 	}
 }

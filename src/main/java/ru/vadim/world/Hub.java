@@ -77,6 +77,11 @@ public final class Hub {
 				else Zavod.track(e);   // буквы вывески из сохранения — для подсветки
 				return;
 			}
+			if (level.dimension() == Places.ROOMS) {
+				if (Room1.onItemLoad(e)) return;   // выброшенные ножницы/болторез
+				if (Room1.isStale(e)) e.discard();
+				return;
+			}
 			if (level.dimension() != Places.HUB) return;
 			if (e.getTags().contains("vadim_ready") && e != readyLabel) e.discard();
 			else if (e.getTags().contains(Bar.TAG) && !e.getTags().contains(Bar.versionTag())) e.discard();
@@ -91,6 +96,8 @@ public final class Hub {
 			// во дворе завода трогать можно только дверь КПП (взлом двери цеха — этап 3б)
 			if (level.dimension() == Places.ZAVOD && !player.isCreative())
 				return Zavod.usable(hit.getBlockPos()) ? InteractionResult.PASS : InteractionResult.FAIL;
+			// в комнатах ничего не трогаем руками (двери открывает игра, кровать — операционный стол)
+			if (level.dimension() == Places.ROOMS && !player.isCreative()) return InteractionResult.FAIL;
 			if (level.dimension() != Places.HUB || player.isCreative()) return InteractionResult.PASS;
 			BlockState s = level.getBlockState(hit.getBlockPos());
 			if (s.is(ModBlocks.READY)) return InteractionResult.PASS;
@@ -125,7 +132,7 @@ public final class Hub {
 		ServerLevel zavod = Places.zavod(server);
 		if (zavod != null) Zavod.ensure(zavod, false);
 		ServerLevel rooms = Places.rooms(server);
-		if (rooms != null) Rooms.ensure(rooms);
+		if (rooms != null) { Rooms.ensure(rooms); Room1.setup(rooms); }
 	}
 
 	public static void rebuildZavod(MinecraftServer server) {
