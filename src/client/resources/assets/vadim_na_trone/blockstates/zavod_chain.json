@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "vadim_na_trone:block/zavod/gate_chain"}, "facing=east": {"model": "vadim_na_trone:block/zavod/gate_chain", "y": 90}, "facing=south": {"model": "vadim_na_trone:block/zavod/gate_chain", "y": 180}, "facing=west": {"model": "vadim_na_trone:block/zavod/gate_chain", "y": 270}}}

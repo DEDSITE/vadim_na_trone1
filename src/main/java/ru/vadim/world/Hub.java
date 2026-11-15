@@ -70,12 +70,20 @@ public final class Hub {
 				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY));
 		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
+			if (level.dimension() == Places.ZAVOD) {
+				if (Zavod.isStaleCamera(e) || Zavod.isStale(e)) e.discard();
+				else Zavod.track(e);   // буквы вывески из сохранения — для подсветки
+				return;
+			}
 			if (level.dimension() != Places.HUB) return;
 			if (e.getTags().contains("vadim_ready") && e != readyLabel) e.discard();
 			else if (e.getTags().contains(Bar.TAG) && !e.getTags().contains(Bar.versionTag())) e.discard();
 		});
 		// двери, люки, кнопки и прочее в баре трогать нельзя — только нашу кнопку «Готов»
 		UseBlockCallback.EVENT.register((player, level, hand, hit) -> {
+			// во дворе завода трогать можно только дверь КПП (взлом двери цеха — этап 3б)
+			if (level.dimension() == Places.ZAVOD && !player.isCreative())
+				return Zavod.usable(hit.getBlockPos()) ? InteractionResult.PASS : InteractionResult.FAIL;
 			if (level.dimension() != Places.HUB || player.isCreative()) return InteractionResult.PASS;
 			BlockState s = level.getBlockState(hit.getBlockPos());
 			if (s.is(ModBlocks.READY)) return InteractionResult.PASS;
@@ -105,6 +113,13 @@ public final class Hub {
 		for (int cx = -6; cx <= 5; cx++) for (int cz = -1; cz <= 1; cz++) hub.setChunkForced(cx, cz, true);
 		Bar.ensure(hub, false);
 		spawnReadyLabel(hub);
+		ServerLevel zavod = Places.zavod(server);
+		if (zavod != null) Zavod.ensure(zavod, false);
+	}
+
+	public static void rebuildZavod(MinecraftServer server) {
+		ServerLevel zavod = Places.zavod(server);
+		if (zavod != null) Zavod.ensure(zavod, true);
 	}
 
 	public static void rebuild(MinecraftServer server) {
@@ -185,6 +200,10 @@ public final class Hub {
 		}
 		List<ServerPlayer> all = everyone(server);
 		// сытость и здоровье в баре
+		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (p.level().dimension() == Places.ZAVOD) {
+			p.getFoodData().setFoodLevel(20);
+			p.getFoodData().setSaturation(5f);
+		}
 		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (Places.inHub(p)) {
 			p.getFoodData().setFoodLevel(20);
 			p.getFoodData().setSaturation(5f);
@@ -213,6 +232,7 @@ public final class Hub {
 			}
 		}
 		News.tick(server);
+		Zavod.tick(server);
 		if (readyLabel == null || server.getTickCount() % 5 != 0) return;
 		String s = countdown >= 0 ? "c" + (countdown / 20 + 1) : ready.size() + "/" + total;
 		if (s.equals(lastLabel)) return;

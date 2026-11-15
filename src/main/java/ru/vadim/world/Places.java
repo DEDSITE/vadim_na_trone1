@@ -15,7 +15,7 @@ import ru.vadim.VadimNaTrone;
  */
 public final class Places {
 	public static final ResourceKey<Level> HUB = ResourceKey.create(Registries.DIMENSION, VadimNaTrone.id("hub"));
-	/** Заброшенный завод (этап 3). Пока — площадка-заглушка у входа. */
+	/** Заброшенный завод (этап 3): двор строит Zavod; появляются снаружи у ворот, смотрят на север (на цех). */
 	public static final ResourceKey<Level> ZAVOD = ResourceKey.create(Registries.DIMENSION, VadimNaTrone.id("zavod"));
 	public static final Vec3 ZAVOD_SPAWN = new Vec3(0.5, 64, 0.5);
 	public static final float ZAVOD_YAW = 180f;

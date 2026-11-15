@@ -4,5 +4,16 @@
   "news_tv": {"sounds": [{"name": "vadim_na_trone:news_tv", "stream": true, "attenuation_distance": 30}]},
   "tv_click": {"sounds": [{"name": "vadim_na_trone:tv_click", "attenuation_distance": 12}]},
   "tv_on": {"sounds": [{"name": "vadim_na_trone:tv_on", "attenuation_distance": 24}]},
-  "tv_static": {"sounds": [{"name": "vadim_na_trone:tv_static", "attenuation_distance": 24}]}
+  "tv_static": {"sounds": [{"name": "vadim_na_trone:tv_static", "attenuation_distance": 24}]},
+  "zavod_wind": {"sounds": [{"name": "vadim_na_trone:zavod_wind", "stream": true}]},
+  "zavod_city": {"sounds": [{"name": "vadim_na_trone:zavod_city", "stream": true}]},
+  "zavod_factory_out": {"sounds": [{"name": "vadim_na_trone:zavod_factory_mono", "attenuation_distance": 36}]},
+  "zavod_lamp_buzz": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_buzz", "stream": true, "attenuation_distance": 22}]},
+  "zavod_lamp_flicker1": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker1", "attenuation_distance": 32}]},
+  "zavod_lamp_flicker2": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker2", "attenuation_distance": 32}]},
+  "zavod_lamp_flicker3": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker3", "attenuation_distance": 32}]},
+  "zavod_lamp_flicker4": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker4", "attenuation_distance": 32}]},
+  "zavod_lamp_flicker5": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker5", "attenuation_distance": 32}]},
+  "zavod_spark": {"sounds": [{"name": "vadim_na_trone:zavod_spark", "attenuation_distance": 28}]},
+  "zavod_lamp_cycle": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_cycle", "attenuation_distance": 26}]}
 }

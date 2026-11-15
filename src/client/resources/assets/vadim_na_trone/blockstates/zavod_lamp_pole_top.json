@@ -1,0 +1,1 @@
+{"variants": {"facing=north": {"model": "vadim_na_trone:block/zavod/lamp_pole_top"}, "facing=east": {"model": "vadim_na_trone:block/zavod/lamp_pole_top", "y": 90}, "facing=south": {"model": "vadim_na_trone:block/zavod/lamp_pole_top", "y": 180}, "facing=west": {"model": "vadim_na_trone:block/zavod/lamp_pole_top", "y": 270}}}

@@ -47,7 +47,8 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		BlockEntityRenderers.register(ModBlocks.NOTES_BE, NotesBoardRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.TV_BE, TvRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.SHOWCASE_BE, ShowcaseRenderer::new);
-		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT, ModBlocks.NOTES, ModBlocks.READY, ModBlocks.SPEAKER);
+		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT, ModBlocks.NOTES, ModBlocks.READY, ModBlocks.SPEAKER,
+				ru.vadim.block.ZavodBlocks.CHAIN, ru.vadim.block.ZavodBlocks.CHAIN_CUT, ru.vadim.block.ZavodBlocks.LAMP_HEAD);
 		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.TRANSLUCENT, ModBlocks.GARLAND, ModBlocks.SHOWCASE, ModBlocks.VAN);
 
 		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.menu.MenuAudio::tick);
@@ -56,12 +57,14 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 			if (mc.level == null) {
 				BarJazz.stopAll();
+				ru.vadim.client.sound.ZavodAmbience.stopAll();
 				return;
 			}
 			ClientAtmo.tick();
 			LampLights.tick(mc);
 			AmbientParticles.tick(mc);
 			BarJazz.tick(mc);
+			ru.vadim.client.sound.ZavodAmbience.tick(mc);
 			Countdown.tick();
 		});
 		// катсцена с новостями (этап 2)

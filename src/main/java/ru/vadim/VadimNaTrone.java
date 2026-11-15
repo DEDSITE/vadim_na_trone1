@@ -36,6 +36,7 @@ public class VadimNaTrone implements ModInitializer {
 		ModParticles.init();
 		ModItems.init();
 		ModBlocks.init();
+		ru.vadim.block.ZavodBlocks.init();
 		ModEntities.init();
 		Hub.register();
 		ru.vadim.world.News.register();

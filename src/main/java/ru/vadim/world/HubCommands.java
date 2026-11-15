@@ -10,7 +10,7 @@ import ru.vadim.entity.CarEntity;
 
 /**
  * Отладка хаба (нужны права оператора / читы):
- *  /vadim rebuild           — пересобрать бар и квартал;
+ *  /vadim rebuild [zavod]   — пересобрать бар и квартал (или двор завода);
  *  /vadim hub               — вернуться в бар;
  *  /vadim car <тип> [восток] — пустить машину (sedan, taxi, truck, van, opel);
  *  /vadim menushot          — встать в точку съёмки и снять кадр для главного меню;
@@ -27,7 +27,11 @@ public final class HubCommands {
 					Hub.rebuild(c.getSource().getServer());
 					c.getSource().sendSuccess(() -> Component.literal("Бар пересобран"), true);
 					return 1;
-				}))
+				}).then(Commands.literal("zavod").executes(c -> {
+					Hub.rebuildZavod(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Двор завода пересобран"), true);
+					return 1;
+				})))
 				.then(Commands.literal("hub").executes(c -> {
 					Hub.sendToHub(c.getSource().getPlayerOrException());
 					return 1;

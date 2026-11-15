@@ -24,9 +24,10 @@ public final class LampLights {
 
 	private LampLights() {}
 
-	/** 1 — подвесная лампа, 2 — голова уличного фонаря, 0 — не лампа. */
+	/** 1 — подвесная лампа, 2 — голова уличного фонаря, 3 — «кобра» завода (горит), 0 — не лампа. */
 	private static int kind(BlockState st) {
 		Block b = st.getBlock();
+		if (b == ru.vadim.block.ZavodBlocks.LAMP_HEAD) return st.getValue(ru.vadim.block.ZavodBlocks.LampHead.LIT) ? 3 : 0;
 		var id = BuiltInRegistries.BLOCK.getKey(b);
 		String path = id.getPath();
 		if (path.equals("tavern_lantern") || path.equals("chain_lantern") || path.equals("lantern")) {
@@ -68,11 +69,15 @@ public final class LampLights {
 			int k = kind(mc.level.getBlockState(p));
 			if (k == 0) continue;
 			Vec3 head = Vec3.atCenterOf(p).add(0, k == 2 ? 0.2 : -0.1, 0);
+			if (k == 3) {   // плафон «кобры» висит ~0.7 блока впереди по FACING
+				var f = mc.level.getBlockState(p).getValue(ru.vadim.block.ZavodBlocks.Deco.FACING);
+				head = Vec3.atCenterOf(p).add(f.getStepX() * 0.7, -0.28, f.getStepZ() * 0.7);
+			}
 			int i = from + n;
 			a[i][0] = (float) (head.x - cam.x);
 			a[i][1] = (float) (head.y - cam.y);
 			a[i][2] = (float) (head.z - cam.z);
-			a[i][3] = (k == 2 ? 1f : 0.75f) * (k == 1 ? ru.vadim.client.news.ClientNews.lampFactor() : 1f);
+			a[i][3] = (k >= 2 ? 1f : 0.75f) * (k == 1 ? ru.vadim.client.news.ClientNews.lampFactor() : 1f);
 			b[i][0] = 0f;
 			b[i][1] = -1f;
 			b[i][2] = 0f;

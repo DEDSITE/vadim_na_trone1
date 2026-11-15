@@ -156,43 +156,20 @@ public final class News {
 		if (ServerPlayNetworking.canSend(p, payload.type())) ServerPlayNetworking.send(p, payload);
 	}
 
-	// ---------- заброшка (заглушка до этапа 3) ----------
+	// ---------- заброшка ----------
 
-	/** Ко входу в заброшку: площадка в пустоте и табличка. */
+	/** Ко входу в заброшку: снаружи у ворот завода (двор строит Zavod при старте сервера). */
 	public static void sendToZavod(ServerPlayer p) {
 		ServerLevel z = Places.zavod(p.level().getServer());
 		if (z == null) {
 			ru.vadim.VadimNaTrone.LOG.error("Нет измерения заброшки — датапак мода не загрузился");
 			return;
 		}
-		ensureStub(z);
 		if (!p.isCreative()) p.setGameMode(GameType.ADVENTURE);
 		if (p.isPassenger()) p.stopRiding();
 		Vec3 s = Places.ZAVOD_SPAWN;
 		double ox = (p.getRandom().nextDouble() - 0.5) * 3;
 		p.teleportTo(z, s.x + ox, s.y, s.z, Set.of(), Places.ZAVOD_YAW, 0f, true);
 		p.fallDistance = 0;
-	}
-
-	private static void ensureStub(ServerLevel z) {
-		BlockPos c = BlockPos.containing(Places.ZAVOD_SPAWN).below();
-		if (!z.getBlockState(c).isAir()) return;
-		for (int x = -4; x <= 4; x++)
-			for (int dz = -5; dz <= 4; dz++) {
-				BlockPos p = c.offset(x, 0, dz);
-				z.setBlockAndUpdate(p, (x + dz) % 3 == 0 ? Blocks.CRACKED_STONE_BRICKS.defaultBlockState() : Blocks.STONE_BRICKS.defaultBlockState());
-			}
-		Display.TextDisplay d = EntityType.TEXT_DISPLAY.create(z, EntitySpawnReason.TRIGGERED);
-		if (d == null) return;
-		d.setPos(Places.ZAVOD_SPAWN.x, Places.ZAVOD_SPAWN.y + 1.8, Places.ZAVOD_SPAWN.z - 4.5);
-		d.setYRot(0f);
-		d.addTag("vadim_zavod_stub");
-		d.setTransformation(new Transformation(null, null, new Vector3f(1.2f, 1.2f, 1.2f), null));
-		d.setBillboardConstraints(Display.BillboardConstraints.FIXED);
-		d.setBackgroundColor(0x88000000);
-		d.setBrightnessOverride(Brightness.FULL_BRIGHT);
-		d.setText(Component.literal("ЗАБРОШЕННЫЙ ЗАВОД\n").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)
-				.append(Component.literal("вход — этап 3").withStyle(ChatFormatting.GRAY)));
-		z.addFreshEntity(d);
 	}
 }
