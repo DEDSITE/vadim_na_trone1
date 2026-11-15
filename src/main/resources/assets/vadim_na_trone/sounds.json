@@ -239,5 +239,86 @@
         "stream": true
       }
     ]
+  },
+  "room1_r1_01": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r1_01",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r1_02": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r1_02",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r1_03": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r1_03",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r1_04": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r1_04",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r1_06": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r1_06",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r2_01": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r2_01",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r2_02": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r2_02",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r_lose": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r_lose",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "room1_r_win": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_r_win",
+        "stream": true,
+        "attenuation_distance": 40
+      }
+    ]
   }
 }

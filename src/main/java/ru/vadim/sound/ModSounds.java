@@ -46,6 +46,17 @@ public final class ModSounds {
 	/** Комната 1 (этап 4): музыка Димы, пока идёт таймер (поток, по кругу). */
 	public static final SoundEvent ROOM1_MUSIC = register("room1_music");
 
+	/** Комната 1: реплики Вадима (озвучка Димы, ElevenLabs), звучат из монитора. r1_05 Дима убрал. */
+	public static final SoundEvent R1_01 = register("room1_r1_01");
+	public static final SoundEvent R1_02 = register("room1_r1_02");
+	public static final SoundEvent R1_03 = register("room1_r1_03");
+	public static final SoundEvent R1_04 = register("room1_r1_04");
+	public static final SoundEvent R1_06 = register("room1_r1_06");
+	public static final SoundEvent R2_01 = register("room1_r2_01");
+	public static final SoundEvent R2_02 = register("room1_r2_02");
+	public static final SoundEvent R_LOSE = register("room1_r_lose");
+	public static final SoundEvent R_WIN = register("room1_r_win");
+
 	private ModSounds() {}
 
 	private static SoundEvent register(String name) {

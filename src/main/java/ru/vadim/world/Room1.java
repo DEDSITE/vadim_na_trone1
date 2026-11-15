@@ -69,9 +69,20 @@ public final class Room1 {
 	public static final String SECRET = "vadim_r1_secret";
 	public static final int P_NONE = 0, P_WAIT = 1, P_INTRO = 2, P_GAME = 3, P_LOST = 4, P_WON = 5;
 	/** Вступление (тики): правила на мониторе → ракеты спускаются → Вадим ржёт → игра. В 4б — по длине мультика. */
-	public static final int INTRO_ROCKETS = 600, INTRO_MOCK = 700, INTRO_END = 860;
+	public static final int INTRO_ROCKETS = 724, INTRO_MOCK = 800, INTRO_END = 1040;
+	/** Реплики вступления: тик старта, длина (тики), звук, текст на мониторе (пока нет мультика 4б). */
+	private record Line(int at, int len, net.minecraft.sounds.SoundEvent snd, String text) {}
+	private static final Line[] LINES = {
+			new Line(20, 114, ModSounds.R1_01, "Ну здравствуйте, дегенераты.\nУзнали? Это я. Вадим."),
+			new Line(146, 158, ModSounds.R1_02, "Помните, как вы ржали над моей музыкой?\nСмешно было, да, уёбки?"),
+			new Line(316, 168, ModSounds.R1_03, "Вы привязаны к стульям.\nКто-то верёвкой, кто-то цепью."),
+			new Line(496, 124, ModSounds.R1_04, "Рядом ножницы. Маникюрные.\nДругих нет — всё бабло ушло на студию."),
+			new Line(632, 84, ModSounds.R1_06, "У вас пять минут.\nНо сначала… посмотрите наверх."),
+			new Line(810, 166, ModSounds.R2_01, "ХА-ХА-ХА-ХА…\nТеперь вы будете настоящими пидорами."),
+			new Line(986, 46, ModSounds.R2_02, "Время пошло, дегенераты."),
+	};
 	public static final int TOTAL = 5 * 60 * 20, PENALTY = 15 * 20;
-	private static final int WAIT_MIN = 100, WAIT_MAX = 400, LOST_LEN = 120, RESTART_WAIT = 70;
+	private static final int WAIT_MIN = 100, WAIT_MAX = 400, LOST_LEN = 150, RESTART_WAIT = 70;
 	private static final int ROPE_TICKS = 60, CHAIN_TICKS = 30;
 
 	public static final int ROLE_ROPE = 1, ROLE_CHAIN = 2, ROLE_FREE = 3;
@@ -86,7 +97,8 @@ public final class Room1 {
 	static final Vec3 KEYPAD = new Vec3(6.94, 65.3, 0.35);
 	static final BlockPos CLOSET_DOOR = new BlockPos(7, 64, -1);
 	static final BlockPos EXIT_DOOR = new BlockPos(-3, 64, -6);
-	static final Vec3 CUTTERS_AT = new Vec3(10.6, 65.6, -1.5);
+	/** Болторез валяется на полу кладовки, в углу за бочками. */
+	static final Vec3 CUTTERS_AT = new Vec3(10.4, 64.03, -2.3);
 	static final Vec3 AFTER_WIN_SPAWN = new Vec3(-2.5, 64, -3.5);
 	/** Лампы дневного света под потолком: [0] моргает сериями, [1] почти мёртвая (редкие вспышки), [2] кладовка — моргает. */
 	static final BlockPos[] TUBES = {new BlockPos(-3, 69, -2), new BlockPos(4, 69, 3), new BlockPos(10, 67, -1)};
@@ -503,9 +515,6 @@ public final class Room1 {
 			d.setItemTransform(ItemDisplayContext.NONE);
 			d.setPos(at.x, at.y, at.z);
 			d.setTransformation(new Transformation(null, new Quaternionf().rotateY(i * 1.3f).rotateX((float) (Math.PI / 2)), new Vector3f(0.45f), null));
-			d.setGlowingTag(true);
-			d.setGlowColorOverride(0xE8C77A);
-			d.setBrightnessOverride(new Brightness(12, 0));
 			add(l, d);
 			scissorsShow[i] = d;
 			scissorsHit[i] = hitbox(l, at.add(0, -0.03, 0), 0.6f, 0.25f);
@@ -519,13 +528,10 @@ public final class Room1 {
 		d.setItemStack(new ItemStack(ModItems.CUTTERS));
 		d.setItemTransform(ItemDisplayContext.NONE);
 		d.setPos(CUTTERS_AT.x, CUTTERS_AT.y, CUTTERS_AT.z);
-		d.setTransformation(new Transformation(null, new Quaternionf().rotateY((float) (Math.PI / 2)).rotateZ(0.6f), new Vector3f(0.8f), null));
-		d.setGlowingTag(true);
-		d.setGlowColorOverride(0xE8C77A);
-		d.setBrightnessOverride(new Brightness(11, 0));
+		d.setTransformation(new Transformation(null, new Quaternionf().rotateY(2.2f).rotateX((float) (Math.PI / 2)), new Vector3f(0.75f), null));
 		add(l, d);
 		cuttersShow = d;
-		cuttersHit = hitbox(l, CUTTERS_AT.add(0, -0.4, 0), 0.7f, 0.8f);
+		cuttersHit = hitbox(l, CUTTERS_AT.add(0, -0.03, 0), 0.8f, 0.25f);
 	}
 
 	/**
@@ -645,6 +651,7 @@ public final class Room1 {
 				if (phaseTick == INTRO_ROCKETS) placeRockets(ROCKET_START_TIP, 60);
 				if (phaseTick == INTRO_ROCKETS + 4)
 					l.playSound(null, CX, 69.5, CZ, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1f, 0.5f);
+				for (Line ln : LINES) if (phaseTick == ln.at) say(l, ln.snd);
 				introText();
 				if (phaseTick >= INTRO_END) { setPhase(P_GAME); monitorText.setText(Component.empty()); }
 			}
@@ -712,22 +719,21 @@ public final class Room1 {
 			ServerPlayNetworking.send(p, new HubPayloads.Room1State(phase, phaseTick, timeLeft, yaw, tiedNow, withIntro));
 	}
 
-	private static final String[] RULES = {
-			"Ну здравствуйте, дегенераты.\nУзнали? Это я. Вадим.",
-			"Помните, как вы ржали над моей музыкой?\nСмешно было, да, уёбки?",
-			"Вы привязаны к стульям.\nКто-то верёвкой, кто-то цепью.",
-			"Рядом ножницы. Маникюрные.\nДругих нет — всё ушло на студию.",
-			"Цепь ножницами не возьмёшь.\nБолторез в кладовке. Код — у вас перед глазами.",
-			"У вас пять минут.\nНо сначала… посмотрите наверх.",
-	};
+	private static void say(ServerLevel l, net.minecraft.sounds.SoundEvent snd) {
+		l.playSound(null, MONITOR.x, MONITOR.y, MONITOR.z, snd, SoundSource.RECORDS, 1f, 1f);
+	}
 
-	/** Пока нет мультика (4б) — текст правил на мониторе. */
+	/** Пропуск: глушим уже звучащую реплику. */
+	private static void hush(ServerLevel l) {
+		for (ServerPlayer p : here(l.getServer()))
+			p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null, SoundSource.RECORDS));
+	}
+
+	/** Пока нет мультика (4б) — текст реплики на мониторе. */
 	private static void introText() {
 		if (monitorText == null) return;
-		String t;
-		if (phaseTick < INTRO_ROCKETS) t = RULES[Math.min(RULES.length - 1, phaseTick / (INTRO_ROCKETS / RULES.length))];
-		else if (phaseTick < INTRO_MOCK) t = "";
-		else t = "ХА-ХА-ХА-ХА…\nТеперь вы будете настоящими пидорами.";
+		String t = "";
+		for (Line ln : LINES) if (phaseTick >= ln.at && phaseTick < ln.at + ln.len + 10) t = ln.text;
 		monitorText.setText(Component.literal(t).withStyle(phaseTick >= INTRO_MOCK ? ChatFormatting.RED : ChatFormatting.WHITE));
 	}
 
@@ -790,6 +796,7 @@ public final class Room1 {
 		setWon(l, true);
 		placeRockets(ROCKET_HIDDEN_TIP, 80);
 		setDoor(l, EXIT_DOOR, true, true);
+		say(l, ModSounds.R_WIN);
 		l.playSound(null, CX, 69, CZ, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1f, 0.6f);
 		for (ServerPlayer p : ps) clearTools(p);
 		VadimNaTrone.LOG.info("[room1] победа, осталось {} с", timeLeft / 20);
@@ -797,6 +804,7 @@ public final class Room1 {
 
 	private static void lose(ServerLevel l, List<ServerPlayer> ps) {
 		setPhase(P_LOST);
+		say(l, ModSounds.R_LOSE);
 		placeRockets(MOUTH_Y + 0.02, 10);
 		cuts.clear();
 		VadimNaTrone.LOG.info("[room1] проигрыш");
@@ -916,6 +924,7 @@ public final class Room1 {
 		if (ps.stream().allMatch(q -> skipVotes.contains(q.getUUID()))) {
 			// прыжок к ракетам: их всё равно показываем
 			phaseTick = INTRO_ROCKETS - 1;
+			hush((ServerLevel) p.level());
 			for (ServerPlayer q : ps) sendState(q, true);
 		}
 	}
@@ -941,18 +950,11 @@ public final class Room1 {
 				boolean ropeTied = role.containsValue(ROLE_ROPE);
 				if (onMe != null && !onMe.by.equals(id)) { hint = H_BEING_CUT; prog = onMe.progress / (float) (onMe.chain ? CHAIN_TICKS : ROPE_TICKS); }
 				else if (mine != null) { hint = mine.chain ? H_BITE : H_CUT; prog = mine.progress / (float) (mine.chain ? CHAIN_TICKS : ROPE_TICKS); }
-				else if (r != null && r == ROLE_ROPE) hint = H_ROPE;
-				else if (r != null && r == ROLE_CHAIN) {
-					boolean hasSc = p.getInventory().contains(st -> st.is(ModItems.SCISSORS));
-					boolean seesCode = secretViewer.containsValue(id);
-					if (ropeTied) hint = hasSc ? H_USE_SC : H_TAKE_SC;
-					else hint = seesCode && !closetOpen ? H_CODE : H_WAIT;
-				} else if (r != null && r == ROLE_FREE) {
-					boolean hasCu = p.getInventory().contains(st -> st.is(ModItems.CUTTERS));
-					if (hasCu) hint = H_USE_CUT;
-					else if (closetOpen && cuttersShow != null && p.distanceToSqr(CUTTERS_AT) < 3.5 * 3.5) hint = H_TAKE_CUT;
-					else if (!closetOpen && p.distanceToSqr(KEYPAD) < 3 * 3) hint = H_PAD;
-					else hint = H_FREE;
+				// без подсказок «что делать»: только ножницы в руке у соседа верёвочного и замок вблизи (игроки ищут сами)
+				else if (r != null && r == ROLE_CHAIN && ropeTied && p.getMainHandItem().is(ModItems.SCISSORS)) hint = H_USE_SC;
+				else if (r != null && r == ROLE_FREE) {
+					if (p.getMainHandItem().is(ModItems.CUTTERS)) hint = H_USE_CUT;
+					else if (!closetOpen && p.distanceToSqr(KEYPAD) < 2.5 * 2.5) hint = H_PAD;
 				}
 			}
 			long key = hint * 1000L + Math.round(prog * 48);
