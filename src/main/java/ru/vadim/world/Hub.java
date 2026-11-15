@@ -61,12 +61,11 @@ public final class Hub {
 			joining.remove(h.getPlayer().getUUID());
 		});
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> {
-			if (News.goesToZavod(newP)) News.sendToZavod(newP);
-			else sendToHub(newP);
+			route(newP);
 		});
 		// в баре никого не бьют и никто не умирает
 		// (заброшка пока заглушка — там тоже без урона)
-		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> (e.level().dimension() != Places.HUB && e.level().dimension() != Places.ZAVOD)
+		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> (e.level().dimension() != Places.HUB && e.level().dimension() != Places.ZAVOD && e.level().dimension() != Places.ROOMS)
 				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY));
 		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
@@ -125,6 +124,8 @@ public final class Hub {
 		spawnReadyLabel(hub);
 		ServerLevel zavod = Places.zavod(server);
 		if (zavod != null) Zavod.ensure(zavod, false);
+		ServerLevel rooms = Places.rooms(server);
+		if (rooms != null) Rooms.ensure(rooms);
 	}
 
 	public static void rebuildZavod(MinecraftServer server) {
@@ -174,6 +175,13 @@ public final class Hub {
 		p.setHealth(p.getMaxHealth());
 	}
 
+	/** Куда отправить игрока при входе/возрождении: бар, завод или (после газа) комнаты. */
+	static void route(ServerPlayer p) {
+		if (ZavodFinal.done(p.level().getServer())) Rooms.send(p);
+		else if (News.goesToZavod(p)) News.sendToZavod(p);
+		else sendToHub(p);
+	}
+
 	public static void pressReady(ServerPlayer p, BlockPos pos) {
 		if (!Places.inHub(p) || countdown >= 0 || News.active()) return;
 		long now = p.level().getGameTime();
@@ -204,13 +212,12 @@ public final class Hub {
 				it.remove();
 				ServerPlayer p = server.getPlayerList().getPlayer(e.getKey());
 				if (p == null || p.hasDisconnected()) continue;
-				if (News.goesToZavod(p)) News.sendToZavod(p);   // катсцена уже прошла / шла без него
-				else sendToHub(p);
+				route(p);   // катсцена уже прошла / шла без него — к заводу, после газа — в комнаты
 			}
 		}
 		List<ServerPlayer> all = everyone(server);
 		// сытость и здоровье в баре
-		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (p.level().dimension() == Places.ZAVOD) {
+		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (p.level().dimension() == Places.ZAVOD || p.level().dimension() == Places.ROOMS) {
 			p.getFoodData().setFoodLevel(20);
 			p.getFoodData().setSaturation(5f);
 		}

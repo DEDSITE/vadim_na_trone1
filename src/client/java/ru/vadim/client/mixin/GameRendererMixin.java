@@ -30,6 +30,12 @@ public abstract class GameRendererMixin {
 		ru.vadim.client.zavod.CctvFeed.render(deltaTracker);
 	}
 
+	/** Финал завода: качание в газу, падение на бок, подъём с пола. */
+	@Inject(method = "bobHurt", at = @At("HEAD"))
+	private void vadim$finalPose(com.mojang.blaze3d.vertex.PoseStack pose, float partial, CallbackInfo ci) {
+		ru.vadim.client.zavod.ZavodFinalClient.applyPose(pose, partial);
+	}
+
 	/** Рука в первом лице рисуется в другой системе координат — гасим для неё фонари. */
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE",
 			target = "Lnet/minecraft/client/renderer/GameRenderer;renderItemInHand(FZLorg/joml/Matrix4f;)V"))

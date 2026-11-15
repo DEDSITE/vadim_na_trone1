@@ -375,6 +375,7 @@ public final class ZavodDoor {
 		if (z == null) return;
 		setBroken(z, false);
 		ZavodInside.resetDebris(z);
+		ZavodFinal.reset(z);
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
 			var inv = p.getInventory();
 			for (int i = 0; i < inv.getContainerSize(); i++) if (inv.getItem(i).is(ModItems.CROWBAR)) inv.setItem(i, ItemStack.EMPTY);

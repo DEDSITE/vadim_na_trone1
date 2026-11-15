@@ -19,6 +19,8 @@ public abstract class NewsCameraMixin {
 
 	@Inject(method = "setup", at = @At("TAIL"))
 	private void vadim$news(Level level, Entity entity, boolean detached, boolean mirror, float partial, CallbackInfo ci) {
+		double drop = ru.vadim.client.zavod.ZavodFinalClient.cameraDrop(partial);
+		if (drop > 0) setPosition(((net.minecraft.client.Camera) (Object) this).position().add(0, -drop, 0));
 		if (!ClientNews.active()) return;
 		ClientNews.Cam c = ClientNews.camera(partial);
 		setRotation(c.yaw(), c.pitch());

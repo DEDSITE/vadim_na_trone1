@@ -20,9 +20,9 @@ public final class ClientAtmo {
 
 	public static void tick() {}
 
-	public static boolean active() { return ClientZone.hub() || ClientZone.zavod(); }
+	public static boolean active() { return ClientZone.hub() || ClientZone.zavod() || ClientZone.rooms(); }
 	/** 0..1 — насколько темно (для пост-эффекта: виньетка, зерно). */
-	public static float darkness() { return ClientZone.hub() ? 0.55f : ClientZone.zavod() ? 0.5f : 0f; }
+	public static float darkness() { return ClientZone.hub() ? 0.55f : ClientZone.zavod() ? 0.5f : ClientZone.rooms() ? 0.6f : 0f; }
 	public static float chase() { return 0f; }
 	/** 1 — уютная сцена (бар): цвета не приглушаем, виньетка мягче. */
 	public static float cozy() { return ClientZone.hub() ? 1f : 0f; }
@@ -35,7 +35,21 @@ public final class ClientAtmo {
 				&& (living.hasEffect(MobEffects.BLINDNESS) || living.hasEffect(MobEffects.DARKNESS)));
 	}
 
-	public static float[] fogColor() { return (ClientZone.zavod() ? ZAVOD_FOG : HUB_FOG).clone(); }
-	public static float fogStart() { return ClientZone.zavod() ? 6f : 18f; }
-	public static float fogEnd() { return ClientZone.zavod() ? 84f : 72f; }
+	/** Газ (3г): туман зеленеет и сгущается. */
+	private static final float[] GAS_FOG = {0.10f, 0.20f, 0.05f};
+
+	public static float[] fogColor() {
+		float[] c = (ClientZone.hub() ? HUB_FOG : ZAVOD_FOG).clone();
+		float g = ru.vadim.client.zavod.ZavodFinalClient.green();
+		for (int i = 0; i < 3; i++) c[i] += (GAS_FOG[i] - c[i]) * g;
+		return c;
+	}
+	public static float fogStart() {
+		float base = ClientZone.hub() ? 18f : ClientZone.rooms() ? 2f : 6f;
+		return base * (1f - ru.vadim.client.zavod.ZavodFinalClient.green());
+	}
+	public static float fogEnd() {
+		float base = ClientZone.hub() ? 72f : ClientZone.rooms() ? 30f : 84f;
+		return base + (7f - base) * ru.vadim.client.zavod.ZavodFinalClient.green();
+	}
 }

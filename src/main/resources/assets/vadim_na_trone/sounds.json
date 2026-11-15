@@ -193,5 +193,43 @@
         "attenuation_distance": 18
       }
     ]
+  },
+  "zavod_hatch_move": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:zavod_hatch_move",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+  "zavod_hatch_slam": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:zavod_hatch_slam",
+        "attenuation_distance": 40
+      }
+    ]
+  },
+  "zavod_hatch_slam_bed": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:zavod_hatch_slam_bed"
+      }
+    ]
+  },
+  "zavod_gas": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:zavod_gas",
+        "stream": true
+      }
+    ]
+  },
+  "zavod_heartbeat": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:zavod_heartbeat"
+      }
+    ]
   }
 }

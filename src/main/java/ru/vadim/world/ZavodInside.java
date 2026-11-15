@@ -198,6 +198,11 @@ public final class ZavodInside {
 				}
 		fill(-24, 63, -58, -19, 63, -51, "minecraft:smooth_stone");
 		fill(-24, 69, -58, -19, 69, -51, "minecraft:gray_concrete");
+		// 3г: выключенный ЭЛТ на западной стене, две решётки вентиляции под потолком (оттуда газ), одна тусклая лампа
+		set(-24, 64, -55, "minecraft:barrel[facing=up]");
+		set(-24, 65, -55, facing(ZavodBlocks.CRT_OFF, Direction.EAST));
+		for (BlockPos v : ZavodFinal.VENTS) set(v.getX(), v.getY(), v.getZ(), "minecraft:iron_trapdoor[facing=north,half=top]");
+		set(-22, 68, -54, "minecraft:lantern[hanging=true]");
 	}
 
 	private void tambour() {

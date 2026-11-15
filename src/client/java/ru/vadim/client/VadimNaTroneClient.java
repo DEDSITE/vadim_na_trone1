@@ -88,6 +88,9 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.ZavodJournal.TYPE, (p, ctx) -> ctx.client().setScreen(new ru.vadim.client.zavod.JournalScreen()));
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> ru.vadim.client.zavod.ZavodHud.tick());
 		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.zavod.CctvFeed::tick);
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.zavod.ZavodFinalClient::tick);
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.ZavodFinal.TYPE, (p, ctx) -> ru.vadim.client.zavod.ZavodFinalClient.onPacket(p));
+		HudRenderCallback.EVENT.register(ru.vadim.client.zavod.ZavodFinalClient::render);
 		HudRenderCallback.EVENT.register(ru.vadim.client.zavod.ZavodHud::render);
 
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Countdown.TYPE, (p, ctx) -> Countdown.show(p.n()));

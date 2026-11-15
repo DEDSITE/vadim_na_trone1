@@ -69,4 +69,12 @@ public final class HubPayloads {
 		public static final StreamCodec<RegistryFriendlyByteBuf, ZavodJournal> CODEC = StreamCodec.unit(new ZavodJournal());
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/** Финал завода (3г): phase 1 — захлопнулась гермодверь, 2 — газ (elapsed — тиков от начала газа), 3 — очнулись в комнате. */
+	public record ZavodFinal(int phase, int elapsed) implements CustomPacketPayload {
+		public static final Type<ZavodFinal> TYPE = new Type<>(VadimNaTrone.id("zavod_final"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, ZavodFinal> CODEC =
+				StreamCodec.composite(ByteBufCodecs.VAR_INT, ZavodFinal::phase, ByteBufCodecs.VAR_INT, ZavodFinal::elapsed, ZavodFinal::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

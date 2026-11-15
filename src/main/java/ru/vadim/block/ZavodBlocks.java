@@ -54,6 +54,8 @@ public final class ZavodBlocks {
 	public static final net.minecraft.world.level.block.entity.BlockEntityType<CrtFeedEntity> CRT_FEED_BE = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, VadimNaTrone.id("zavod_crt_feed"),
 			net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder.create(CrtFeedEntity::new, CRT_FEED).build());
+	/** ЭЛТ выключен — чёрное стекло (комната с газом, 3г). */
+	public static final Block CRT_OFF = reg("zavod_crt_off", new Crt(props("zavod_crt_off", MapColor.SAND, SoundType.METAL)));
 	/** ЭЛТ с надписью «Хочешь сыграть в игру?». */
 	public static final Block CRT_PLAY = reg("zavod_crt_play", new Crt(props("zavod_crt_play", MapColor.SAND, SoundType.METAL).lightLevel(s -> 7)));
 	/** Плоская панель 2×2 «Хочешь сыграть в игру?»: PART 0 — левый верх, 1 — правый верх, 2 — левый низ, 3 — правый низ (если смотреть на экран). */

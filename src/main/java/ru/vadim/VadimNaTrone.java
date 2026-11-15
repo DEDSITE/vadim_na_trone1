@@ -34,6 +34,7 @@ public class VadimNaTrone implements ModInitializer {
 		PayloadTypeRegistry.playC2S().register(HubPayloads.NewsSkip.TYPE, HubPayloads.NewsSkip.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.ZavodHint.TYPE, HubPayloads.ZavodHint.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.ZavodJournal.TYPE, HubPayloads.ZavodJournal.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.ZavodFinal.TYPE, HubPayloads.ZavodFinal.CODEC);
 		ModSounds.init();
 		ModParticles.init();
 		ModItems.init();

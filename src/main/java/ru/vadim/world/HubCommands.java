@@ -55,9 +55,13 @@ public final class HubCommands {
 				})).then(Commands.literal("break").executes(c -> {
 					ZavodDoor.forceBreak(c.getSource().getServer());
 					return 1;
+				})).then(Commands.literal("gas").executes(c -> {
+					ZavodFinal.force(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Гермодверь закрывается, газ через 10 с"), true);
+					return 1;
 				})).then(Commands.literal("reset").executes(c -> {
 					ZavodDoor.reset(c.getSource().getServer());
-					c.getSource().sendSuccess(() -> Component.literal("Цепь на месте, лом на столе, дверь закрыта"), true);
+					c.getSource().sendSuccess(() -> Component.literal("Цепь на месте, лом на столе, дверь закрыта, гермодверь поднята"), true);
 					return 1;
 				})))
 				.then(Commands.literal("menushot").executes(c -> {

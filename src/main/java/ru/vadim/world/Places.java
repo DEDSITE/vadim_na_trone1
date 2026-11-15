@@ -20,6 +20,10 @@ public final class Places {
 	public static final Vec3 ZAVOD_SPAWN = new Vec3(0.5, 64, 0.5);
 	public static final float ZAVOD_YAW = 180f;
 
+	/** Комнаты Вадима (этап 4+): пока одна комната-заглушка, строит Rooms. */
+	public static final ResourceKey<Level> ROOMS = ResourceKey.create(Registries.DIMENSION, VadimNaTrone.id("rooms"));
+	public static final Vec3 ROOMS_SPAWN = new Vec3(0.5, 64, 0.5);
+
 	/** Точка появления в баре: посередине зала, лицом к стойке (на север). */
 	public static final Vec3 HUB_SPAWN = new Vec3(0.5, 64, -1.5);
 	public static final float HUB_YAW = 180f;
@@ -29,4 +33,5 @@ public final class Places {
 	public static ServerLevel hub(MinecraftServer s) { return s.getLevel(HUB); }
 	public static boolean inHub(Player p) { return p.level().dimension() == HUB; }
 	public static ServerLevel zavod(MinecraftServer s) { return s.getLevel(ZAVOD); }
+	public static ServerLevel rooms(MinecraftServer s) { return s.getLevel(ROOMS); }
 }

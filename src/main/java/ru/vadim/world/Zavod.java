@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public final class Zavod {
 	/** Поменял планировку — увеличь, и при следующем запуске двор пересоберётся. */
-	public static final int VERSION = 5;
+	public static final int VERSION = 6;
 	public static final String TAG = "vadim_zavod";
 	public static final String CAM_TAG = "vadim_zavod_cam";
 	public static final String LETTER_TAG = "vadim_zavod_letter";
@@ -113,6 +113,7 @@ public final class Zavod {
 		lampsInit = false;
 		ZavodDoor.setup(z);
 		ZavodInside.setup(z);
+		ZavodFinal.setup(z);
 	}
 
 	// ======================================================================= блоки
@@ -857,6 +858,7 @@ public final class Zavod {
 					led.setBlockState((camTick / 10) % 2 == 0 ? Blocks.RED_CONCRETE.defaultBlockState() : Blocks.BLACK_CONCRETE.defaultBlockState());
 		lamps(z);
 		ZavodInside.tick(z);
+		ZavodFinal.tick(z);
 		if (camTick % 2 != 0) return;
 		List<Part> parts = camParts();
 		for (Cam c : cams) {

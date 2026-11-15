@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public final class Bar {
 	/** Поменял планировку — увеличь, и при следующем запуске хаб пересоберётся. */
-	public static final int VERSION = 2;
+	public static final int VERSION = 3;
 	public static final String TAG = "vadim_hub";
 	public static String versionTag() { return "vadim_hub_v" + VERSION; }
 
@@ -505,7 +505,7 @@ public final class Bar {
 		label(l, new net.minecraft.world.phys.Vec3(9.9, 64.55, 0.5), Direction.WEST,
 				Component.literal("ЛОПАТА АНИМЕ-ПСИХА\n").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD)
 						.append(Component.literal("«Говномесы», 1 экз. в мире.\nРуками не трогать").withStyle(ChatFormatting.GRAY)), 0.32f, 160);
-		label(l, new net.minecraft.world.phys.Vec3(9.9, 64.85, -6.0), Direction.WEST,
+		label(l, new net.minecraft.world.phys.Vec3(9.9, 64.75, -5.0), Direction.WEST,
 				Component.literal("Говнозавр Тимофей. Портрет.\n").withStyle(ChatFormatting.GOLD)
 						.append(Component.literal("холст, масло, говно").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)), 0.3f, 180);
 		// табличка «Закрыто» на двери

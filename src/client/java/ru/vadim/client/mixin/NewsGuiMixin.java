@@ -14,11 +14,11 @@ import ru.vadim.client.news.ClientNews;
 public abstract class NewsGuiMixin {
 	@Inject(method = "renderHotbarAndDecorations", at = @At("HEAD"), cancellable = true)
 	private void vadim$hideHotbar(GuiGraphics g, DeltaTracker d, CallbackInfo ci) {
-		if (ClientNews.active()) ci.cancel();
+		if (ClientNews.active() || ru.vadim.client.zavod.ZavodFinalClient.locked()) ci.cancel();
 	}
 
 	@Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
 	private void vadim$hideCross(GuiGraphics g, DeltaTracker d, CallbackInfo ci) {
-		if (ClientNews.active()) ci.cancel();
+		if (ClientNews.active() || ru.vadim.client.zavod.ZavodFinalClient.locked()) ci.cancel();
 	}
 }

@@ -12,6 +12,11 @@ public final class ClientZone {
 		return mc.level != null && mc.level.dimension() == Places.HUB;
 	}
 
+	public static boolean rooms() {
+		Minecraft mc = Minecraft.getInstance();
+		return mc.level != null && mc.level.dimension() == Places.ROOMS;
+	}
+
 	public static boolean zavod() {
 		Minecraft mc = Minecraft.getInstance();
 		return mc.level != null && mc.level.dimension() == Places.ZAVOD;

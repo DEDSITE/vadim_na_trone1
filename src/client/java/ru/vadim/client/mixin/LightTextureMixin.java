@@ -13,7 +13,8 @@ public abstract class LightTextureMixin {
 	@ModifyExpressionValue(method = "updateLightTexture",
 			at = @At(value = "INVOKE", target = "Ljava/lang/Double;floatValue()F", ordinal = 1))
 	private float vadim$gamma(float original) {
-		if (ClientZone.zavod()) return 0.35f;   // на заводе чуть светлее: ночь, но дорогу видно
+		if (ClientZone.zavod()) return 0.35f;
+		if (ClientZone.rooms()) return 0.2f;   // на заводе чуть светлее: ночь, но дорогу видно
 		return ClientAtmo.active() ? 0.0f : original;
 	}
 

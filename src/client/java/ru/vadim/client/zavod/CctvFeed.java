@@ -137,6 +137,16 @@ public final class CctvFeed {
 				Vector4f fogColor = gr.vadim$fog().setupFog(cam, rd, dt, 0f, mc.level);
 				mc.levelRenderer.renderLevel(gr.vadim$pool(), dt, false, cam, view, projection, projection,
 						gr.vadim$fog().getBuffer(FogRenderer.FogMode.WORLD), fogColor, true);
+				// полупрозрачные модели (игроки рисуются translucent) сбрасываются из общего буфера позже,
+				// уже в основном кадре — дорисовываем их сейчас, в кадр камеры, с её поворотом
+				org.joml.Matrix4fStack mv = RenderSystem.getModelViewStack();
+				mv.pushMatrix();
+				mv.mul(view);
+				try {
+					mc.renderBuffers().bufferSource().endBatch();
+				} finally {
+					mv.popMatrix();
+				}
 			} finally {
 				rendering = false;
 				RenderSystem.restoreProjectionMatrix();
