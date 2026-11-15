@@ -184,6 +184,9 @@ public final class ZavodDoor {
 		if (crowbarTaken && e instanceof Display d) { d.setGlowingTag(true); d.setGlowColorOverride(0xE8C77A); }
 	}
 
+	/** Чужая сущность (например, железка из ZavodInside) живёт с тем же тегом — не удалять при загрузке. */
+	static void keep(Entity e) { live.add(e); }
+
 	/** Старые сущности 3б из сохранения — убрать (живые пересоздаются при старте). */
 	public static boolean isStale(Entity e) {
 		return e.getTags().contains(TAG) && !live.contains(e);
@@ -371,6 +374,7 @@ public final class ZavodDoor {
 		ServerLevel z = Places.zavod(server);
 		if (z == null) return;
 		setBroken(z, false);
+		ZavodInside.resetDebris(z);
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
 			var inv = p.getInventory();
 			for (int i = 0; i < inv.getContainerSize(); i++) if (inv.getItem(i).is(ModItems.CROWBAR)) inv.setItem(i, ItemStack.EMPTY);

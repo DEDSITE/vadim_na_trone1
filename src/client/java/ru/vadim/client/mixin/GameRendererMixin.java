@@ -24,6 +24,12 @@ public abstract class GameRendererMixin {
 		return useFovSetting && ru.vadim.client.news.ClientNews.active() ? 60f : fov;
 	}
 
+	/** Камера видеонаблюдения в цеху: её кадр рисуем до основного (в свою текстуру). */
+	@Inject(method = "renderLevel", at = @At("HEAD"))
+	private void vadim$cctv(DeltaTracker deltaTracker, CallbackInfo ci) {
+		ru.vadim.client.zavod.CctvFeed.render(deltaTracker);
+	}
+
 	/** Рука в первом лице рисуется в другой системе координат — гасим для неё фонари. */
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE",
 			target = "Lnet/minecraft/client/renderer/GameRenderer;renderItemInHand(FZLorg/joml/Matrix4f;)V"))

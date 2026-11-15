@@ -90,7 +90,7 @@ public final class News {
 		if (participants.isEmpty()) return;
 		active = true;
 		start = hub.getGameTime() + 2;   // пара тиков запаса, чтобы пакет успел дойти
-		for (ServerPlayer p : online(server)) send(p, new HubPayloads.NewsStart(start, false));
+		for (ServerPlayer p : online(server)) send(p, new HubPayloads.NewsStart(hub.getGameTime() - start, false));
 	}
 
 	/** /vadim news stop — прервать и оставить всех в баре. */
@@ -115,6 +115,8 @@ public final class News {
 		List<ServerPlayer> on = online(server);
 		if (on.isEmpty()) { finish(server); return; }   // все вышли — катсцену сбрасываем
 		long t = hub.getGameTime() - start;
+		// раз в 5 с пересинхронизируем клиентов (по сети время может уползти)
+		if (t > 0 && t % 100 == 0) for (ServerPlayer p : on) send(p, new HubPayloads.NewsStart(t, skipped));
 		BarmanEntity b = barman(hub);
 		if (b != null) {
 			if (t == TURN) b.setWatchTv(true);
@@ -146,7 +148,7 @@ public final class News {
 			start = hub.getGameTime() - STATIC_AT;   // прыгаем сразу в помехи в конце ролика
 			BarmanEntity b = barman(hub);
 			if (b != null) b.setWatchTv(true);
-			for (ServerPlayer pl : on) send(pl, new HubPayloads.NewsStart(start, true));
+			for (ServerPlayer pl : on) send(pl, new HubPayloads.NewsStart(hub.getGameTime() - start, true));
 		} else {
 			for (ServerPlayer pl : on) send(pl, new HubPayloads.NewsVotes(n, total));
 		}

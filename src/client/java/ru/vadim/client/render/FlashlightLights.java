@@ -113,7 +113,7 @@ public final class FlashlightLights {
 
 	/** После мира, до руки: сохранить глубину — по ней пост-эффект строит лучи в тумане. */
 	public static void captureDepth() {
-		if (!ru.vadim.client.ClientAtmo.active()) return;
+		if (!ru.vadim.client.ClientAtmo.active() || ru.vadim.client.zavod.CctvFeed.rendering()) return;
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 		if (depthCopy == null) {
 			depthCopy = new TextureTarget("vadim depth copy", main.width, main.height, true);

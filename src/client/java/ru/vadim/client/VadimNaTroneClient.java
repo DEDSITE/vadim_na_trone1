@@ -46,9 +46,11 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntities.VAN, VanCarRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.NOTES_BE, NotesBoardRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.TV_BE, TvRenderer::new);
+		BlockEntityRenderers.register(ru.vadim.block.ZavodBlocks.CRT_FEED_BE, ru.vadim.client.render.CrtFeedRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.SHOWCASE_BE, ShowcaseRenderer::new);
 		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT, ModBlocks.NOTES, ModBlocks.READY, ModBlocks.SPEAKER,
-				ru.vadim.block.ZavodBlocks.CHAIN, ru.vadim.block.ZavodBlocks.CHAIN_CUT, ru.vadim.block.ZavodBlocks.LAMP_HEAD);
+				ru.vadim.block.ZavodBlocks.CHAIN, ru.vadim.block.ZavodBlocks.CHAIN_CUT, ru.vadim.block.ZavodBlocks.LAMP_HEAD,
+				ru.vadim.block.ZavodBlocks.CABLES, ru.vadim.block.ZavodBlocks.CABLE_HANG);
 		BlockRenderLayerMap.putBlocks(ChunkSectionLayer.TRANSLUCENT, ModBlocks.GARLAND, ModBlocks.SHOWCASE, ModBlocks.VAN);
 
 		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.menu.MenuAudio::tick);
@@ -85,6 +87,7 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.ZavodHint.TYPE, (p, ctx) -> ru.vadim.client.zavod.ZavodHud.onHint(p));
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.ZavodJournal.TYPE, (p, ctx) -> ctx.client().setScreen(new ru.vadim.client.zavod.JournalScreen()));
 		ClientTickEvents.END_CLIENT_TICK.register(mc -> ru.vadim.client.zavod.ZavodHud.tick());
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.zavod.CctvFeed::tick);
 		HudRenderCallback.EVENT.register(ru.vadim.client.zavod.ZavodHud::render);
 
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Countdown.TYPE, (p, ctx) -> Countdown.show(p.n()));

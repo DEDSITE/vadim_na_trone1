@@ -19,6 +19,9 @@ public final class ZavodAmbience {
 	private static Bed wind, city;
 	/** Позиционные петли: гул цеха из-за фасада и гудение ламп вывески. */
 	private static Spot factory, buzz;
+	/** В цеху: гул трансформаторов и вентиляция (фон), гул серверов от стоек. */
+	private static Bed hum, vent;
+	private static Spot servers, monitors;
 	/** 0..1 — насколько слышен двор (1 — на улице, 0 — в цехе). */
 	private static float outdoor = 0f;
 
@@ -40,6 +43,16 @@ public final class ZavodAmbience {
 		buzz = ensureSpot(mc, buzz, ModSounds.ZAVOD_LAMP_BUZZ, 0.5, 78.5, Zavod.SHOP_Z1 + 1.5, 0.6f);
 		factory.target = factory.loud * outdoor;
 		buzz.target = buzz.loud * outdoor;
+		hum = ensure(mc, hum, ModSounds.ZAVOD_FACTORY);
+		vent = ensure(mc, vent, ModSounds.ZAVOD_VENT);
+		servers = ensureSpot(mc, servers, ModSounds.ZAVOD_SERVERS, ru.vadim.world.ZavodInside.SERVERS.x, ru.vadim.world.ZavodInside.SERVERS.y,
+				ru.vadim.world.ZavodInside.SERVERS.z, 0.5f);
+		hum.target = 0.32f * (1f - outdoor);
+		vent.target = 0.32f * (1f - outdoor);
+		servers.target = servers.loud * (1f - outdoor);
+		// белый шум мониторов у стены с экранами — еле слышно
+		monitors = ensureSpot(mc, monitors, ModSounds.ZAVOD_MONITORS, -16.4, 65.8, -57.5, 0.3f);
+		monitors.target = monitors.loud * (1f - outdoor);
 	}
 
 	private static Spot ensureSpot(Minecraft mc, Spot b, SoundEvent ev, double x, double y, double z, float loud) {
@@ -63,8 +76,12 @@ public final class ZavodAmbience {
 		if (city != null) mc.getSoundManager().stop(city);
 		if (factory != null) mc.getSoundManager().stop(factory);
 		if (buzz != null) mc.getSoundManager().stop(buzz);
-		wind = city = null;
-		factory = buzz = null;
+		if (hum != null) mc.getSoundManager().stop(hum);
+		if (vent != null) mc.getSoundManager().stop(vent);
+		if (servers != null) mc.getSoundManager().stop(servers);
+		if (monitors != null) mc.getSoundManager().stop(monitors);
+		wind = city = hum = vent = null;
+		factory = buzz = servers = monitors = null;
 	}
 
 	private static class Bed extends AbstractTickableSoundInstance {

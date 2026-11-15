@@ -28,6 +28,12 @@ public final class ModSounds {
 	public static final SoundEvent ZAVOD_LAMP_FLICKER5 = register("zavod_lamp_flicker5");
 	public static final SoundEvent ZAVOD_SPARK = register("zavod_spark");
 	public static final SoundEvent ZAVOD_LAMP_CYCLE = register("zavod_lamp_cycle");
+	/** Цех (этап 3в): гул трансформаторов и вентиляция (фон), гул серверов (от стоек), упавшая железка. */
+	public static final SoundEvent ZAVOD_FACTORY = register("zavod_factory");
+	public static final SoundEvent ZAVOD_VENT = register("zavod_vent");
+	public static final SoundEvent ZAVOD_SERVERS = register("zavod_servers");
+	public static final SoundEvent ZAVOD_DEBRIS = register("zavod_debris");
+	public static final SoundEvent ZAVOD_MONITORS = register("zavod_monitors");
 	/** Взлом двери (этап 3б): лопнула цепь. */
 	public static final SoundEvent ZAVOD_CHAIN_SNAP = register("zavod_chain_snap");
 

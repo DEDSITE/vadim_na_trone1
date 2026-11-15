@@ -24,7 +24,7 @@ public final class HubPayloads {
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
 
-	/** Катсцена с новостями: старт (или пересинхронизация после пропуска) — тик мира, от которого клиент считает время. */
+	/** Катсцена с новостями: старт / пересинхронизация — startTick = сколько тиков прошло от старта (может быть < 0). */
 	public record NewsStart(long startTick, boolean skipped) implements CustomPacketPayload {
 		public static final Type<NewsStart> TYPE = new Type<>(VadimNaTrone.id("news_start"));
 		public static final StreamCodec<RegistryFriendlyByteBuf, NewsStart> CODEC =

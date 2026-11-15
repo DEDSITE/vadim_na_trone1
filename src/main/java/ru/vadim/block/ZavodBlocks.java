@@ -43,6 +43,29 @@ public final class ZavodBlocks {
 	public static final Block CHAIN = reg("zavod_chain", new Deco(props("zavod_chain", MapColor.METAL, SoundType.CHAIN), new double[]{5, 1, 4, 11, 9, 11}, false));
 	public static final Block CHAIN_CUT = reg("zavod_chain_cut", new Deco(props("zavod_chain_cut", MapColor.METAL, SoundType.CHAIN), new double[]{5, 0, 3, 12, 9, 11}, false));
 
+	// ---- цех внутри (этап 3в): техника Вадима (текстуры — макет Claude Design «Цех — техника Вадима»)
+	/** Серверная стойка: низ и верх (2 блока), огоньки мигают анимацией текстуры. */
+	public static final Block RACK = reg("zavod_rack", new Deco(props("zavod_rack", MapColor.COLOR_BLACK, SoundType.METAL).lightLevel(s -> 3), new double[]{1, 0, 1, 15, 16, 15}, true));
+	public static final Block RACK_TOP = reg("zavod_rack_top", new Deco(props("zavod_rack_top", MapColor.COLOR_BLACK, SoundType.METAL).lightLevel(s -> 3), new double[]{1, 0, 1, 15, 16, 15}, true));
+	/** Старый ЭЛТ-монитор: CAM=false — помехи, true — камера двора «CAM 01». */
+	public static final Block CRT = reg("zavod_crt", new Crt(props("zavod_crt", MapColor.SAND, SoundType.METAL).lightLevel(s -> 6)));
+	/** ЭЛТ с живой картинкой с камеры над стеной мониторов (рисует клиент, CrtFeedRenderer). */
+	public static final Block CRT_FEED = reg("zavod_crt_feed", new CrtFeed(props("zavod_crt_feed", MapColor.SAND, SoundType.METAL).lightLevel(s -> 6)));
+	public static final net.minecraft.world.level.block.entity.BlockEntityType<CrtFeedEntity> CRT_FEED_BE = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, VadimNaTrone.id("zavod_crt_feed"),
+			net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder.create(CrtFeedEntity::new, CRT_FEED).build());
+	/** ЭЛТ с надписью «Хочешь сыграть в игру?». */
+	public static final Block CRT_PLAY = reg("zavod_crt_play", new Crt(props("zavod_crt_play", MapColor.SAND, SoundType.METAL).lightLevel(s -> 7)));
+	/** Плоская панель 2×2 «Хочешь сыграть в игру?»: PART 0 — левый верх, 1 — правый верх, 2 — левый низ, 3 — правый низ (если смотреть на экран). */
+	public static final Block PANEL = reg("zavod_panel", new Panel(props("zavod_panel", MapColor.COLOR_BLACK, SoundType.METAL).lightLevel(s -> 8)));
+	/** Лампа дневного света под потолком (на цепи), FACING — вдоль какой оси, LIT — горит. */
+	public static final Block TUBE = reg("zavod_tube", new Tube(props("zavod_tube", MapColor.METAL, SoundType.METAL).noCollision()
+			.lightLevel(s -> s.getValue(Tube.LIT) ? 14 : 0)));
+	/** Пучок кабелей на полу (как ковёр, ходить можно), FACING — вдоль какой оси. */
+	public static final Block CABLES = reg("zavod_cables", new Deco(props("zavod_cables", MapColor.COLOR_BLACK, SoundType.WOOL).noCollision(), new double[]{0, 0, 0, 16, 1, 16}, false));
+	/** Кабель, свисающий с потолка; END — оборванный конец с жилами (искрит). */
+	public static final Block CABLE_HANG = reg("zavod_cable_hang", new CableHang(props("zavod_cable_hang", MapColor.COLOR_BLACK, SoundType.WOOL).noCollision()));
+
 	private ZavodBlocks() {}
 
 	private static Block reg(String name, Block b) {
@@ -106,5 +129,70 @@ public final class ZavodBlocks {
 
 		@Override
 		protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) { b.add(FACING, LIT); }
+	}
+
+	public static class Crt extends Deco {
+		public static final BooleanProperty CAM = BooleanProperty.create("cam");
+
+		Crt(Properties p) {
+			super(p, new double[]{1, 0, 2, 15, 14, 15}, true);
+			registerDefaultState(defaultBlockState().setValue(CAM, false));
+		}
+
+		@Override
+		protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) { b.add(FACING, CAM); }
+	}
+
+	public static class CrtFeed extends Crt implements net.minecraft.world.level.block.EntityBlock {
+		CrtFeed(Properties p) { super(p); }
+		@Override public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(BlockPos pos, BlockState st) { return new CrtFeedEntity(pos, st); }
+	}
+
+	public static class CrtFeedEntity extends net.minecraft.world.level.block.entity.BlockEntity {
+		public CrtFeedEntity(BlockPos pos, BlockState st) { super(CRT_FEED_BE, pos, st); }
+	}
+
+	public static class Panel extends Deco {
+		public static final net.minecraft.world.level.block.state.properties.IntegerProperty PART =
+				net.minecraft.world.level.block.state.properties.IntegerProperty.create("part", 0, 3);
+
+		Panel(Properties p) {
+			super(p, new double[]{0, 0, 13, 16, 16, 16}, true);
+			registerDefaultState(defaultBlockState().setValue(PART, 0));
+		}
+
+		@Override
+		protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) { b.add(FACING, PART); }
+	}
+
+	public static class Tube extends Deco {
+		public static final BooleanProperty LIT = BlockStateProperties.LIT;
+
+		Tube(Properties p) {
+			super(p, new double[]{0, 12, 5, 16, 16, 11}, false);
+			registerDefaultState(defaultBlockState().setValue(LIT, true));
+		}
+
+		@Override
+		protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) { b.add(FACING, LIT); }
+	}
+
+	public static class CableHang extends Block {
+		public static final BooleanProperty END = BooleanProperty.create("end");
+		private static final VoxelShape SHAPE = Block.box(6, 0, 6, 10, 16, 10);
+
+		CableHang(Properties p) {
+			super(p);
+			registerDefaultState(stateDefinition.any().setValue(END, false));
+		}
+
+		@Override
+		protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) { b.add(END); }
+
+		@Override
+		protected VoxelShape getShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) { return SHAPE; }
+
+		@Override
+		protected VoxelShape getCollisionShape(BlockState s, BlockGetter l, BlockPos p, CollisionContext c) { return Shapes.empty(); }
 	}
 }

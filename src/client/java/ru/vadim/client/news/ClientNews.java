@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
+import ru.vadim.VadimNaTrone;
 import ru.vadim.net.HubPayloads;
 import ru.vadim.sound.ModSounds;
 
@@ -50,6 +51,8 @@ public final class ClientNews {
 	private static int arriveFade = 0;
 	private static final int ARRIVE_TICKS = 30;
 	private static boolean waitingArrive = false;
+	/** Свой счётчик тиков клиента (идёт, пока есть мир). */
+	private static long ticks = 0;
 
 	private ClientNews() {}
 
@@ -59,7 +62,11 @@ public final class ClientNews {
 		Minecraft mc = Minecraft.getInstance();
 		boolean first = !active;
 		active = true;
-		startTick = p.startTick();
+		// сервер присылает, сколько тиков прошло от старта; считаем от своего счётчика тиков,
+		// а не от времени мира — у клиентов по сети оно может отличаться от сервера
+		long st = ticks - p.startTick();
+		if (first || skipped != p.skipped() || Math.abs(st - startTick) > 3) startTick = st;
+		VadimNaTrone.LOG.info("[news] старт/синхр: прошло {} тиков (first={}, skipped={})", p.startTick(), first, p.skipped());
 		if (first) {
 			skipped = false;
 			tvOnPlayed = newsPlayed = staticPlayed = false;
@@ -108,7 +115,7 @@ public final class ClientNews {
 	public static float time(float partial) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.level == null) return 0f;
-		return (mc.level.getGameTime() - startTick + partial) / 20f;
+		return (ticks - startTick + partial) / 20f;
 	}
 
 	private static float now() {
@@ -192,6 +199,7 @@ public final class ClientNews {
 	// ---------- тик: звук, пропуск, выход из черноты ----------
 
 	public static void tick(Minecraft mc) {
+		if (mc.level != null && !mc.isPaused()) ticks++;
 		if (waitingArrive) {
 			// мир заброшки прогрузился — выходим из черноты
 			if (mc.level != null && mc.player != null && mc.screen == null && !ru.vadim.client.ClientZone.hub()) {

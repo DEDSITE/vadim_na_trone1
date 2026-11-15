@@ -48,7 +48,11 @@ public final class HubCommands {
 				.then(Commands.literal("zavod").executes(c -> {
 					News.sendToZavod(c.getSource().getPlayerOrException());
 					return 1;
-				}).then(Commands.literal("break").executes(c -> {
+				}).then(Commands.literal("path").executes(c -> {
+					String r = ZavodInside.checkPath(Places.zavod(c.getSource().getServer()));
+					c.getSource().sendSuccess(() -> Component.literal(r), false);
+					return 1;
+				})).then(Commands.literal("break").executes(c -> {
 					ZavodDoor.forceBreak(c.getSource().getServer());
 					return 1;
 				})).then(Commands.literal("reset").executes(c -> {

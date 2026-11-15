@@ -518,6 +518,7 @@ public final class Bar {
 			Painting p = new Painting(l, new BlockPos(9, 66, -6), Direction.WEST, v);
 			p.addTag(TAG);
 			p.addTag(versionTag());
+			p.setInvulnerable(true);
 			l.addFreshEntity(p);
 		} catch (Exception e) {
 			VadimNaTrone.LOG.warn("Картина Тимофея не повесилась: {}", e.toString());

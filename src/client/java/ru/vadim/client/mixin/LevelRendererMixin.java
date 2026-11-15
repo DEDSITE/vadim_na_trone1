@@ -20,6 +20,6 @@ public abstract class LevelRendererMixin {
 	private void vadim$matrices(GraphicsResourceAllocator alloc, DeltaTracker delta, boolean outline, Camera camera,
 	                                 Matrix4f view, Matrix4f proj, Matrix4f cullProj, GpuBufferSlice fog, Vector4f fogColor,
 	                                 boolean sky, CallbackInfo ci) {
-		FlashlightLights.matrices(view, proj);
+		if (!ru.vadim.client.zavod.CctvFeed.rendering()) FlashlightLights.matrices(view, proj);
 	}
 }

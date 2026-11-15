@@ -81,7 +81,12 @@ public final class Hub {
 			if (level.dimension() != Places.HUB) return;
 			if (e.getTags().contains("vadim_ready") && e != readyLabel) e.discard();
 			else if (e.getTags().contains(Bar.TAG) && !e.getTags().contains(Bar.versionTag())) e.discard();
+			else if (e instanceof net.minecraft.world.entity.decoration.painting.Painting) e.setInvulnerable(true);   // Тимофея не сломать
 		});
+		// картину в баре нельзя сбить даже в креативе
+		net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((player, level, hand, e, hit) ->
+				level.dimension() == Places.HUB && e instanceof net.minecraft.world.entity.decoration.painting.Painting
+						? InteractionResult.FAIL : InteractionResult.PASS);
 		// двери, люки, кнопки и прочее в баре трогать нельзя — только нашу кнопку «Готов»
 		UseBlockCallback.EVENT.register((player, level, hand, hit) -> {
 			// во дворе завода трогать можно только дверь КПП (взлом двери цеха — этап 3б)
@@ -105,6 +110,8 @@ public final class Hub {
 	}
 
 	private static void onStarted(MinecraftServer server) {
+		// мир, открытый по сети (LAN / Radmin): пускаем друзей с пиратских лаунчеров (Legacy Launcher и т.п.) без проверки лицензии
+		if (!server.isDedicatedServer()) server.setUsesAuthentication(false);
 		ready.clear();
 		countdown = -1;
 		ServerLevel hub = Places.hub(server);

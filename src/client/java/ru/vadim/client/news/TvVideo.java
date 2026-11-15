@@ -63,6 +63,7 @@ public final class TvVideo {
 					try (InputStream in = rm.open(id)) { d[i] = in.readAllBytes(); }
 				}
 				data = d;
+				VadimNaTrone.LOG.info("[news] ролик загружен: {} кадров", FRAMES);
 			}
 			int[] buf = new int[W * H];
 			int[] out = new int[W * H];

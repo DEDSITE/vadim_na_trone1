@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public final class Zavod {
 	/** Поменял планировку — увеличь, и при следующем запуске двор пересоберётся. */
-	public static final int VERSION = 3;
+	public static final int VERSION = 5;
 	public static final String TAG = "vadim_zavod";
 	public static final String CAM_TAG = "vadim_zavod_cam";
 	public static final String LETTER_TAG = "vadim_zavod_letter";
@@ -87,7 +87,8 @@ public final class Zavod {
 	// ======================================================================= сборка
 
 	public static void ensure(ServerLevel z, boolean force) {
-		z.setChunkForced(-1, -1, true);   // чанк камеры: её части всегда загружены
+		// двор и цех всегда загружены: камеры, лампы, железка и сущности взлома живут, даже если никого рядом
+		for (int cx = -2; cx <= 1; cx++) for (int cz = -5; cz <= -1; cz++) z.setChunkForced(cx, cz, true);
 		Built st = z.getDataStorage().computeIfAbsent(Built.TYPE);
 		if (force || st.version != VERSION) {
 			long t0 = System.currentTimeMillis();
@@ -98,6 +99,7 @@ public final class Zavod {
 			b.fence();
 			b.booth();
 			b.shop();
+			ZavodInside.build(z);
 			b.yard();
 			b.city();
 			b.barriers();
@@ -110,6 +112,7 @@ public final class Zavod {
 		spawnCamera(z);
 		lampsInit = false;
 		ZavodDoor.setup(z);
+		ZavodInside.setup(z);
 	}
 
 	// ======================================================================= блоки
@@ -678,9 +681,16 @@ public final class Zavod {
 	/** Части камеры: [x0,y0,z0, sx,sy,sz] в локальных координатах (смотрит в -Z), блок, светится ли. */
 	private record Part(float x, float y, float z, float sx, float sy, float sz, BlockState block, boolean glow) {}
 
-	private static final List<Display.BlockDisplay> cam = new ArrayList<>();
-	private static final List<Display.BlockDisplay> leds = new ArrayList<>();
-	private static float camYaw = 30f, camPitch = -20f;
+	/** Камера: точка крепления, части, огоньки, куда смотрит; idle — направление «осмотра», когда никого нет. */
+	private static final class Cam {
+		final Vec3 pivot;
+		final float idle;
+		final List<Display.BlockDisplay> parts = new ArrayList<>(), leds = new ArrayList<>();
+		float yaw, pitch = -20f;
+		Cam(Vec3 pivot, float idle) { this.pivot = pivot; this.idle = idle; this.yaw = idle; }
+	}
+
+	private static final List<Cam> cams = new ArrayList<>();
 	private static int camTick = 0;
 
 	private static List<Part> camParts() {
@@ -699,29 +709,35 @@ public final class Zavod {
 				.translate(p.x, p.y, p.z).scale(p.sx, p.sy, p.sz);
 	}
 
+	/** Все камеры: во дворе на столбе + внутри цеха (ZavodInside.CAMS). */
 	static void spawnCamera(ServerLevel l) {
 		List<Entity> old = new ArrayList<>();
 		for (Entity e : l.getAllEntities()) if (e.getTags().contains(CAM_TAG)) old.add(e);
 		old.forEach(Entity::discard);
-		cam.clear();
-		leds.clear();
-		// столб
+		cams.clear();
+		// столб во дворе
 		for (int y = 64; y <= 69; y++) l.setBlock(new BlockPos(-6, y, -6), Blocks.IRON_BARS.defaultBlockState(), Block.UPDATE_CLIENTS);
 		l.setBlock(new BlockPos(-6, 70, -6), Blocks.POLISHED_DEEPSLATE_SLAB.defaultBlockState(), Block.UPDATE_CLIENTS);
+		addCam(l, new Cam(CAM_PIVOT, 30f));
+		for (float[] c : ZavodInside.CAMS) addCam(l, new Cam(new Vec3(c[0], c[1], c[2]), c[3]));
+	}
+
+	private static void addCam(ServerLevel l, Cam c) {
+		cams.add(c);   // до сущностей: ENTITY_LOAD удаляет части камер, которых нет в списке
 		List<Part> parts = camParts();
 		for (int i = 0; i < parts.size(); i++) {
 			Part p = parts.get(i);
 			Display.BlockDisplay d = EntityType.BLOCK_DISPLAY.create(l, EntitySpawnReason.TRIGGERED);
 			if (d == null) continue;
 			d.setBlockState(p.block);
-			d.setPos(CAM_PIVOT.x, CAM_PIVOT.y, CAM_PIVOT.z);
-			d.setTransformation(new Transformation(camMatrix(p, camYaw, camPitch)));
+			d.setPos(c.pivot.x, c.pivot.y, c.pivot.z);
+			d.setTransformation(new Transformation(camMatrix(p, c.yaw, c.pitch)));
 			if (p.glow) d.setBrightnessOverride(Brightness.FULL_BRIGHT);
 			d.setViewRange(2f);
 			d.addTag(CAM_TAG);
-			cam.add(d);   // до добавления: ENTITY_LOAD удаляет «чужие» части камеры
+			c.parts.add(d);   // до добавления: ENTITY_LOAD удаляет «чужие» части камеры
 			l.addFreshEntity(d);
-			if (i == 4 || i == 6) leds.add(d);
+			if (i == 4 || i == 6) c.leds.add(d);
 		}
 	}
 
@@ -798,7 +814,7 @@ public final class Zavod {
 			z.playSound(null, at.x, at.y, at.z, FLICKER[v], SoundSource.BLOCKS, 1f, 0.9f + lr.nextFloat() * 0.2f);
 			setSignLamp(z, i, !signLit[i]);
 			if (broken(i) && lr.nextInt(3) > 0) {
-				z.playSound(null, at.x, at.y, at.z, ModSounds.ZAVOD_SPARK, SoundSource.BLOCKS, 1f, 0.9f + lr.nextFloat() * 0.25f);
+				z.playSound(null, at.x, at.y, at.z, ModSounds.ZAVOD_SPARK, SoundSource.BLOCKS, 0.4f, 0.9f + lr.nextFloat() * 0.25f);
 				z.sendParticles(ParticleTypes.ELECTRIC_SPARK, at.x, at.y - 0.2, at.z, 14, 0.15, 0.1, 0.15, 0.25);
 				z.sendParticles(ParticleTypes.LAVA, at.x, at.y - 0.2, at.z, 4, 0.1, 0.05, 0.1, 0.0);
 			}
@@ -821,7 +837,9 @@ public final class Zavod {
 
 	/** Старые части камеры из сохранения (после перезапуска) — убрать. */
 	public static boolean isStaleCamera(Entity e) {
-		return e.getTags().contains(CAM_TAG) && !cam.contains(e);
+		if (!e.getTags().contains(CAM_TAG)) return false;
+		for (Cam c : cams) if (c.parts.contains(e)) return false;
+		return true;
 	}
 
 	public static boolean isStale(Entity e) {
@@ -830,40 +848,46 @@ public final class Zavod {
 
 	public static void tick(MinecraftServer server) {
 		ServerLevel z = Places.zavod(server);
-		if (z == null || cam.isEmpty()) return;
+		if (z == null || cams.isEmpty()) return;
 		camTick++;
 		// огонёк записи мигает раз в секунду
 		if (camTick % 10 == 0)
-			for (Display.BlockDisplay led : leds)
-				led.setBlockState((camTick / 10) % 2 == 0 ? Blocks.RED_CONCRETE.defaultBlockState() : Blocks.BLACK_CONCRETE.defaultBlockState());
+			for (Cam c : cams)
+				for (Display.BlockDisplay led : c.leds)
+					led.setBlockState((camTick / 10) % 2 == 0 ? Blocks.RED_CONCRETE.defaultBlockState() : Blocks.BLACK_CONCRETE.defaultBlockState());
 		lamps(z);
+		ZavodInside.tick(z);
 		if (camTick % 2 != 0) return;
-		ServerPlayer target = null;
-		double best = 40 * 40;
-		for (ServerPlayer p : z.players()) {
-			if (p.isSpectator()) continue;
-			double d = p.distanceToSqr(CAM_PIVOT);
-			if (d < best) { best = d; target = p; }
-		}
-		float wantYaw, wantPitch;
-		if (target != null) {
-			Vec3 to = target.getEyePosition().subtract(CAM_PIVOT);
-			wantYaw = (float) Math.toDegrees(Math.atan2(-to.x, -to.z));
-			wantPitch = (float) Math.toDegrees(Math.atan2(to.y, Math.sqrt(to.x * to.x + to.z * to.z)));
-		} else {
-			wantYaw = 20f + 55f * Mth.sin(camTick / 90f);   // никого нет — медленно осматривает двор
-			wantPitch = -18f;
-		}
-		float dy = Mth.wrapDegrees(wantYaw - camYaw);
-		float maxStep = 7f;
-		camYaw += Mth.clamp(dy, -maxStep, maxStep);
-		camPitch += Mth.clamp(Mth.clamp(wantPitch, -60f, 15f) - camPitch, -maxStep, maxStep);
 		List<Part> parts = camParts();
-		for (int i = 0; i < cam.size() && i < parts.size(); i++) {
-			Display.BlockDisplay d = cam.get(i);
-			d.setTransformationInterpolationDelay(0);
-			d.setTransformationInterpolationDuration(2);
-			d.setTransformation(new Transformation(camMatrix(parts.get(i), camYaw, camPitch)));
+		for (Cam c : cams) {
+			ServerPlayer target = null;
+			double best = 40 * 40;
+			for (ServerPlayer p : z.players()) {
+				if (p.isSpectator()) continue;
+				// камера в цеху видит только тех, кто в цеху, и наоборот
+				if (insideShop(p.getX(), p.getY(), p.getZ()) != insideShop(c.pivot.x, c.pivot.y, c.pivot.z)) continue;
+				double d = p.distanceToSqr(c.pivot);
+				if (d < best) { best = d; target = p; }
+			}
+			float wantYaw, wantPitch;
+			if (target != null) {
+				Vec3 to = target.getEyePosition().subtract(c.pivot);
+				wantYaw = (float) Math.toDegrees(Math.atan2(-to.x, -to.z));
+				wantPitch = (float) Math.toDegrees(Math.atan2(to.y, Math.sqrt(to.x * to.x + to.z * to.z)));
+			} else {
+				wantYaw = c.idle + 55f * Mth.sin(camTick / 90f);   // никого нет — медленно осматривается
+				wantPitch = -18f;
+			}
+			float dy = Mth.wrapDegrees(wantYaw - c.yaw);
+			float maxStep = 7f;
+			c.yaw += Mth.clamp(dy, -maxStep, maxStep);
+			c.pitch += Mth.clamp(Mth.clamp(wantPitch, -60f, 15f) - c.pitch, -maxStep, maxStep);
+			for (int i = 0; i < c.parts.size() && i < parts.size(); i++) {
+				Display.BlockDisplay d = c.parts.get(i);
+				d.setTransformationInterpolationDelay(0);
+				d.setTransformationInterpolationDuration(2);
+				d.setTransformation(new Transformation(camMatrix(parts.get(i), c.yaw, c.pitch)));
+			}
 		}
 	}
 

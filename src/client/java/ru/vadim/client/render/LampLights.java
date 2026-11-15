@@ -24,10 +24,11 @@ public final class LampLights {
 
 	private LampLights() {}
 
-	/** 1 — подвесная лампа, 2 — голова уличного фонаря, 3 — «кобра» завода (горит), 0 — не лампа. */
+	/** 1 — подвесная лампа, 2 — голова уличного фонаря, 3 — «кобра» завода (горит), 4 — лампа дневного света цеха (горит), 0 — не лампа. */
 	private static int kind(BlockState st) {
 		Block b = st.getBlock();
 		if (b == ru.vadim.block.ZavodBlocks.LAMP_HEAD) return st.getValue(ru.vadim.block.ZavodBlocks.LampHead.LIT) ? 3 : 0;
+		if (b == ru.vadim.block.ZavodBlocks.TUBE) return st.getValue(ru.vadim.block.ZavodBlocks.Tube.LIT) ? 4 : 0;
 		var id = BuiltInRegistries.BLOCK.getKey(b);
 		String path = id.getPath();
 		if (path.equals("tavern_lantern") || path.equals("chain_lantern") || path.equals("lantern")) {
@@ -69,6 +70,7 @@ public final class LampLights {
 			int k = kind(mc.level.getBlockState(p));
 			if (k == 0) continue;
 			Vec3 head = Vec3.atCenterOf(p).add(0, k == 2 ? 0.2 : -0.1, 0);
+			if (k == 4) head = Vec3.atCenterOf(p).add(0, -0.25, 0);   // лампа дневного света
 			if (k == 3) {   // плафон «кобры» висит ~0.7 блока впереди по FACING
 				var f = mc.level.getBlockState(p).getValue(ru.vadim.block.ZavodBlocks.Deco.FACING);
 				head = Vec3.atCenterOf(p).add(f.getStepX() * 0.7, -0.28, f.getStepZ() * 0.7);

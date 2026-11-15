@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cross", "textures": {"cross": "vadim_na_trone:block/zavod/cable_end", "particle": "vadim_na_trone:block/zavod/cable_end"}}

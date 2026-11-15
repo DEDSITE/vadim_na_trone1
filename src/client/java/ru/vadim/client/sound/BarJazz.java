@@ -19,7 +19,7 @@ import java.util.Set;
  * Все колонки запускаются в один тик, поэтому звучат синхронно. Тихо, фоном.
  */
 public final class BarJazz {
-	private static final float LOUD = 0.32f;
+	private static final float LOUD = 0.15f;
 	private static final List<Track> playing = new ArrayList<>();
 	private static Set<BlockPos> current = new HashSet<>();
 	private static int scanIn = 0;
