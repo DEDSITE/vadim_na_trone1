@@ -1,8 +1,7 @@
 {
  "textures": {
   "f": "vadim_na_trone:item/room1/monitor",
-  "b": "minecraft:block/anvil",
-  "particle": "minecraft:block/anvil"
+  "particle": "vadim_na_trone:item/room1/monitor"
  },
  "elements": [
   {
@@ -39,37 +38,37 @@
      "uv": [
       0,
       0,
-      1,
-      10
+      0.4,
+      0.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     },
     "west": {
      "uv": [
       0,
       0,
-      1,
-      10
+      0.4,
+      0.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     },
     "up": {
      "uv": [
       0,
       0,
-      16,
-      1
+      0.4,
+      0.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     },
     "down": {
      "uv": [
       0,
       0,
-      16,
-      1
+      0.4,
+      0.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     }
    }
   }

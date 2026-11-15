@@ -88,6 +88,14 @@ public final class Room1 {
 	static final BlockPos EXIT_DOOR = new BlockPos(-3, 64, -6);
 	static final Vec3 CUTTERS_AT = new Vec3(10.6, 65.6, -1.5);
 	static final Vec3 AFTER_WIN_SPAWN = new Vec3(-2.5, 64, -3.5);
+	/** Лампы дневного света под потолком: [0] моргает сериями, [1] почти мёртвая (редкие вспышки), [2] кладовка — моргает. */
+	static final BlockPos[] TUBES = {new BlockPos(-3, 69, -2), new BlockPos(4, 69, 3), new BlockPos(10, 67, -1)};
+	private static final int[][] tubeState = {{60, 0}, {120, 0}, {200, 0}};
+	private static final net.minecraft.sounds.SoundEvent[] FLICKER = {ModSounds.ZAVOD_LAMP_FLICKER1, ModSounds.ZAVOD_LAMP_FLICKER2,
+			ModSounds.ZAVOD_LAMP_FLICKER3, ModSounds.ZAVOD_LAMP_FLICKER4, ModSounds.ZAVOD_LAMP_FLICKER5};
+	private static final int[] FLICKER_LEN = {16, 28, 12, 14, 14};
+	/** Ракеты опускаются рывками: шаг раз в 15 с, со звоном цепи. */
+	private static final int STEP = 15 * 20;
 
 	static final Seat[] SEATS = new Seat[3];
 	static {
@@ -367,7 +375,9 @@ public final class Room1 {
 	}
 
 	private static double gameTip() {
-		double p = 1.0 - Math.max(0, timeLeft) / (double) TOTAL;
+		int steps = TOTAL / STEP;
+		int done = Math.min(steps, (TOTAL - Math.max(0, timeLeft)) / STEP);
+		double p = done / (double) steps;
 		return ROCKET_START_TIP + (MOUTH_Y + 0.02 - ROCKET_START_TIP) * p;
 	}
 
@@ -610,6 +620,7 @@ public final class Room1 {
 			}
 		}
 		if (ps.isEmpty()) return;
+		lampsTick(l);
 		if (phase == P_NONE && !won(server)) {
 			boolean anySeated = ps.stream().anyMatch(p -> seatOf.containsKey(p.getUUID()));
 			if (anySeated) setPhase(P_WAIT);
@@ -663,6 +674,29 @@ public final class Room1 {
 		hints(ps, now);
 	}
 
+	private static void lampsTick(ServerLevel l) {
+		java.util.Random r = new java.util.Random();
+		for (int i = 0; i < TUBES.length; i++) {
+			int[] st = tubeState[i];
+			BlockPos p = TUBES[i];
+			BlockState s = l.getBlockState(p);
+			if (!s.is(ru.vadim.block.ZavodBlocks.TUBE)) continue;
+			boolean base = i != 1;   // мёртвая по умолчанию выключена
+			boolean lit = s.getValue(ru.vadim.block.ZavodBlocks.Tube.LIT);
+			if (st[1] > 0) {
+				st[1]--;
+				boolean want = st[1] == 0 ? base : (r.nextInt(100) < 40) != lit;
+				if (want != lit) l.setBlock(p, s.setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, want), Block.UPDATE_CLIENTS);
+			} else if (--st[0] <= 0) {
+				int v = r.nextInt(FLICKER.length);
+				st[1] = FLICKER_LEN[v];
+				st[0] = base ? 200 + r.nextInt(500) : 120 + r.nextInt(300);
+				l.playSound(null, p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5, FLICKER[v], SoundSource.BLOCKS, 0.45f, 0.9f + r.nextFloat() * 0.2f);
+				l.setBlock(p, s.setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, !lit), Block.UPDATE_CLIENTS);
+			} else if (st[1] == 0 && lit != base) l.setBlock(p, s.setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, base), Block.UPDATE_CLIENTS);
+		}
+	}
+
 	private static final Map<UUID, Integer> sentPhase = new HashMap<>();
 
 	private static void sendState(ServerPlayer p, boolean force) {
@@ -699,7 +733,11 @@ public final class Room1 {
 
 	private static void gameTick(ServerLevel l, List<ServerPlayer> ps, long now) {
 		timeLeft--;
-		if (now % 10 == 0) placeRockets(gameTip(), 10);
+		int elapsed = TOTAL - timeLeft;
+		if (elapsed % STEP == 0 && elapsed > 0) {
+			placeRockets(gameTip(), 6);
+			for (Seat s : SEATS) l.playSound(null, s.mouth().x, rocketTip + 2, s.mouth().z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 0.9f, 0.55f + l.random.nextFloat() * 0.2f);
+		}
 		if (timeLeft % 20 == 0) showTimer();
 		// резка
 		var it = cuts.entrySet().iterator();
@@ -863,6 +901,7 @@ public final class Room1 {
 		} else {
 			timeLeft = Math.max(1, timeLeft - PENALTY);
 			showTimer();
+			placeRockets(gameTip(), 6);
 			l.playSound(null, KEYPAD.x, KEYPAD.y, KEYPAD.z, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, 1.2f, 0.5f);
 			l.playSound(null, MONITOR.x, MONITOR.y, MONITOR.z, SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), SoundSource.BLOCKS, 1f, 0.5f);
 			for (ServerPlayer q : here(l.getServer())) flash(q, H_WRONG);

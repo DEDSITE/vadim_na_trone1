@@ -1,8 +1,7 @@
 {
  "textures": {
   "f": "vadim_na_trone:item/room1/keypad_wall",
-  "b": "minecraft:block/anvil",
-  "particle": "minecraft:block/anvil"
+  "particle": "vadim_na_trone:item/room1/keypad_wall"
  },
  "elements": [
   {
@@ -37,39 +36,39 @@
     },
     "east": {
      "uv": [
-      0,
-      0,
       1,
-      14
+      8,
+      1.4,
+      8.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     },
     "west": {
      "uv": [
-      0,
-      0,
       1,
-      14
+      8,
+      1.4,
+      8.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     },
     "up": {
      "uv": [
-      0,
-      0,
-      9,
-      1
+      1,
+      8,
+      1.4,
+      8.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     },
     "down": {
      "uv": [
-      0,
-      0,
-      9,
-      1
+      1,
+      8,
+      1.4,
+      8.4
      ],
-     "texture": "#b"
+     "texture": "#f"
     }
    }
   }

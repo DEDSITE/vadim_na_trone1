@@ -231,5 +231,13 @@
         "name": "vadim_na_trone:zavod_heartbeat"
       }
     ]
+  },
+  "room1_music": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room1_music",
+        "stream": true
+      }
+    ]
   }
 }

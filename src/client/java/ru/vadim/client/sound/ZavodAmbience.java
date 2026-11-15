@@ -28,6 +28,18 @@ public final class ZavodAmbience {
 	private ZavodAmbience() {}
 
 	public static void tick(Minecraft mc) {
+		if (ClientZone.rooms() && mc.player != null) {
+			// комнаты Вадима: тот же гул и вентиляция, что в цеху, потише; двор и стойки молчат
+			for (var b : new java.util.ArrayList<>(java.util.Arrays.asList(wind, city, factory, buzz, servers, monitors)))
+				if (b != null) mc.getSoundManager().stop(b);
+			wind = city = null;
+			factory = buzz = servers = monitors = null;
+			hum = ensure(mc, hum, ModSounds.ZAVOD_FACTORY);
+			vent = ensure(mc, vent, ModSounds.ZAVOD_VENT);
+			hum.target = 0.22f;
+			vent.target = 0.26f;
+			return;
+		}
 		if (!ClientZone.zavod() || mc.player == null) {
 			stopAll();
 			outdoor = 0f;

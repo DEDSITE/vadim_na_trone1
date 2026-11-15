@@ -47,7 +47,46 @@ public final class Room1Client {
 	private static boolean released = true;
 	private static float lastYaw, lastPitch;
 
+	private static Music music;
+
 	private Room1Client() {}
+
+	/** Музыка Димы, пока идёт таймер: с конца вступления, по кругу; гаснет при проигрыше/победе/выходе. */
+	private static final class Music extends net.minecraft.client.resources.sounds.AbstractTickableSoundInstance {
+		float target = 0.8f;
+		int age;
+
+		Music() {
+			super(ModSounds.ROOM1_MUSIC, SoundSource.MUSIC, SoundInstance.createUnseededRandom());
+			looping = true;
+			delay = 0;
+			relative = true;
+			attenuation = Attenuation.NONE;
+			volume = 0.001f;
+		}
+
+		@Override
+		public void tick() {
+			age++;
+			volume += (Math.max(0f, target) - volume) * 0.06f;
+			if (target <= 0f && volume < 0.01f) stop();
+		}
+	}
+
+	private static void musicTick(Minecraft mc) {
+		boolean want = here() && phase == Room1.P_GAME && released;
+		if (want) {
+			if (music == null || (!mc.getSoundManager().isActive(music) && music.age > 40)) {
+				music = new Music();
+				mc.getSoundManager().play(music);
+			}
+			music.target = 0.8f;
+		} else if (music != null) {
+			music.target = 0f;
+			if (!here()) { mc.getSoundManager().stop(music); music = null; }
+			else if (music.isStopped()) music = null;
+		}
+	}
 
 	public static void onState(HubPayloads.Room1State p) {
 		Minecraft mc = Minecraft.getInstance();
@@ -85,6 +124,7 @@ public final class Room1Client {
 	public static void tick(Minecraft mc) {
 		if (mc.level == null) return;
 		if (!mc.isPaused()) ticks++;
+		musicTick(mc);
 		if (!here()) { phase = Room1.P_NONE; return; }
 		if (shake > 0) shake--;
 		// сидящие (на дисплее-стуле) телом по стулу

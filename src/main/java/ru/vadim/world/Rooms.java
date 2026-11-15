@@ -30,7 +30,7 @@ import java.util.Set;
  * 9×9, одна лампа, табличка «скоро». Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
  */
 public final class Rooms {
-	public static final int VERSION = 2;
+	public static final int VERSION = 3;
 	public static final String TAG = "vadim_rooms";
 
 	private Rooms() {}
@@ -124,7 +124,7 @@ public final class Rooms {
 		set(l, 11, 65, 1, b(Blocks.BARREL));
 		set(l, 8, 64, 1, b(Blocks.CHEST).setValue(net.minecraft.world.level.block.ChestBlock.FACING, Direction.WEST));
 		set(l, 11, 66, -1, b(Blocks.TRIPWIRE_HOOK).setValue(net.minecraft.world.level.block.TripWireHookBlock.FACING, Direction.WEST));
-		set(l, 10, 67, -1, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 6));
+		set(l, 9, 67, -2, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 6));
 		door(l, Room1.CLOSET_DOOR, Direction.EAST);
 		// выход: коридор на север и комната 2 (заглушка)
 		door(l, Room1.EXIT_DOOR, Direction.NORTH);
@@ -145,6 +145,9 @@ public final class Rooms {
 			d.addTag(TAG);
 			l.addFreshEntity(d);
 		}
+		// лампы дневного света на потолке: одна моргает, одна почти мёртвая, одна в кладовке (Room1.lampsTick)
+		for (BlockPos t : Room1.TUBES) l.setBlock(t, ru.vadim.block.ZavodBlocks.TUBE.defaultBlockState()
+				.setValue(ru.vadim.block.ZavodBlocks.Deco.FACING, Direction.EAST).setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, true), Block.UPDATE_CLIENTS);
 		bt.version = VERSION;
 		bt.setDirty();
 		VadimNaTrone.LOG.info("Комната 1 построена за {} мс", System.currentTimeMillis() - t0);

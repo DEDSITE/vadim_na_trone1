@@ -43,6 +43,9 @@ public final class ModSounds {
 	/** Взлом двери (этап 3б): лопнула цепь. */
 	public static final SoundEvent ZAVOD_CHAIN_SNAP = register("zavod_chain_snap");
 
+	/** Комната 1 (этап 4): музыка Димы, пока идёт таймер (поток, по кругу). */
+	public static final SoundEvent ROOM1_MUSIC = register("room1_music");
+
 	private ModSounds() {}
 
 	private static SoundEvent register(String name) {

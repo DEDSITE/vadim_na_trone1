@@ -131,6 +131,10 @@ public final class CctvFeed {
 			cs.orientation = new Quaternionf(cam.rotation());
 			cs.initialized = true;
 			rendering = true;
+			// моды анимаций (Not Enough Animations и т.п.) прячут своего игрока, если вид «от первого лица» —
+			// на время кадра камеры считаем, что вид от третьего лица
+			net.minecraft.client.CameraType sType = mc.options.getCameraType();
+			mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
 			RenderSystem.backupProjectionMatrix();
 			try {
 				RenderSystem.setProjectionMatrix(proj.getBuffer(projection), ProjectionType.PERSPECTIVE);
@@ -147,8 +151,10 @@ public final class CctvFeed {
 				} finally {
 					mv.popMatrix();
 				}
+				lastEntities = gr.vadim$levelState().entityRenderStates.size();
 			} finally {
 				rendering = false;
+				mc.options.setCameraType(sType);
 				RenderSystem.restoreProjectionMatrix();
 				cs.pos = sPos;
 				cs.entityPos = sEnt;
@@ -168,6 +174,7 @@ public final class CctvFeed {
 	}
 
 	private static int dumps;
+	private static int lastEntities;
 	private static long lastDump;
 
 	/** Отладка: пару раз за запуск сохраняем кадр камеры в cctv_debug_N.png и пишем в лог среднюю яркость. */
@@ -176,7 +183,7 @@ public final class CctvFeed {
 		if (dumps >= 6 || now - lastDump < 4000) return;
 		lastDump = now;
 		int n = ++dumps;
-		VadimNaTrone.LOG.info("[cctv] кадр {}: камера {} yaw {} pitch {}", n, cam.position(), cam.yRot(), cam.xRot());
+		VadimNaTrone.LOG.info("[cctv] кадр {}: камера {} yaw {} pitch {}, сущностей в кадре {}", n, cam.position(), cam.yRot(), cam.xRot(), lastEntities);
 		net.minecraft.client.Screenshot.takeScreenshot(target, img -> {
 			try {
 				long sum = 0;
