@@ -115,7 +115,7 @@ public final class CctvFeed {
 			cam.tick();   // небо/свет у камеры считаются от её позиции (attributeProbe)
 
 			int rd = mc.options.getEffectiveRenderDistance();
-			Matrix4f projection = new Matrix4f().perspective((float) Math.toRadians(78), (float) W / H, 0.05f, Math.max(64f, rd * 16f));
+			Matrix4f projection = new Matrix4f().perspective((float) Math.toRadians(108), (float) W / H, 0.05f, Math.max(64f, rd * 16f));
 			Matrix4f view = new Matrix4f().rotation(cam.rotation().conjugate(new Quaternionf()));
 			CctvGameRendererAccessor gr = (CctvGameRendererAccessor) mc.gameRenderer;
 			// позиция камеры для сущностей берётся из общего состояния кадра (его заполняет GameRenderer
