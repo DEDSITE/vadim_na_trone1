@@ -32,6 +32,8 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 		boolean video;
 	}
 
+	private static boolean loggedVideo;
+
 	public TvRenderer(BlockEntityRendererProvider.Context ctx) {}
 
 	@Override public boolean shouldRenderOffScreen() { return true; }
@@ -46,6 +48,10 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 		s.video = ClientNews.tvOn();
 		if (s.video) TvVideo.upload();
 		s.video = s.video && TvVideo.hasFrame();
+		if (s.video && !loggedVideo) {
+			loggedVideo = true;
+			VadimNaTrone.LOG.info("[news] телек: первый кадр ролика на экране");
+		}
 	}
 
 	@Override
@@ -94,7 +100,8 @@ public class TvRenderer implements BlockEntityRenderer<ModBlocks.TvEntity, TvRen
 
 	/** Ролик новостей поверх тёмного стекла: светится сам (без освещения), как настоящий экран. */
 	private void video(SubmitNodeCollector out, PoseStack ps, float x0, float y0, float x1, float y1, float z) {
-		out.submitCustomGeometry(ps, RenderTypes.eyes(TvVideo.TEX), (p, vc) -> {
+		// непрозрачный слой: «eyes» (прибавление по альфе) на части видеокарт/настроек давал чёрный экран
+		out.submitCustomGeometry(ps, RenderTypes.entitySolid(TvVideo.TEX), (p, vc) -> {
 			Matrix4f m = p.pose();
 			int full = 0xF000F0;
 			v(vc, m, p, x0, y0, z, 0f, 1f, full, 0, 0, 1); v(vc, m, p, x1, y0, z, 1f, 1f, full, 0, 0, 1);

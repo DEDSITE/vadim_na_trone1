@@ -29,6 +29,7 @@ public final class TvVideo {
 	private static volatile boolean loaded;
 	private static volatile int shown = -1;
 	private static Thread worker;
+	private static boolean warned;
 
 	private TvVideo() {}
 
@@ -71,6 +72,12 @@ public final class TvVideo {
 				int f = ClientNews.active() ? (int) (ClientNews.videoTime() * FPS) : shown;
 				if (f >= 0 && f < FRAMES && f != shown && ready == null) {
 					BufferedImage img = ImageIO.read(new ByteArrayInputStream(data[f]));
+					if (img == null || img.getWidth() != W || img.getHeight() != H) {
+						if (!warned) {
+							warned = true;
+							VadimNaTrone.LOG.warn("[news] кадр {} не прочитался: {}", f, img == null ? "null" : img.getWidth() + "x" + img.getHeight());
+						}
+					}
 					if (img != null && img.getWidth() == W && img.getHeight() == H) {
 						img.getRGB(0, 0, W, H, buf, 0, W);
 						for (int i = 0; i < out.length; i++) {
@@ -106,6 +113,7 @@ public final class TvVideo {
 		ib.put(f);
 		tex.upload();
 		ready = null;
+		if (!loaded) VadimNaTrone.LOG.info("[news] телек: кадр залит в текстуру");
 		loaded = true;
 	}
 }
