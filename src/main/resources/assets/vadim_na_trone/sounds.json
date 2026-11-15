@@ -15,5 +15,6 @@
   "zavod_lamp_flicker4": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker4", "attenuation_distance": 32}]},
   "zavod_lamp_flicker5": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_flicker5", "attenuation_distance": 32}]},
   "zavod_spark": {"sounds": [{"name": "vadim_na_trone:zavod_spark", "attenuation_distance": 28}]},
-  "zavod_lamp_cycle": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_cycle", "attenuation_distance": 26}]}
+  "zavod_lamp_cycle": {"sounds": [{"name": "vadim_na_trone:zavod_lamp_cycle", "attenuation_distance": 26}]},
+  "zavod_chain_snap": {"sounds": [{"name": "vadim_na_trone:zavod_chain_snap", "attenuation_distance": 28}]}
 }

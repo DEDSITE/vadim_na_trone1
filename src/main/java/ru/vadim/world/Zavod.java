@@ -109,6 +109,7 @@ public final class Zavod {
 		}
 		spawnCamera(z);
 		lampsInit = false;
+		ZavodDoor.setup(z);
 	}
 
 	// ======================================================================= блоки

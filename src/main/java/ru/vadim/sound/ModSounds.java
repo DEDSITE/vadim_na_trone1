@@ -28,6 +28,8 @@ public final class ModSounds {
 	public static final SoundEvent ZAVOD_LAMP_FLICKER5 = register("zavod_lamp_flicker5");
 	public static final SoundEvent ZAVOD_SPARK = register("zavod_spark");
 	public static final SoundEvent ZAVOD_LAMP_CYCLE = register("zavod_lamp_cycle");
+	/** Взлом двери (этап 3б): лопнула цепь. */
+	public static final SoundEvent ZAVOD_CHAIN_SNAP = register("zavod_chain_snap");
 
 	private ModSounds() {}
 

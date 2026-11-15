@@ -81,6 +81,12 @@ public class VadimNaTroneClient implements ClientModInitializer {
 			return InteractionResult.SUCCESS;
 		});
 
+		// завод, взлом двери (этап 3б): подсказки и журнал охранника
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.ZavodHint.TYPE, (p, ctx) -> ru.vadim.client.zavod.ZavodHud.onHint(p));
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.ZavodJournal.TYPE, (p, ctx) -> ctx.client().setScreen(new ru.vadim.client.zavod.JournalScreen()));
+		ClientTickEvents.END_CLIENT_TICK.register(mc -> ru.vadim.client.zavod.ZavodHud.tick());
+		HudRenderCallback.EVENT.register(ru.vadim.client.zavod.ZavodHud::render);
+
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Countdown.TYPE, (p, ctx) -> Countdown.show(p.n()));
 		HudRenderCallback.EVENT.register(Countdown::render);
 		VadimNaTrone.LOG.info("Клиент Вадима готов.");

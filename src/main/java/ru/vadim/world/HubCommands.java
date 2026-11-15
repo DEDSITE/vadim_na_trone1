@@ -15,7 +15,7 @@ import ru.vadim.entity.CarEntity;
  *  /vadim car <тип> [восток] — пустить машину (sedan, taxi, truck, van, opel);
  *  /vadim menushot          — встать в точку съёмки и снять кадр для главного меню;
  *  /vadim news [stop]       — запустить катсцену с новостями без кнопки «Готов» / прервать её;
- *  /vadim zavod             — сразу ко входу в заброшку.
+ *  /vadim zavod [break|reset] — ко входу в заброшку (break — сразу сбить цепь, reset — вернуть цепь и лом, закрыть дверь).
  */
 public final class HubCommands {
 	private HubCommands() {}
@@ -48,7 +48,14 @@ public final class HubCommands {
 				.then(Commands.literal("zavod").executes(c -> {
 					News.sendToZavod(c.getSource().getPlayerOrException());
 					return 1;
-				}))
+				}).then(Commands.literal("break").executes(c -> {
+					ZavodDoor.forceBreak(c.getSource().getServer());
+					return 1;
+				})).then(Commands.literal("reset").executes(c -> {
+					ZavodDoor.reset(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Цепь на месте, лом на столе, дверь закрыта"), true);
+					return 1;
+				})))
 				.then(Commands.literal("menushot").executes(c -> {
 					var p = c.getSource().getPlayerOrException();
 					p.teleportTo(Places.hub(c.getSource().getServer()), 0.5, 64, -5.2, java.util.Set.of(), 0f, 4f, true);

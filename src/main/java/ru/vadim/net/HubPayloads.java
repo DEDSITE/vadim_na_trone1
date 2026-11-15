@@ -54,4 +54,19 @@ public final class HubPayloads {
 		public static final StreamCodec<RegistryFriendlyByteBuf, NewsSkip> CODEC = StreamCodec.unit(new NewsSkip());
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/** Завод, взлом двери: подсказка внизу экрана (0 — нет) и прогресс 0..1. */
+	public record ZavodHint(int hint, float progress) implements CustomPacketPayload {
+		public static final Type<ZavodHint> TYPE = new Type<>(VadimNaTrone.id("zavod_hint"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, ZavodHint> CODEC =
+				StreamCodec.composite(ByteBufCodecs.VAR_INT, ZavodHint::hint, ByteBufCodecs.FLOAT, ZavodHint::progress, ZavodHint::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Завод: открыть журнал охранника. */
+	public record ZavodJournal() implements CustomPacketPayload {
+		public static final Type<ZavodJournal> TYPE = new Type<>(VadimNaTrone.id("zavod_journal"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, ZavodJournal> CODEC = StreamCodec.unit(new ZavodJournal());
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

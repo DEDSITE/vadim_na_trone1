@@ -71,7 +71,10 @@ public final class Hub {
 		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
 			if (level.dimension() == Places.ZAVOD) {
-				if (Zavod.isStaleCamera(e) || Zavod.isStale(e)) e.discard();
+				if (ZavodDoor.onItemLoad(e)) return;   // выброшенный лом — обратно на стол
+				if (Zavod.isStaleCamera(e) || Zavod.isStale(e) || ZavodDoor.isStale(e)) { e.discard(); return; }
+				ZavodDoor.onChainLoad(level, e);
+				if (e.isRemoved()) return;
 				else Zavod.track(e);   // буквы вывески из сохранения — для подсветки
 				return;
 			}
@@ -233,6 +236,7 @@ public final class Hub {
 		}
 		News.tick(server);
 		Zavod.tick(server);
+		ZavodDoor.tick(server);
 		if (readyLabel == null || server.getTickCount() % 5 != 0) return;
 		String s = countdown >= 0 ? "c" + (countdown / 20 + 1) : ready.size() + "/" + total;
 		if (s.equals(lastLabel)) return;

@@ -12,6 +12,10 @@ public final class ModItems {
 	public static final Item SHOVEL_DEZHAVU = reg("shovel_dezhavu");
 	public static final Item SHOVEL_ANIME = reg("shovel_anime");
 
+	/** Лом из будки охранника (этап 3б): им вскрывают цепь на двери цеха, после взлома пропадает. */
+	public static final Item CROWBAR = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("crowbar"),
+			new Item(Ids.item("crowbar").stacksTo(1)));
+
 	private ModItems() {}
 
 	private static Item reg(String name) {
