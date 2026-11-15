@@ -185,5 +185,13 @@
         "attenuation_distance": 9
       }
     ]
+  },
+  "zavod_debris_rod": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:zavod_debris_rod",
+        "attenuation_distance": 18
+      }
+    ]
   }
 }

@@ -52,8 +52,9 @@ public class CrtFeedRenderer implements BlockEntityRenderer<ZavodBlocks.CrtFeedE
 		out.submitCustomGeometry(ps, RenderTypes.entityCutout(DARK), (p, vc) ->
 				quad(vc, p, x0, y0, x1, y1, z - 0.003f, 0.5f, 1f, 1f, 0f, 0xF000F0, 40, 40, 40));
 		// картинка 4:3 на квадратном экране — берём середину; у текстуры цели низ кадра в v = 0
-		out.submitCustomGeometry(ps, RenderTypes.eyes(CctvFeed.TEX), (p, vc) ->
-				quad(vc, p, x0, y0, x1, y1, z - 0.006f, 0.875f, 0f, 0.125f, 1f, 0xF000F0, 196, 222, 200));
+		// непрозрачный слой (eyes складывается по альфе, а у кадра мира альфа бывает нулевой → было чёрное)
+		out.submitCustomGeometry(ps, RenderTypes.entitySolid(CctvFeed.TEX), (p, vc) ->
+				quad(vc, p, x0, y0, x1, y1, z - 0.006f, 0.875f, 0f, 0.125f, 1f, 0xF000F0, 205, 230, 210));
 		ps.popPose();
 	}
 

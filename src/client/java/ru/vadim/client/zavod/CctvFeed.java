@@ -111,7 +111,7 @@ public final class CctvFeed {
 			cam.setup(mc.level, mc.player, true, false, pt);
 			CctvCameraInvoker ci = (CctvCameraInvoker) cam;
 			ci.vadim$setRotation(mcYaw, mcPitch);
-			ci.vadim$setPosition(PIVOT.add(Vec3.directionFromRotation(mcPitch, mcYaw).scale(0.75)));
+			ci.vadim$setPosition(PIVOT.add(Vec3.directionFromRotation(mcPitch, mcYaw).scale(0.85)));
 			cam.tick();   // небо/свет у камеры считаются от её позиции (attributeProbe)
 
 			int rd = mc.options.getEffectiveRenderDistance();
@@ -131,12 +131,41 @@ public final class CctvFeed {
 			}
 			tex.show(target);
 			has = true;
+			debugDump(mc);
 		} catch (Throwable t) {
 			rendering = false;
 			broken = true;
 			has = false;
 			VadimNaTrone.LOG.warn("Камера видеонаблюдения выключена: {}", t.toString());
 		}
+	}
+
+	private static int dumps;
+	private static long lastDump;
+
+	/** Отладка: пару раз за запуск сохраняем кадр камеры в cctv_debug_N.png и пишем в лог среднюю яркость. */
+	private static void debugDump(Minecraft mc) {
+		long now = System.currentTimeMillis();
+		if (dumps >= 3 || now - lastDump < 4000) return;
+		lastDump = now;
+		int n = ++dumps;
+		VadimNaTrone.LOG.info("[cctv] кадр {}: камера {} yaw {} pitch {}", n, cam.position(), cam.yRot(), cam.xRot());
+		net.minecraft.client.Screenshot.takeScreenshot(target, img -> {
+			try {
+				long sum = 0;
+				int w = img.getWidth(), h = img.getHeight();
+				for (int y = 0; y < h; y += 2) for (int x = 0; x < w; x += 2) {
+					int c = img.getPixel(x, y);
+					sum += (c & 0xFF) + (c >> 8 & 0xFF) + (c >> 16 & 0xFF);
+				}
+				VadimNaTrone.LOG.info("[cctv] кадр {}: {}x{}, средняя яркость {}", n, w, h, sum / 3 / Math.max(1, (w / 2) * (h / 2)));
+				img.writeToFile(mc.gameDirectory.toPath().resolve("cctv_debug_" + n + ".png"));
+			} catch (Exception e) {
+				VadimNaTrone.LOG.warn("[cctv] не сохранил кадр: {}", e.toString());
+			} finally {
+				img.close();
+			}
+		});
 	}
 
 	/** Текстура-обёртка над цветом нашей цели (саму цель не закрываем вместе с текстурой). */

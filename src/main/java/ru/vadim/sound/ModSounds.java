@@ -33,6 +33,7 @@ public final class ModSounds {
 	public static final SoundEvent ZAVOD_VENT = register("zavod_vent");
 	public static final SoundEvent ZAVOD_SERVERS = register("zavod_servers");
 	public static final SoundEvent ZAVOD_DEBRIS = register("zavod_debris");
+	public static final SoundEvent ZAVOD_DEBRIS_ROD = register("zavod_debris_rod");
 	public static final SoundEvent ZAVOD_MONITORS = register("zavod_monitors");
 	/** Взлом двери (этап 3б): лопнула цепь. */
 	public static final SoundEvent ZAVOD_CHAIN_SNAP = register("zavod_chain_snap");

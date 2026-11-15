@@ -64,7 +64,7 @@ public final class ZavodInside {
 	/** Контрольная точка: мостки над задним проходом; железка падает с x≈−8.5 впереди идущих на запад. */
 	/** Игрок идёт по заднему проходу на запад: дошёл до x ≤ −2.5 — железка падает впереди, на x ≈ −8.5. */
 	static final double CHECK_X = -2.5;
-	static final Vec3 DEBRIS_FROM = new Vec3(-8.6, 71.02, -62.0), DEBRIS_TO = new Vec3(-8.4, 64.05, -61.6);
+	static final Vec3 DEBRIS_FROM = new Vec3(-8.6, 70.45, -62.0), DEBRIS_TO = new Vec3(-8.4, 64.07, -61.6);
 	/** Где гудят сервера (центр коридора стоек). */
 	public static final Vec3 SERVERS = new Vec3(3.5, 65.5, -56.0);
 
@@ -442,15 +442,20 @@ public final class ZavodInside {
 	private static void debrisTick(ServerLevel z) {
 		if (debrisT >= 0) {
 			debrisT++;
-			if (debrisT == 9 && debris != null) {   // долетела
+			if (debrisT == 1 && debris != null) {   // со следующего тика — чтобы клиенты увидели, откуда он сорвался
+				debris.teleportTo(DEBRIS_TO.x, DEBRIS_TO.y, DEBRIS_TO.z);
+				debris.setTransformation(new Transformation(rod(LYING_YAW, 0f)));
+			}
+			if (debrisT == 1 + FALL_TICKS && debris != null) {   // долетел
 				z.playSound(null, DEBRIS_TO.x, DEBRIS_TO.y, DEBRIS_TO.z, ModSounds.ZAVOD_DEBRIS, SoundSource.BLOCKS, 0.6f, 1f);
-				z.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.WAXED_WEATHERED_COPPER.defaultBlockState()),
-						DEBRIS_TO.x, DEBRIS_TO.y + 0.1, DEBRIS_TO.z, 14, 0.4, 0.05, 0.2, 0.1);
+				z.playSound(null, DEBRIS_TO.x, DEBRIS_TO.y, DEBRIS_TO.z, ModSounds.ZAVOD_DEBRIS_ROD, SoundSource.BLOCKS, 0.7f, 1f);
+				z.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.IRON_BLOCK.defaultBlockState()),
+						DEBRIS_TO.x, DEBRIS_TO.y + 0.1, DEBRIS_TO.z, 10, 0.5, 0.05, 0.3, 0.1);
 				// пыль с пола поднялась облачком вокруг
 				z.sendParticles(ParticleTypes.POOF, DEBRIS_TO.x, DEBRIS_TO.y + 0.15, DEBRIS_TO.z, 16, 0.8, 0.08, 0.5, 0.025);
 				z.sendParticles(new DustParticleOptions(0x8C867A, 1.6f), DEBRIS_TO.x, DEBRIS_TO.y + 0.25, DEBRIS_TO.z, 40, 1.0, 0.2, 0.7, 0.0);
 			}
-			if (debrisT == 15) {   // облачко ещё висит и оседает
+			if (debrisT == 7 + FALL_TICKS) {   // облачко ещё висит и оседает
 				z.sendParticles(new DustParticleOptions(0x7E796E, 1.3f), DEBRIS_TO.x, DEBRIS_TO.y + 0.5, DEBRIS_TO.z, 28, 1.3, 0.3, 0.9, 0.0);
 				z.sendParticles(ParticleTypes.WHITE_SMOKE, DEBRIS_TO.x, DEBRIS_TO.y + 0.3, DEBRIS_TO.z, 6, 0.9, 0.1, 0.6, 0.005);
 				debrisT = -1;
@@ -465,35 +470,34 @@ public final class ZavodInside {
 		}
 	}
 
-	/** Обрезок трубы срывается с мостков и падает впереди (тихо, звук только от него, поднимается пыль). */
+	/** Железный прут срывается из-под мостков и падает впереди (тихо, звук только от него, поднимается пыль). */
+	private static final int FALL_TICKS = 10;
+	private static final float HANG_YAW = 0.5f, HANG_TILT = 0.2f, LYING_YAW = 0.9f;
+
 	private static void dropDebris(ServerLevel z) {
 		Debris st = z.getDataStorage().computeIfAbsent(Debris.TYPE);
 		st.fell = true;
 		st.setDirty();
-		spawnDebris(z, DEBRIS_FROM, 0f);
+		if (debris == null || debris.isRemoved()) spawnDebris(z, DEBRIS_FROM, rod(HANG_YAW, HANG_TILT));
 		if (debris == null) return;
-		debris.setPosRotInterpolationDuration(9);
+		debris.setPosRotInterpolationDuration(FALL_TICKS);
 		debris.setTransformationInterpolationDelay(0);
-		debris.setTransformationInterpolationDuration(9);
-		z.getServer().execute(() -> {
-			if (debris == null) return;
-			debris.teleportTo(DEBRIS_TO.x, DEBRIS_TO.y, DEBRIS_TO.z);
-			debris.setTransformation(new Transformation(pipe(1.35f)));
-		});
+		debris.setTransformationInterpolationDuration(FALL_TICKS);
 		debrisT = 0;
 	}
 
-	private static Matrix4f pipe(float roll) {
-		return new Matrix4f().rotateY(0.5f).rotateZ(roll).translate(-0.9f, 0f, -0.14f).scale(1.8f, 0.28f, 0.28f);
+	/** Железный прут 2 блока × 0.12: поворот вокруг вертикали и наклон. */
+	private static Matrix4f rod(float yaw, float tilt) {
+		return new Matrix4f().rotateY(yaw).rotateZ(tilt).translate(-1.0f, -0.06f, -0.06f).scale(2.0f, 0.12f, 0.12f);
 	}
 
-	private static void spawnDebris(ServerLevel z, Vec3 at, float roll) {
+	private static void spawnDebris(ServerLevel z, Vec3 at, Matrix4f m) {
 		if (debris != null && !debris.isRemoved()) debris.discard();
 		Display.BlockDisplay d = EntityType.BLOCK_DISPLAY.create(z, EntitySpawnReason.TRIGGERED);
 		if (d == null) return;
-		d.setBlockState(Blocks.WAXED_WEATHERED_CUT_COPPER.defaultBlockState());
+		d.setBlockState(Blocks.IRON_BLOCK.defaultBlockState());
 		d.setPos(at.x, at.y, at.z);
-		d.setTransformation(new Transformation(pipe(roll)));
+		d.setTransformation(new Transformation(m));
 		d.setViewRange(1f);
 		d.addTag(ZavodDoor.TAG);
 		ZavodDoor.keep(d);
@@ -508,8 +512,8 @@ public final class ZavodInside {
 		debris = null;
 		debrisT = -1;
 		lampState.clear();
-		if (debrisFell(z)) spawnDebris(z, DEBRIS_TO, 1.35f);
-		else spawnDebris(z, DEBRIS_FROM, 0f);
+		if (debrisFell(z)) spawnDebris(z, DEBRIS_TO, rod(LYING_YAW, 0f));
+		else spawnDebris(z, DEBRIS_FROM, rod(HANG_YAW, HANG_TILT));
 	}
 
 	static void resetDebris(ServerLevel z) {
