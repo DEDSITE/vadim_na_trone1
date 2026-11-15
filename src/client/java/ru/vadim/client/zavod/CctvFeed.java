@@ -118,6 +118,18 @@ public final class CctvFeed {
 			Matrix4f projection = new Matrix4f().perspective((float) Math.toRadians(78), (float) W / H, 0.05f, Math.max(64f, rd * 16f));
 			Matrix4f view = new Matrix4f().rotation(cam.rotation().conjugate(new Quaternionf()));
 			CctvGameRendererAccessor gr = (CctvGameRendererAccessor) mc.gameRenderer;
+			// позиция камеры для сущностей берётся из общего состояния кадра (его заполняет GameRenderer
+			// для главной камеры) — подменяем на время своего кадра, иначе игроки рисуются «вокруг объектива»
+			net.minecraft.client.renderer.state.CameraRenderState cs = gr.vadim$levelState().cameraRenderState;
+			Vec3 sPos = cs.pos, sEnt = cs.entityPos;
+			net.minecraft.core.BlockPos sBlock = cs.blockPos;
+			Quaternionf sRot = cs.orientation;
+			boolean sInit = cs.initialized;
+			cs.pos = cam.position();
+			cs.blockPos = cam.blockPosition();
+			cs.entityPos = mc.player.getPosition(pt);
+			cs.orientation = new Quaternionf(cam.rotation());
+			cs.initialized = true;
 			rendering = true;
 			RenderSystem.backupProjectionMatrix();
 			try {
@@ -128,6 +140,11 @@ public final class CctvFeed {
 			} finally {
 				rendering = false;
 				RenderSystem.restoreProjectionMatrix();
+				cs.pos = sPos;
+				cs.entityPos = sEnt;
+				cs.blockPos = sBlock;
+				cs.orientation = sRot;
+				cs.initialized = sInit;
 			}
 			tex.show(target);
 			has = true;
@@ -146,7 +163,7 @@ public final class CctvFeed {
 	/** Отладка: пару раз за запуск сохраняем кадр камеры в cctv_debug_N.png и пишем в лог среднюю яркость. */
 	private static void debugDump(Minecraft mc) {
 		long now = System.currentTimeMillis();
-		if (dumps >= 3 || now - lastDump < 4000) return;
+		if (dumps >= 6 || now - lastDump < 4000) return;
 		lastDump = now;
 		int n = ++dumps;
 		VadimNaTrone.LOG.info("[cctv] кадр {}: камера {} yaw {} pitch {}", n, cam.position(), cam.yRot(), cam.xRot());

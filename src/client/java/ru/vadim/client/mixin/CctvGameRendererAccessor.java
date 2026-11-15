@@ -10,4 +10,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface CctvGameRendererAccessor {
 	@Accessor("resourcePool") CrossFrameResourcePool vadim$pool();
 	@Accessor("fogRenderer") FogRenderer vadim$fog();
+	@Accessor("levelRenderState") net.minecraft.client.renderer.state.LevelRenderState vadim$levelState();
 }
