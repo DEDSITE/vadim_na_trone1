@@ -115,7 +115,7 @@ public final class Room2 {
 	static final BlockPos JUKEBOX = new BlockPos(5, 64, -16);
 	/** Проигрыватель «Вега» на столике (низ модели — на крышке стола y≈65). */
 	static final Vec3 VEGA = new Vec3(5.5, 65.27, -15.5);
-	static final Vec3 RECORD_AT = new Vec3(-9.5, 64.03, -16.0);
+	static final Vec3 RECORD_AT = new Vec3(1.55, 65.74, -12.6);
 
 	// ---- состояние
 	private static int phase = P_NONE, phaseTick = 0;
@@ -246,8 +246,11 @@ public final class Room2 {
 		// лампы под абажурами: цепь + свет (сам абажур — модель)
 		for (int[] a : SHADES) {
 			set(l, a[0], 70, a[1], b(Blocks.IRON_CHAIN));
-			set(l, a[0], 68, a[1], b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 12));
+			set(l, a[0], 68, a[1], b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 15));
+			set(l, a[0], 66, a[1], b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 13));
 		}
+		for (int x = X0 + 2; x <= X1 - 1; x += 5) for (int z = Z0 + 6; z <= Z1 - 1; z += 4)
+			if (l.getBlockState(new BlockPos(x, 69, z)).isAir()) set(l, x, 69, z, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 11));
 		set(l, X0, 64, Z0 + 5, b(Blocks.COBWEB));
 		set(l, X1, 70, Z1, b(Blocks.COBWEB));
 		// заглушка комнаты 3 (x 40..48, z −4..4)
@@ -287,7 +290,8 @@ public final class Room2 {
 			set(l, x, 67, z, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState());
 		}
 		for (int x = bx; x <= bx + 2; x++) for (int z = BOOTH_Z0; z < BOOTH_FRONT; z++) set(l, x, 64, z, b(Blocks.GRAY_CARPET));
-		set(l, bx + 1, 66, BOOTH_Z0 + 1, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 10));
+		set(l, bx + 1, 66, BOOTH_Z0 + 1, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 15));
+		set(l, bx + 1, 66, BOOTH_Z0, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 14));
 		for (int x = x0; x <= x1; x++) for (int z = BOOTH_Z0; z <= BOOTH_FRONT; z++) for (int y = 64; y <= 66; y++) {
 			BlockPos p = new BlockPos(x, y, z);
 			BlockState st = l.getBlockState(p);
@@ -322,7 +326,7 @@ public final class Room2 {
 		// табло (смотрит на север, к кабинкам: для зрителя слева — это +X). Опускается на время раунда.
 		boardParts.clear();
 		boardDown = false;
-		Display.ItemDisplay face = bpart(item(l, "room2_board", new Vec3(BOARD.x, BOARD.y, BOARD.z + 0.1), new Quaternionf(), 7.6f));
+		Display.ItemDisplay face = bpart(item(l, "room2_board", new Vec3(BOARD.x, BOARD.y, BOARD.z + 0.1), new Quaternionf().rotateY((float) Math.PI), 7.6f));
 		face.setBrightnessOverride(new Brightness(12, 12));
 		face.setViewRange(3f);
 		for (int x : new int[]{-5, 0}) for (int k = 0; k < 5; k++) {   // цепи до потолка (верх уходит в потолок)
@@ -404,8 +408,10 @@ public final class Room2 {
 		// гитары: три на западной стене (смотрят на восток), две на стойках между кабинками
 		String[] g = {"room2_guitar_red", "room2_guitar_acoustic", "room2_guitar_bass"};
 		for (int k = 0; k < 3; k++) item(l, g[k], new Vec3(X0 + 0.04, 65.7, -26 + k * 4.0), east.get(new Quaternionf()).rotateZ(0.06f * (k - 1)), 1.6f).setViewRange(2f);
-		item(l, "room2_guitar_red", new Vec3(-5.5, 65.05, -28.6), south.get(new Quaternionf()).rotateZ(0.12f), 1.35f).setViewRange(2f);
-		item(l, "room2_guitar_acoustic", new Vec3(0.5, 65.05, -28.6), south.get(new Quaternionf()).rotateZ(-0.1f), 1.35f).setViewRange(2f);
+		for (double[] g2 : new double[][]{{-5.5, 0.08}, {0.5, -0.08}}) {
+			item(l, g2[1] > 0 ? "room2_guitar_red" : "room2_guitar_acoustic", new Vec3(g2[0], 64.74, -28.6), south.get(new Quaternionf()).rotateZ((float) g2[1]), 1.35f).setViewRange(2f);
+			block(l, Blocks.DARK_OAK_FENCE.defaultBlockState(), new Vec3(g2[0] - 0.15, 64.06, -28.45), new Vector3f(0.3f, 0.5f, 0.3f));
+		}
 		// плакаты альбомов и платиновый диск — восточная стена (смотрят на запад)
 		String[] a = {"room2_album_1", "room2_album_2", "room2_album_3", "room2_album_4", "room2_platinum"};
 		for (int k = 0; k < 5; k++) item(l, a[k], new Vec3(X1 + 0.97, 65.75, -27 + k * 2.4), west.get(new Quaternionf()).rotateZ(((k * 37) % 7 - 3) * 0.01f), 1.55f).setViewRange(2f);
@@ -414,10 +420,10 @@ public final class Room2 {
 		rod.setTransformation(new Transformation(null, new Quaternionf().rotateZ((float) (Math.PI / 2)).rotateY(0.5f), new Vector3f(1f, 1.6f, 1f), null));
 		// комбики по углам
 		for (double[] p : new double[][]{{6.5, -29.4, 1}, {6.5, -22.5, 1}, {-12.5, -22.5, -1}, {-12.5, -19.5, -1}})
-			item(l, "room2_amp", new Vec3(p[0], 64.5, p[1]), p[2] > 0 ? west : east, 1f).setViewRange(2f);
+			item(l, "room2_amp", new Vec3(p[0], 64.5, p[1]), p[2] > 0 ? east : west, 1f).setViewRange(2f);
 		// пульт звукорежиссёра и катушечник у южной стены (лицом в зал)
-		item(l, "room2_mix", new Vec3(2.5, 65.35, Z1 + 0.45), new Quaternionf(), 3f).setViewRange(2f);
-		item(l, "room2_tape", new Vec3(4.5, 65.22, Z1 + 0.5), new Quaternionf(), 0.9f).setViewRange(2f);
+		item(l, "room2_mix", new Vec3(2.5, 65.35, Z1 + 0.45), new Quaternionf().rotateY((float) Math.PI), 3f).setViewRange(2f);
+		item(l, "room2_tape", new Vec3(4.5, 65.22, Z1 + 0.5), new Quaternionf().rotateY((float) Math.PI), 0.9f).setViewRange(2f);
 		// абажуры
 		for (int[] s : SHADES) {
 			Display.ItemDisplay d = item(l, "room2_shade", new Vec3(s[0] + 0.5, 69.45, s[1] + 0.5), new Quaternionf(), 1.1f);
@@ -507,7 +513,8 @@ public final class Room2 {
 		d.setItemStack(new ItemStack(ModItems.RECORD));
 		d.setItemTransform(ItemDisplayContext.NONE);
 		d.setPos(RECORD_AT.x, RECORD_AT.y, RECORD_AT.z);
-		d.setTransformation(new Transformation(null, new Quaternionf().rotateY(0.7f).rotateX((float) (Math.PI / 2)), new Vector3f(0.7f), null));
+		d.setTransformation(new Transformation(null, new Quaternionf().rotateY(0.7f).rotateX((float) (Math.PI / 2)), new Vector3f(0.6f), null));
+		d.setBrightnessOverride(new Brightness(12, 12));
 		add(l, d);
 		recordShow = d;
 		recordHit = hitbox(l, RECORD_AT.add(0, -0.03, 0), 0.7f, 0.25f);
@@ -848,7 +855,7 @@ public final class Room2 {
 	private static void spawnKeys(ServerLevel l, int i) {
 		double cx = BX[i] + 1.5;
 		fx(block(l, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState(), new Vec3(cx - 0.8, 64.0, -28.75), new Vector3f(1.6f, 0.72f, 0.6f)));
-		fx(item(l, "room2_console", new Vec3(cx, 64.767, -28.45), new Quaternionf(), 1.5f)).setBrightnessOverride(new Brightness(10, 10));
+		fx(item(l, "room2_console", new Vec3(cx, 64.767, -28.45), new Quaternionf().rotateY((float) Math.PI), 1.5f)).setBrightnessOverride(new Brightness(10, 10));
 		for (int k = 0; k < 8; k++) {
 			double x = cx + 0.54 - (k % 4) * 0.36, z = -28.6 + (k / 4) * 0.3;
 			Display.ItemDisplay d = fx(item(l, "room2_key_" + keyColor[k], new Vec3(x, KEY_Y, z), new Quaternionf(), 0.3f));
@@ -879,7 +886,7 @@ public final class Room2 {
 		fx(item(l, "room2_poster", at, rot, sc)).setBrightnessOverride(new Brightness(12, 12));
 		for (int s = 0; s < 8; s++) {
 			// кольцо на текстуре: центр u=196, v=83+20s (из 256)
-			Vector3f off = new Vector3f(-(196f / 256f - 0.5f) * sc, (0.5f - (83f + 20f * s) / 256f) * sc, -0.012f);
+			Vector3f off = new Vector3f(-(196f / 256f - 0.5f) * sc, (0.5f - (83f + 20f * s) / 256f) * sc, -0.07f);
 			rot.transform(off);
 			Display.ItemDisplay d = EntityType.ITEM_DISPLAY.create(l, EntitySpawnReason.TRIGGERED);
 			ItemStack st = new ItemStack(Items.PAPER);
@@ -902,12 +909,13 @@ public final class Room2 {
 		double k = side ? 0.6 : 1.0;
 		double cx = side ? BX[i] + 0.35 : BX[i] + 1.5, z = side ? -28.7 : -28.45, w = side ? 0.6 : 1.4;
 		fx(block(l, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState(), new Vec3(cx - w / 2, 64.0, z - 0.3), new Vector3f((float) w, 0.72f, 0.6f)));
-		double tx = side ? cx : cx - 0.25, tz = side ? z - 0.05 : z;
-		fx(item(l, "room2_tape", new Vec3(tx, 64.72 + 0.225 * k * 0.9 / 0.9, tz), new Quaternionf(), (float) (0.9 * k))).setBrightnessOverride(new Brightness(11, 11));
+		Quaternionf face = new Quaternionf().rotateY((float) Math.PI);   // лицом на −Z, к стулу
+		double tx = side ? cx - 0.12 : cx - 0.25, tz = z;
+		fx(item(l, "room2_tape", new Vec3(tx, 64.72 + 0.225 * (side ? 0.5 / 0.9 : 1.0), tz), face, (float) (side ? 0.5 : 0.9))).setBrightnessOverride(new Brightness(11, 11));
 		// рубильник: эбонитовая панель, нож на оси, лампа «ВОСПР.»
-		double sx = side ? cx : cx + 0.48, sz = side ? z + 0.2 : z, ss = 0.6 * k;
+		double sx = side ? cx + 0.2 : cx + 0.48, sz = z, ss = 0.6 * k;
 		double py = 64.72 + 0.225 * k;
-		fx(item(l, "room2_switch", new Vec3(sx, py, sz), new Quaternionf(), (float) ss)).setBrightnessOverride(new Brightness(10, 10));
+		fx(item(l, "room2_switch", new Vec3(sx, py, sz), face, (float) ss)).setBrightnessOverride(new Brightness(10, 10));
 		knifeScale = (float) ss;
 		knife = fx(item(l, "room2_knife", new Vec3(sx, py + 0.225 * k - 0.31 * k, sz - 0.07 * k), new Quaternionf(), (float) ss));
 		knife.setBrightnessOverride(new Brightness(11, 11));
