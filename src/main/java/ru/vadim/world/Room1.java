@@ -543,13 +543,21 @@ public final class Room1 {
 		List<ServerPlayer> chains = seated.stream().filter(p -> Integer.valueOf(ROLE_CHAIN).equals(role.get(p.getUUID()))).toList();
 		if (chains.isEmpty()) chains = seated;   // один в комнате (тест) — видит сам
 		if (chains.isEmpty()) return;
-		int per = 4 / chains.size();
+		// Одну цифру не видит никто — её подбирают (решение Димы 16.11). 2 «цепных»: один видит 2 цифры, другой 1;
+		// 1 «цепной» (вдвоём / тест одному) видит 3. У каждой видимой цифры — метка её места в коде.
+		List<Integer> slots = new ArrayList<>(List.of(0, 1, 2, 3));
+		java.util.Collections.shuffle(slots, new java.util.Random(l.random.nextLong()));
+		slots = slots.subList(0, 3);   // четвёртая (случайная) — без подсказки
+		List<ServerPlayer> order = new ArrayList<>(chains);
+		java.util.Collections.shuffle(order, new java.util.Random(l.random.nextLong()));
+		int[] counts = order.size() >= 2 ? new int[]{2, 1} : new int[]{3};
 		int k = 0;
-		for (int c = 0; c < chains.size(); c++) {
-			ServerPlayer p = chains.get(c);
+		for (int c = 0; c < Math.min(order.size(), counts.length); c++) {
+			ServerPlayer p = order.get(c);
 			Seat s = SEATS[seatOf.get(p.getUUID())];
-			int n = c == chains.size() - 1 ? 4 - k : per;
+			int n = counts[c];
 			for (int j = 0; j < n; j++, k++) {
+				int slot = slots.get(k);
 				double off = n == 1 ? 30 : -55 + 110.0 * j / (n - 1);
 				Vec3 dir = s.facing().yRot((float) Math.toRadians(off));
 				double eye = 65.0 + (j % 2) * 0.9;
@@ -557,12 +565,13 @@ public final class Room1 {
 				Vec3 at = new Vec3(hit[0].x, eye, hit[0].z);
 				Vec3 nrm = hit[1];
 				float a = (float) Math.atan2(-nrm.x, -nrm.z);
-				float tilt = (float) ((k * 37 % 20 - 10) * Math.PI / 180);
+				float tilt = (float) ((slot * 37 % 20 - 10) * Math.PI / 180);
 				Vec3 side = new Vec3(nrm.z, 0, -nrm.x);   // вдоль стены
-				secret(l, "room1_digit_" + code[k], at, new Quaternionf().rotateY(a).rotateZ(tilt), 0.95f, p.getUUID());
-				secret(l, "room1_mark_" + (k + 1), at.add(side.scale(-0.62)).add(0, 0.25, 0), new Quaternionf().rotateY(a), 0.5f, p.getUUID());
+				secret(l, "room1_digit_" + code[slot], at, new Quaternionf().rotateY(a).rotateZ(tilt), 0.95f, p.getUUID());
+				secret(l, "room1_mark_" + (slot + 1), at.add(side.scale(-0.62)).add(0, 0.25, 0), new Quaternionf().rotateY(a), 0.5f, p.getUUID());
 			}
 		}
+		VadimNaTrone.LOG.info("[room1] цифры: видны места {}, без подсказки место {}", slots, 6 - slots.get(0) - slots.get(1) - slots.get(2) + 1);
 	}
 
 	/** Цифра, которую видит только viewer: зритель записан до добавления в мир (видимость проверяется при старте отслеживания). */
