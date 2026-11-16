@@ -93,6 +93,34 @@ public final class HubCommands {
 					c.getSource().sendSuccess(() -> Component.literal(info), false);
 					return 1;
 				})))
+				.then(Commands.literal("room2").executes(c -> {
+					Room2.restart(c.getSource().getServer(), false);
+					c.getSource().sendSuccess(() -> Component.literal("Комната 2: все в студии, плита внизу, пластинка на полу"), true);
+					return 1;
+				}).then(Commands.literal("skip").executes(c -> {
+					Room2.restart(c.getSource().getServer(), true);
+					c.getSource().sendSuccess(() -> Component.literal("Комната 2: без пластинки, жмите кнопку"), true);
+					return 1;
+				})).then(Commands.literal("start").executes(c -> {
+					Room2.forceStart(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Комната 2: кабинки открыты"), true);
+					return 1;
+				})).then(Commands.literal("seq").executes(c -> {
+					String s = Room2.seqString();
+					c.getSource().sendSuccess(() -> Component.literal(s), false);
+					return 1;
+				})).then(Commands.literal("win").executes(c -> {
+					Room2.forceWin(c.getSource().getServer());
+					return 1;
+				})).then(Commands.literal("reset").executes(c -> {
+					Room2.reset(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Комната 2 сброшена: плита наверху, все у выхода из комнаты 1"), true);
+					return 1;
+				})).then(Commands.literal("info").executes(c -> {
+					String info = Room2.debug();
+					c.getSource().sendSuccess(() -> Component.literal(info), false);
+					return 1;
+				})))
 				.then(Commands.literal("menushot").executes(c -> {
 					var p = c.getSource().getPlayerOrException();
 					p.teleportTo(Places.hub(c.getSource().getServer()), 0.5, 64, -5.2, java.util.Set.of(), 0f, 4f, true);

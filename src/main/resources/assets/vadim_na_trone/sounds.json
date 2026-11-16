@@ -320,5 +320,136 @@
         "attenuation_distance": 40
       }
     ]
+  },
+  "room2_rules": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rules",
+        "stream": true,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "room2_r_lose": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_r_lose",
+        "stream": true,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "room2_r_win": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_r_win",
+        "stream": true,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "room2_rec_01": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_01",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_02": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_02",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_03": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_03",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_04": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_04",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_05": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_05",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_06": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_06",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_07": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_07",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_08": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_08",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_09": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_09",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_10": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_10",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_11": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_11",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_12": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_12",
+        "stream": true
+      }
+    ]
+  },
+  "room2_rec_13": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room2_rec_13",
+        "stream": true
+      }
+    ]
   }
 }

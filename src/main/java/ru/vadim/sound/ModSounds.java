@@ -57,6 +57,16 @@ public final class ModSounds {
 	public static final SoundEvent R_LOSE = register("room1_r_lose");
 	public static final SoundEvent R_WIN = register("room1_r_win");
 
+	/** Комната 2 «Студия» (этап 5): пластинка с правилами (голос Димы, обработан «рацией»), проигрыш, победа. */
+	public static final SoundEvent ROOM2_RULES = register("room2_rules");
+	public static final SoundEvent ROOM2_LOSE = register("room2_r_lose");
+	public static final SoundEvent ROOM2_WIN = register("room2_r_win");
+	/** 13 записей для «Уха»: по 8 звуков (пердёж, Тимофей ×4, Вадим ×3), пауза 0,4 с. Последовательности — Room2.SEQS. */
+	public static final SoundEvent[] ROOM2_REC = new SoundEvent[13];
+	static {
+		for (int i = 0; i < 13; i++) ROOM2_REC[i] = register(String.format("room2_rec_%02d", i + 1));
+	}
+
 	private ModSounds() {}
 
 	private static SoundEvent register(String name) {

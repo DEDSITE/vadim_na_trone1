@@ -22,6 +22,10 @@ public final class ModItems {
 	public static final Item CUTTERS = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("cutters"),
 			new Item(Ids.item("cutters").stacksTo(1)));
 
+	/** Комната 2 «Студия» (этап 5): пластинка Вадима с правилами — лежит на полу, ставят в проигрыватель. */
+	public static final Item RECORD = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("record_vadim"),
+			new Item(Ids.item("record_vadim").stacksTo(1)));
+
 	private ModItems() {}
 
 	private static Item reg(String name) {

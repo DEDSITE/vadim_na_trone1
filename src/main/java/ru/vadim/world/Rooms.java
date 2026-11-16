@@ -26,11 +26,11 @@ import ru.vadim.net.HubPayloads;
 import java.util.Set;
 
 /**
- * Комнаты Вадима (измерение vadim_na_trone:rooms). Пока — заглушка первой комнаты: тёмная бетонная коробка
- * 9×9, одна лампа, табличка «скоро». Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
+ * Комнаты Вадима (измерение vadim_na_trone:rooms): комната 1 «Стулья», коридор, студия (комната 2, Room2.build),
+ * заглушка комнаты 3. Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
  */
 public final class Rooms {
-	public static final int VERSION = 3;
+	public static final int VERSION = 4;
 	public static final String TAG = "vadim_rooms";
 
 	private Rooms() {}
@@ -52,7 +52,7 @@ public final class Rooms {
 		long t0 = System.currentTimeMillis();
 		java.util.Random r = new java.util.Random(4242);
 		// всё старое — в воздух
-		for (int x = -14; x <= 16; x++) for (int z = -22; z <= 12; z++) for (int y = 60; y <= 80; y++) set(l, x, y, z, b(Blocks.AIR));
+		for (int x = -16; x <= 16; x++) for (int z = -34; z <= 12; z++) for (int y = 60; y <= 80; y++) set(l, x, y, z, b(Blocks.AIR));
 		for (var e : l.getEntities(EntityType.TEXT_DISPLAY, en -> en.getTags().contains(TAG))) e.discard();
 		BlockState black = b(Blocks.BLACK_CONCRETE);
 		// оболочка: всё бетоном, потом вырезаем
@@ -128,23 +128,8 @@ public final class Rooms {
 		door(l, Room1.CLOSET_DOOR, Direction.EAST);
 		// выход: коридор на север и комната 2 (заглушка)
 		door(l, Room1.EXIT_DOOR, Direction.NORTH);
-		for (int z = -10; z <= -7; z++) for (int x = -4; x <= -2; x++) {
-			set(l, x, 63, z, b(Blocks.SMOOTH_STONE));
-			for (int y = 64; y <= 66; y++) set(l, x, y, z, b(Blocks.AIR));
-		}
-		for (int x = -6; x <= 0; x++) for (int z = -16; z <= -11; z++) {
-			set(l, x, 63, z, b(Blocks.SMOOTH_STONE));
-			for (int y = 64; y <= 68; y++) set(l, x, y, z, b(Blocks.AIR));
-		}
-		set(l, -3, 68, -13, b(Blocks.LANTERN).setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
-		Display.TextDisplay d = EntityType.TEXT_DISPLAY.create(l, EntitySpawnReason.TRIGGERED);
-		if (d != null) {
-			d.setPos(-2.5, 66.2, -15.45);
-			d.setText(Component.literal("КОМНАТА 2\nв разработке").withColor(0x8C8C8C));
-			d.setTransformation(new Transformation(new Matrix4f().scale(0.9f)));
-			d.addTag(TAG);
-			l.addFreshEntity(d);
-		}
+		// коридор, студия (комната 2) и заглушка комнаты 3 — Room2.build
+		Room2.build(l);
 		// лампы дневного света на потолке: одна моргает, одна почти мёртвая, одна в кладовке (Room1.lampsTick)
 		for (BlockPos t : Room1.TUBES) l.setBlock(t, ru.vadim.block.ZavodBlocks.TUBE.defaultBlockState()
 				.setValue(ru.vadim.block.ZavodBlocks.Deco.FACING, Direction.EAST).setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, true), Block.UPDATE_CLIENTS);
@@ -182,8 +167,10 @@ public final class Rooms {
 		ensure(l);
 		if (!p.isCreative()) p.setGameMode(GameType.ADVENTURE);
 		if (p.isPassenger()) p.stopRiding();
-		boolean won = Room1.won(p.level().getServer());
-		Vec3 s = won ? Room1.AFTER_WIN_SPAWN : Places.ROOMS_SPAWN;
+		var server = p.level().getServer();
+		boolean won = Room1.won(server);
+		// куда: заглушка комнаты 3 (комната 2 пройдена) → студия (плита уже упала) → у выхода из комнаты 1 → на стул
+		Vec3 s = Room2.won(server) ? Room2.ROOM3_SPAWN : Room2.entered(server) ? Room2.STUDIO_SPAWN : won ? Room1.AFTER_WIN_SPAWN : Places.ROOMS_SPAWN;
 		p.teleportTo(l, s.x, s.y, s.z, Set.of(), 180f, 0f, true);
 		p.fallDistance = 0;
 		// очнулись: на стуле (elapsed = 1 — пробуждение сидя) или у выхода, если комната уже пройдена

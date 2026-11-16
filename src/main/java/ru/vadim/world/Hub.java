@@ -79,7 +79,8 @@ public final class Hub {
 			}
 			if (level.dimension() == Places.ROOMS) {
 				if (Room1.onItemLoad(e)) return;   // выброшенные ножницы/болторез
-				if (Room1.isStale(e)) e.discard();
+				if (Room2.onItemLoad(e)) return;   // выброшенная пластинка
+				if (Room1.isStale(e) || Room2.isStale(e)) e.discard();
 				return;
 			}
 			if (level.dimension() != Places.HUB) return;
@@ -132,7 +133,7 @@ public final class Hub {
 		ServerLevel zavod = Places.zavod(server);
 		if (zavod != null) Zavod.ensure(zavod, false);
 		ServerLevel rooms = Places.rooms(server);
-		if (rooms != null) { Rooms.ensure(rooms); Room1.setup(rooms); }
+		if (rooms != null) { Rooms.ensure(rooms); Room1.setup(rooms); Room2.setup(rooms); }
 	}
 
 	public static void rebuildZavod(MinecraftServer server) {

@@ -55,6 +55,8 @@ public final class ZavodHud {
 			case ZavodDoor.H_PRY -> new Line("ДЕРЖИТЕ", GOLD, null, "Не отпускайте — цепь поддаётся", true);
 			case ZavodDoor.H_DONE -> new Line("ГОТОВО", GOLD, null, "Цепь сбита. Дверь открыта", false);
 			// комната 1 «Стулья» (тексты — артборд «Подсказки» макета «Комната 1 — ассеты»)
+			// комната 2 «Студия» (макет «Комната 2 — ассеты», артборд «Подсказка»)
+			case ru.vadim.world.Room2.H_RESTART -> new Line("ОШИБКА", RED, null, "Последовательность заново", false);
 			case Room1.H_ROPE -> new Line("ВЕРЁВКИ", RED, null, "Сам не выберешься. Пусть сосед в цепях перережет верёвки", false);
 			case Room1.H_TAKE_SC -> new Line("ЦЕПИ", GOLD, "ПКМ", "взять ножницы у стула", false);
 			case Room1.H_USE_SC -> new Line("НОЖНИЦЫ", GOLD, "ПКМ", "зажми по соседу в верёвках", false);

@@ -220,6 +220,16 @@ public final class Room1 {
 		return l != null && l.getDataStorage().computeIfAbsent(State.TYPE).won;
 	}
 
+	/** /vadim room2 — считать комнату 1 пройденной. */
+	public static void markWon(MinecraftServer s) {
+		ServerLevel l = Places.rooms(s);
+		if (l == null) return;
+		setWon(l, true);
+		setDoor(l, EXIT_DOOR, true, false);
+		closetOpen = true;
+		phase = P_WON;
+	}
+
 	private static void setWon(ServerLevel l, boolean w) {
 		State st = l.getDataStorage().computeIfAbsent(State.TYPE);
 		st.won = w;
@@ -443,7 +453,8 @@ public final class Room1 {
 		List<ServerPlayer> out = new ArrayList<>();
 		ServerLevel l = Places.rooms(s);
 		if (l == null) return out;
-		for (ServerPlayer p : l.players()) if (!p.isSpectator()) out.add(p);
+		// студия (комната 2) и комната 3 — уже не наши
+		for (ServerPlayer p : l.players()) if (!p.isSpectator() && p.getZ() > -12.2 && p.getX() < 30) out.add(p);
 		return out;
 	}
 

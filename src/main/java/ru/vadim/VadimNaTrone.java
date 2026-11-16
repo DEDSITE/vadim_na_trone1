@@ -39,6 +39,7 @@ public class VadimNaTrone implements ModInitializer {
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room1Keypad.TYPE, HubPayloads.Room1Keypad.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room1Code.TYPE, HubPayloads.Room1Code.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room1Skip.TYPE, HubPayloads.Room1Skip.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.Room2State.TYPE, HubPayloads.Room2State.CODEC);
 		ModSounds.init();
 		ModParticles.init();
 		ModItems.init();
@@ -50,6 +51,7 @@ public class VadimNaTrone implements ModInitializer {
 		Traffic.register();
 		ru.vadim.world.ZavodDoor.register();
 		ru.vadim.world.Room1.register();
+		ru.vadim.world.Room2.register();
 		HubCommands.register();
 		LOG.info("Вадим сел на трон. Хочешь сыграть в игру?");
 	}

@@ -113,4 +113,16 @@ public final class HubPayloads {
 		public static final StreamCodec<RegistryFriendlyByteBuf, Room1Skip> CODEC = StreamCodec.unit(new Room1Skip());
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/**
+	 * Комната 2 «Студия» (этап 5): состояние для клиента. phase — Room2.P_*, phaseTick — тиков от начала фазы,
+	 * lives — жизни (3..0), locked — сидишь в кабинке и встать нельзя, shocks — счётчик ударов током (вспышка при росте).
+	 */
+	public record Room2State(int phase, int phaseTick, int lives, boolean locked, int shocks) implements CustomPacketPayload {
+		public static final Type<Room2State> TYPE = new Type<>(VadimNaTrone.id("room2_state"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room2State> CODEC = StreamCodec.composite(
+				ByteBufCodecs.VAR_INT, Room2State::phase, ByteBufCodecs.VAR_INT, Room2State::phaseTick, ByteBufCodecs.VAR_INT, Room2State::lives,
+				ByteBufCodecs.BOOL, Room2State::locked, ByteBufCodecs.VAR_INT, Room2State::shocks, Room2State::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }
