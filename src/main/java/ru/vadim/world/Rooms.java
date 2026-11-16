@@ -30,7 +30,7 @@ import java.util.Set;
  * заглушка комнаты 3. Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
  */
 public final class Rooms {
-	public static final int VERSION = 4;
+	public static final int VERSION = 5;
 	public static final String TAG = "vadim_rooms";
 
 	private Rooms() {}

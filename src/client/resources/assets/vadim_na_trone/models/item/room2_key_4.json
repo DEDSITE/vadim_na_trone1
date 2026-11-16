@@ -1,0 +1,76 @@
+{
+ "textures": {
+  "k": "vadim_na_trone:item/room2/key_4",
+  "particle": "vadim_na_trone:item/room2/key_4"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    6,
+    1.6
+   ],
+   "to": [
+    16,
+    10,
+    14.4
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#k"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#k"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#k"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#k"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#k"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#k"
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "textures": {
+  "p": "vadim_na_trone:item/room2/switch_panel",
+  "e": "vadim_na_trone:item/room2/ebonite",
+  "particle": "vadim_na_trone:item/room2/switch_panel"
+ },
+ "elements": [
+  {
+   "from": [
+    4,
+    2,
+    7
+   ],
+   "to": [
+    12,
+    14,
+    9
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#p"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#e"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#e"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#e"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#e"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#e"
+    }
+   }
+  }
+ ]
+}

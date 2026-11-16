@@ -1,0 +1,78 @@
+{
+ "textures": {
+  "f": "vadim_na_trone:item/room2/tape_front",
+  "t": "vadim_na_trone:item/room2/tape_top",
+  "s": "vadim_na_trone:item/room2/tape_side",
+  "particle": "vadim_na_trone:item/room2/tape_front"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    4,
+    3
+   ],
+   "to": [
+    16,
+    12,
+    13
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#f"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#s"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#s"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#s"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#s"
+    }
+   }
+  }
+ ]
+}

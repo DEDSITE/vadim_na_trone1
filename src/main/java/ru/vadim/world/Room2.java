@@ -113,6 +113,8 @@ public final class Room2 {
 	static final double BOARD_DROP = 2.1;
 	static final Vec3 BUTTON = new Vec3(-2.5, 64, -18.5);
 	static final BlockPos JUKEBOX = new BlockPos(5, 64, -16);
+	/** Проигрыватель «Вега» на столике (низ модели — на крышке стола y≈65). */
+	static final Vec3 VEGA = new Vec3(5.5, 65.27, -15.5);
 	static final Vec3 RECORD_AT = new Vec3(-9.5, 64.03, -16.0);
 
 	// ---- состояние
@@ -134,15 +136,19 @@ public final class Room2 {
 	private static final Display.ItemDisplay[] chairs = new Display.ItemDisplay[3];
 	private static final Interaction[] chairHit = new Interaction[3];
 	private static final List<Entity> fixtures = new ArrayList<>();
-	private static final Display.BlockDisplay[] keyDisp = new Display.BlockDisplay[8];
+	private static final Display.ItemDisplay[] keyDisp = new Display.ItemDisplay[8];
 	private static final Interaction[] keyHit = new Interaction[8];
 	private static final int[] keyAnim = new int[8];
-	private static Display.BlockDisplay leverDisp, lampDisp, plate, buttonCap;
+	private static Display.BlockDisplay plate, buttonCap;
+	private static Display.ItemDisplay lampDisp;
 	private static Interaction leverHit, buttonHit, jukeboxHit, recordHit;
 	private static Display.ItemDisplay recordShow, recordOnPlayer;
 	private static final Display.ItemDisplay[] digits = new Display.ItemDisplay[4];
 	private static Display.TextDisplay roundText, message;
-	private static final Display.BlockDisplay[] lifeLamp = new Display.BlockDisplay[3];
+	private static final Display.ItemDisplay[] lifeLamp = new Display.ItemDisplay[3];
+	private static final Display.ItemDisplay[] signs = new Display.ItemDisplay[3];
+	private static Display.ItemDisplay knife;
+	private static float knifeScale = 0.6f;
 	private static final List<Display> boardParts = new ArrayList<>();
 	private static boolean boardDown = false;
 	/** Кто сейчас слушает запись (чтобы остановить её рычагом или в конце раунда). */
@@ -185,9 +191,10 @@ public final class Room2 {
 		l.setBlock(new BlockPos(x, y, z), st, Block.UPDATE_CLIENTS);
 	}
 
-	/** Студия: коридор от двери комнаты 1, щель для плиты, зал, три кабинки, проигрыватель, декор; заглушка комнаты 3. */
+	/** Студия по макету «Студия — общий вид»: орех + латунь + поролон, бордовый ковёр, кабинки; декор-модели — в setup. */
 	static void build(ServerLevel l) {
 		Random r = new Random(2025);
+		BlockState walnut = ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState();
 		// оболочка
 		for (int x = X0 - 2; x <= X1 + 2; x++) for (int z = Z0 - 2; z <= -6; z++) for (int y = 62; y <= 72; y++) {
 			if (z >= -6 && x >= -7) continue;   // стена комнаты 1 — не трогаем
@@ -202,42 +209,47 @@ public final class Room2 {
 		for (int x = -4; x <= -2; x++) for (int y = 67; y <= 70; y++) set(l, x, y, PLATE_Z, b(Blocks.AIR));
 		for (int x = -5; x <= -1; x += 4) for (int y = 64; y <= 70; y++) set(l, x, y, PLATE_Z, b(Blocks.IRON_BLOCK));
 		set(l, -3, 66, -9, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 6));
-		// зал
+		// зал: бордовый ковёр, тёмный потолок
 		for (int x = X0; x <= X1; x++) for (int z = Z0; z <= Z1; z++) {
 			set(l, x, 63, z, b(Blocks.DARK_OAK_PLANKS));
 			for (int y = 64; y <= 70; y++) set(l, x, y, z, b(Blocks.AIR));
 			set(l, x, 71, z, b(Blocks.BLACK_WOOL));
-			int k = r.nextInt(100);
-			set(l, x, 64, z, b(k < 70 ? Blocks.RED_CARPET : k < 85 ? Blocks.BROWN_CARPET : Blocks.AIR));
+			set(l, x, 64, z, b(r.nextInt(100) < 92 ? Blocks.RED_CARPET : Blocks.BROWN_CARPET));
 		}
-		// стены: орех понизу, «поролон» (серая шерсть) выше
+		// стены: орех 64..66, латунная полоса 67, поролон 68..70
 		for (int y = 64; y <= 70; y++) {
-			for (int x = X0 - 1; x <= X1 + 1; x++) for (int z : new int[]{Z0 - 1, Z1 + 1}) set(l, x, y, z, studioWall(r, y));
-			for (int z = Z0 - 1; z <= Z1 + 1; z++) for (int x : new int[]{X0 - 1, X1 + 1}) set(l, x, y, z, studioWall(r, y));
+			BlockState w = y <= 66 ? walnut : y == 67 ? ru.vadim.block.StudioBlocks.BRASS.defaultBlockState() : ru.vadim.block.StudioBlocks.FOAM.defaultBlockState();
+			for (int x = X0 - 1; x <= X1 + 1; x++) for (int z : new int[]{Z0 - 1, Z1 + 1}) set(l, x, y, z, w);
+			for (int z = Z0 - 1; z <= Z1 + 1; z++) for (int x : new int[]{X0 - 1, X1 + 1}) set(l, x, y, z, w);
 		}
 		// вход из коридора
 		for (int x = -4; x <= -2; x++) for (int y = 64; y <= 66; y++) set(l, x, y, Z1 + 1, b(Blocks.AIR));
 		// кабинки
 		for (int i = 0; i < 3; i++) booth(l, BX[i]);
-		// проигрыватель на тумбе у восточной стены
-		set(l, JUKEBOX.getX(), 63, JUKEBOX.getZ(), b(Blocks.DARK_OAK_PLANKS));
-		set(l, JUKEBOX.getX(), 64, JUKEBOX.getZ(), b(Blocks.JUKEBOX));
-		// декор: колонки-комбики, стойки микрофонов, пульт, лампы
-		for (int[] a : new int[][]{{6, -29}, {6, -24}, {-12, -24}, {-12, -20}}) {
-			set(l, a[0], 64, a[1], b(Blocks.NOTE_BLOCK));
-			set(l, a[0], 65, a[1], b(Blocks.NOTE_BLOCK));
+		// столик под проигрыватель, тумба под пульт звукорежиссёра и катушечник, диван
+		set(l, JUKEBOX.getX(), 64, JUKEBOX.getZ(), mcw(l, "mcwfurnitures:dark_oak_table", Blocks.DARK_OAK_FENCE.defaultBlockState()));
+		for (int x = 1; x <= 4; x++) set(l, x, 64, Z1, walnut);
+		for (int z = -15; z <= -14; z++) {
+			BlockPos p = new BlockPos(X0, 64, z);
+			BlockState c = mcw(l, "mcwfurnitures:brown_couch[facing=east]", Blocks.DARK_OAK_STAIRS.defaultBlockState());
+			l.setBlock(p, c, Block.UPDATE_CLIENTS);
 		}
-		for (int[] a : new int[][]{{-8, -22}, {3, -22}, {-11, -15}}) {
+		for (int z = -15; z <= -14; z++) {
+			BlockPos p = new BlockPos(X0, 64, z);
+			l.setBlock(p, Block.updateFromNeighbourShapes(l.getBlockState(p), l, p), Block.UPDATE_CLIENTS);
+		}
+		// стойки микрофонов (одна упала — модель в setup)
+		for (int[] a : new int[][]{{-8, -22}, {3, -22}}) {
 			set(l, a[0], 64, a[1], b(Blocks.IRON_BARS));
 			set(l, a[0], 65, a[1], b(Blocks.LIGHTNING_ROD));
 		}
-		for (int x = 1; x <= 4; x++) set(l, x, 64, -13, b(Blocks.SMOOTH_STONE_SLAB));
-		for (int[] a : new int[][]{{-8, -17}, {3, -17}, {-8, -25}, {3, -25}, {-2, -14}}) {
+		// лампы под абажурами: цепь + свет (сам абажур — модель)
+		for (int[] a : SHADES) {
 			set(l, a[0], 70, a[1], b(Blocks.IRON_CHAIN));
-			set(l, a[0], 69, a[1], b(Blocks.LANTERN).setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
+			set(l, a[0], 68, a[1], b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 12));
 		}
-		set(l, -12, 64, -29, b(Blocks.COBWEB));
-		set(l, 7, 70, -13, b(Blocks.COBWEB));
+		set(l, X0, 64, Z0 + 5, b(Blocks.COBWEB));
+		set(l, X1, 70, Z1, b(Blocks.COBWEB));
 		// заглушка комнаты 3 (x 40..48, z −4..4)
 		for (int x = 38; x <= 50; x++) for (int z = -6; z <= 6; z++) for (int y = 62; y <= 70; y++)
 			set(l, x, y, z, (x == 38 || x == 50 || z == -6 || z == 6 || y == 62 || y == 70) ? b(Blocks.GRAY_CONCRETE) : b(Blocks.AIR));
@@ -249,13 +261,20 @@ public final class Room2 {
 		set(l, 44, 69, 0, b(Blocks.IRON_CHAIN));
 	}
 
-	private static BlockState studioWall(Random r, int y) {
-		if (y <= 66) return r.nextInt(12) == 0 ? b(Blocks.STRIPPED_DARK_OAK_LOG) : b(Blocks.DARK_OAK_PLANKS);
-		int k = r.nextInt(10);
-		return k < 6 ? b(Blocks.GRAY_WOOL) : k < 9 ? b(Blocks.LIGHT_GRAY_WOOL) : b(Blocks.BLACK_WOOL);
+	/** Лампы под абажурами (x, z). */
+	static final int[][] SHADES = {{-8, -17}, {3, -17}, {-8, -24}, {3, -24}, {-12, -27}, {6, -27}};
+
+	private static BlockState mcw(ServerLevel l, String spec, BlockState fallback) {
+		try {
+			return net.minecraft.commands.arguments.blocks.BlockStateParser.parseForBlock(
+					l.holderLookup(net.minecraft.core.registries.Registries.BLOCK), spec, false).blockState();
+		} catch (Exception e) {
+			VadimNaTrone.LOG.warn("[room2] нет блока {} — замена", spec);
+			return fallback;
+		}
 	}
 
-	/** Кабинка: стекло спереди и по бокам, рама из тёмного дерева, крыша, табличка-лампа «ИДЁТ ЗАПИСЬ». */
+	/** Кабинка: рама из тёмного дерева, стекло спереди и по бокам, ореховая крыша, серый ковёр внутри. */
 	private static void booth(ServerLevel l, int bx) {
 		int x0 = bx - 1, x1 = bx + 3;
 		for (int x = x0; x <= x1; x++) for (int z = BOOTH_Z0; z <= BOOTH_FRONT; z++) {
@@ -265,16 +284,14 @@ public final class Room2 {
 				else if (edgeX || front) set(l, x, y, z, b(Blocks.GLASS_PANE));
 				else set(l, x, y, z, b(Blocks.AIR));
 			}
-			set(l, x, 67, z, b(Blocks.DARK_OAK_PLANKS));
+			set(l, x, 67, z, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState());
 		}
 		for (int x = bx; x <= bx + 2; x++) for (int z = BOOTH_Z0; z < BOOTH_FRONT; z++) set(l, x, 64, z, b(Blocks.GRAY_CARPET));
-		set(l, bx + 1, 67, BOOTH_FRONT, b(Blocks.REDSTONE_LAMP));
-		set(l, bx + 1, 66, BOOTH_Z0 + 1, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 9));
-		// стёкла — соединить
+		set(l, bx + 1, 66, BOOTH_Z0 + 1, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 10));
 		for (int x = x0; x <= x1; x++) for (int z = BOOTH_Z0; z <= BOOTH_FRONT; z++) for (int y = 64; y <= 66; y++) {
 			BlockPos p = new BlockPos(x, y, z);
-			BlockState s = l.getBlockState(p);
-			if (s.is(Blocks.GLASS_PANE)) l.setBlock(p, Block.updateFromNeighbourShapes(s, l, p), Block.UPDATE_CLIENTS);
+			BlockState st = l.getBlockState(p);
+			if (st.is(Blocks.GLASS_PANE)) l.setBlock(p, Block.updateFromNeighbourShapes(st, l, p), Block.UPDATE_CLIENTS);
 		}
 	}
 
@@ -305,45 +322,41 @@ public final class Room2 {
 		// табло (смотрит на север, к кабинкам: для зрителя слева — это +X). Опускается на время раунда.
 		boardParts.clear();
 		boardDown = false;
-		Display.BlockDisplay back = bpart(block(l, Blocks.BLACK_CONCRETE.defaultBlockState(), new Vec3(BOARD.x - 3.8, BOARD.y - 1.0, BOARD.z + 0.05), new Vector3f(7.6f, 2.1f, 0.1f)));
-		back.setViewRange(3f);
-		Display.BlockDisplay rim = bpart(block(l, Blocks.DARK_OAK_PLANKS.defaultBlockState(), new Vec3(BOARD.x - 3.9, BOARD.y - 1.1, BOARD.z + 0.12), new Vector3f(7.8f, 2.3f, 0.1f)));
-		rim.setViewRange(3f);
+		Display.ItemDisplay face = bpart(item(l, "room2_board", new Vec3(BOARD.x, BOARD.y, BOARD.z + 0.1), new Quaternionf(), 7.6f));
+		face.setBrightnessOverride(new Brightness(12, 12));
+		face.setViewRange(3f);
 		for (int x : new int[]{-5, 0}) for (int k = 0; k < 5; k++) {   // цепи до потолка (верх уходит в потолок)
-			Display.BlockDisplay c = bpart(block(l, Blocks.IRON_CHAIN.defaultBlockState(), new Vec3(x + 0.0, BOARD.y + 1.2 + k, BOARD.z - 0.4), new Vector3f(1f)));
+			Display.BlockDisplay c = bpart(block(l, Blocks.IRON_CHAIN.defaultBlockState(), new Vec3(x + 0.0, BOARD.y + 1.0 + k, BOARD.z - 0.4 + 0.4), new Vector3f(1f)));
 			c.setViewRange(3f);
 		}
+		double[] dx = {0.93, 0.33, -0.27, -0.87};
 		for (int k = 0; k < 4; k++) {
-			Display.ItemDisplay d = bpart(item(l, "room1_seg_0", new Vec3(BOARD.x + 0.95 - k * 0.62 + (k >= 2 ? 0.05 : 0), BOARD.y + 0.05, BOARD.z - 0.02), new Quaternionf(), 0.8f));
+			Display.ItemDisplay d = bpart(item(l, "room1_seg_0", new Vec3(BOARD.x - 0.07 + dx[k], BOARD.y - 0.02, BOARD.z - 0.02), new Quaternionf(), 0.85f));
 			d.setBrightnessOverride(new Brightness(15, 15));
 			d.setViewRange(3f);
 			digits[k] = d;
 		}
-		roundText = bpart(text(l, new Vec3(BOARD.x + 2.85, BOARD.y - 0.45, BOARD.z - 0.02), 0.7f));
-		message = bpart(text(l, new Vec3(BOARD.x, BOARD.y - 0.35, BOARD.z - 0.03), 1.6f));
+		roundText = bpart(text(l, new Vec3(BOARD.x + 2.69, BOARD.y - 0.42, BOARD.z - 0.02), 1.6f));
+		message = bpart(text(l, new Vec3(BOARD.x - 0.07, BOARD.y - 0.42, BOARD.z - 0.03), 1.7f));
 		for (int k = 0; k < 3; k++) {
-			Display.BlockDisplay d = bpart(block(l, Blocks.OCHRE_FROGLIGHT.defaultBlockState(), new Vec3(BOARD.x - 2.52 - k * 0.45, BOARD.y - 0.15, BOARD.z - 0.1), new Vector3f(0.32f)));
+			Display.ItemDisplay d = bpart(item(l, "room2_bulb_on", new Vec3(BOARD.x - 2.30 - k * 0.505, BOARD.y - 0.15, BOARD.z - 0.08), new Quaternionf(), 0.9f));
 			d.setBrightnessOverride(new Brightness(15, 15));
 			d.setViewRange(3f);
 			lifeLamp[k] = d;
 		}
-		Display.TextDisplay livesLabel = bpart(text(l, new Vec3(BOARD.x - 2.81, BOARD.y + 0.3, BOARD.z - 0.02), 0.4f));
-		livesLabel.setText(Component.literal("ЖИЗНИ").withColor(0x7A2A24));
-		Display.TextDisplay timeLabel = bpart(text(l, new Vec3(BOARD.x + 0.05, BOARD.y + 0.55, BOARD.z - 0.02), 0.4f));
-		timeLabel.setText(Component.literal("ВРЕМЯ").withColor(0x7A2A24));
+		decor(l);
 		// кнопка «НАЧАТЬ ИГРУ»
-		block(l, Blocks.GRAY_CONCRETE.defaultBlockState(), new Vec3(BUTTON.x - 0.3, 64.0, BUTTON.z - 0.3), new Vector3f(0.6f, 0.9f, 0.6f));
+		block(l, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState(), new Vec3(BUTTON.x - 0.3, 64.0, BUTTON.z - 0.3), new Vector3f(0.6f, 0.9f, 0.6f));
 		block(l, Blocks.YELLOW_CONCRETE.defaultBlockState(), new Vec3(BUTTON.x - 0.36, 64.9, BUTTON.z - 0.36), new Vector3f(0.72f, 0.08f, 0.72f));
 		buttonCap = block(l, Blocks.RED_CONCRETE.defaultBlockState(), new Vec3(BUTTON.x - 0.2, 64.98, BUTTON.z - 0.2), new Vector3f(0.4f, 0.14f, 0.4f));
-		for (int s = 0; s < 2; s++) {
-			Display.TextDisplay t = text(l, new Vec3(BUTTON.x, 64.35, BUTTON.z + (s == 0 ? -0.31 : 0.31)), 0.3f);
-			t.setText(Component.literal("НАЧАТЬ\nИГРУ").withColor(0x2A1D14));
-			t.setBackgroundColor(0xFFE8DCC0);
+		for (int k = 0; k < 2; k++) {   // таблички «НАЧАТЬ ИГРУ» с двух сторон тумбы
+			Display.ItemDisplay t = item(l, "room2_button_label", new Vec3(BUTTON.x, 64.5, BUTTON.z + (k == 0 ? -0.31 : 0.31)),
+					k == 0 ? new Quaternionf() : new Quaternionf().rotateY((float) Math.PI), 0.62f);
 			t.setBrightnessOverride(new Brightness(10, 10));
-			if (s == 1) t.setTransformation(new Transformation(null, null, new Vector3f(0.3f), null));
 		}
 		buttonHit = hitbox(l, BUTTON, 0.8f, 1.2f);
-		jukeboxHit = hitbox(l, new Vec3(JUKEBOX.getX() + 0.5, JUKEBOX.getY() - 0.01, JUKEBOX.getZ() + 0.5), 1.06f, 1.08f);
+		item(l, "room2_vega", VEGA, new Quaternionf().rotateY((float) Math.PI), 1f).setViewRange(2f);
+		jukeboxHit = hitbox(l, new Vec3(JUKEBOX.getX() + 0.5, JUKEBOX.getY() - 0.01, JUKEBOX.getZ() + 0.5), 1.02f, 1.45f);
 		// плита в коридоре
 		plate = block(l, Blocks.IRON_BLOCK.defaultBlockState(), new Vec3(-4.0, st.entered ? PLATE_DOWN : PLATE_UP, PLATE_Z + 0.3), new Vector3f(3.0f, 3.0f, 0.4f));
 		plate.setViewRange(2f);
@@ -378,6 +391,39 @@ public final class Room2 {
 		}
 		l.playSound(null, BOARD.x, BOARD.y + 1, BOARD.z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1f, 0.5f);
 		l.playSound(null, BOARD.x, BOARD.y + 1, BOARD.z, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 1f, 0.6f);
+	}
+
+	/** Модели декора: таблички «ИДЁТ ЗАПИСЬ», гитары, плакаты альбомов, платиновый диск, комбики, пульт звукорежиссёра, абажуры. */
+	private static void decor(ServerLevel l) {
+		Quaternionf south = new Quaternionf().rotateY((float) Math.PI), east = new Quaternionf().rotateY((float) (-Math.PI / 2)),
+				west = new Quaternionf().rotateY((float) (Math.PI / 2));
+		for (int i = 0; i < 3; i++) {
+			signs[i] = item(l, "room2_sign_off", new Vec3(BX[i] + 1.5, 67.5, BOOTH_FRONT + 1.03), south, 1.1f);
+			signs[i].setViewRange(2f);
+		}
+		// гитары: три на западной стене (смотрят на восток), две на стойках между кабинками
+		String[] g = {"room2_guitar_red", "room2_guitar_acoustic", "room2_guitar_bass"};
+		for (int k = 0; k < 3; k++) item(l, g[k], new Vec3(X0 + 0.04, 65.7, -26 + k * 4.0), east.get(new Quaternionf()).rotateZ(0.06f * (k - 1)), 1.6f).setViewRange(2f);
+		item(l, "room2_guitar_red", new Vec3(-5.5, 65.05, -28.6), south.get(new Quaternionf()).rotateZ(0.12f), 1.35f).setViewRange(2f);
+		item(l, "room2_guitar_acoustic", new Vec3(0.5, 65.05, -28.6), south.get(new Quaternionf()).rotateZ(-0.1f), 1.35f).setViewRange(2f);
+		// плакаты альбомов и платиновый диск — восточная стена (смотрят на запад)
+		String[] a = {"room2_album_1", "room2_album_2", "room2_album_3", "room2_album_4", "room2_platinum"};
+		for (int k = 0; k < 5; k++) item(l, a[k], new Vec3(X1 + 0.97, 65.75, -27 + k * 2.4), west.get(new Quaternionf()).rotateZ(((k * 37) % 7 - 3) * 0.01f), 1.55f).setViewRange(2f);
+		// упавшая стойка микрофона
+		Display.BlockDisplay rod = block(l, Blocks.LIGHTNING_ROD.defaultBlockState(), new Vec3(-11.0, 64.08, -15.6), new Vector3f(1f));
+		rod.setTransformation(new Transformation(null, new Quaternionf().rotateZ((float) (Math.PI / 2)).rotateY(0.5f), new Vector3f(1f, 1.6f, 1f), null));
+		// комбики по углам
+		for (double[] p : new double[][]{{6.5, -29.4, 1}, {6.5, -22.5, 1}, {-12.5, -22.5, -1}, {-12.5, -19.5, -1}})
+			item(l, "room2_amp", new Vec3(p[0], 64.5, p[1]), p[2] > 0 ? west : east, 1f).setViewRange(2f);
+		// пульт звукорежиссёра и катушечник у южной стены (лицом в зал)
+		item(l, "room2_mix", new Vec3(2.5, 65.35, Z1 + 0.45), new Quaternionf(), 3f).setViewRange(2f);
+		item(l, "room2_tape", new Vec3(4.5, 65.22, Z1 + 0.5), new Quaternionf(), 0.9f).setViewRange(2f);
+		// абажуры
+		for (int[] s : SHADES) {
+			Display.ItemDisplay d = item(l, "room2_shade", new Vec3(s[0] + 0.5, 69.45, s[1] + 0.5), new Quaternionf(), 1.1f);
+			d.setBrightnessOverride(new Brightness(13, 13));
+			d.setViewRange(2f);
+		}
 	}
 
 	static Vec3 chairPos(int i) { return new Vec3(BX[i] + 1.5, 64.5, BOOTH_Z0 + 0.5); }
@@ -490,9 +536,10 @@ public final class Room2 {
 	}
 
 	private static void setLamp(ServerLevel l, int i, boolean on) {
-		BlockPos p = new BlockPos(BX[i] + 1, 67, BOOTH_FRONT);
-		BlockState s = l.getBlockState(p);
-		if (s.hasProperty(RedstoneLampBlock.LIT)) l.setBlock(p, s.setValue(RedstoneLampBlock.LIT, on), Block.UPDATE_CLIENTS);
+		Display.ItemDisplay d = signs[i];
+		if (d == null) return;
+		setModel(d, on ? "room2_sign_on" : "room2_sign_off");
+		d.setBrightnessOverride(on ? new Brightness(15, 15) : new Brightness(4, 4));
 	}
 
 	// ======================================================================= игроки
@@ -667,10 +714,10 @@ public final class Room2 {
 	private static void playRecord(ServerLevel l, ServerPlayer p) {
 		if (phase != P_IN || !p.getMainHandItem().is(ModItems.RECORD)) return;
 		p.getMainHandItem().shrink(1);
-		recordOnPlayer = item0(l, new ItemStack(ModItems.RECORD), new Vec3(JUKEBOX.getX() + 0.5, JUKEBOX.getY() + 1.02, JUKEBOX.getZ() + 0.5),
-				new Quaternionf().rotateX((float) (Math.PI / 2)), 0.8f);
+		recordOnPlayer = item0(l, new ItemStack(ModItems.RECORD), new Vec3(VEGA.x + 0.08, VEGA.y + 0.075, VEGA.z + 0.02),
+				new Quaternionf().rotateX((float) (Math.PI / 2)), 0.62f);
 		l.playSound(null, JUKEBOX, SoundEvents.ARMOR_EQUIP_GENERIC.value(), SoundSource.BLOCKS, 0.8f, 0.6f);
-		l.playSound(null, JUKEBOX.getX() + 0.5, JUKEBOX.getY() + 1, JUKEBOX.getZ() + 0.5, ModSounds.ROOM2_RULES, SoundSource.RECORDS, 1f, 1f);
+		l.playSound(null, VEGA.x, VEGA.y + 0.3, VEGA.z, ModSounds.ROOM2_RULES, SoundSource.RECORDS, 1f, 1f);
 		setPhase(P_RULES);
 		VadimNaTrone.LOG.info("[room2] пластинка в проигрывателе ({})", p.getName().getString());
 	}
@@ -788,7 +835,7 @@ public final class Room2 {
 		for (Entity e : fixtures) remove(e);
 		fixtures.clear();
 		for (int k = 0; k < 8; k++) { keyDisp[k] = null; keyHit[k] = null; keyAnim[k] = 0; }
-		leverDisp = lampDisp = null;
+		knife = lampDisp = null;
 		leverHit = null;
 	}
 
@@ -797,78 +844,88 @@ public final class Room2 {
 		return e;
 	}
 
-	/** Пульт: стол перед стулом, 8 клавиш 4×2. */
+	/** Пульт ПУ-8 по макету: ореховый стол, пластина, 8 цветных клавиш 4×2. */
 	private static void spawnKeys(ServerLevel l, int i) {
 		double cx = BX[i] + 1.5;
-		fx(block(l, Blocks.DARK_OAK_PLANKS.defaultBlockState(), new Vec3(cx - 0.8, 64.0, -28.75), new Vector3f(1.6f, 0.72f, 0.6f)));
-		fx(block(l, Blocks.BLACK_CONCRETE.defaultBlockState(), new Vec3(cx - 0.74, 64.72, -28.7), new Vector3f(1.48f, 0.02f, 0.5f)));
+		fx(block(l, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState(), new Vec3(cx - 0.8, 64.0, -28.75), new Vector3f(1.6f, 0.72f, 0.6f)));
+		fx(item(l, "room2_console", new Vec3(cx, 64.767, -28.45), new Quaternionf(), 1.5f)).setBrightnessOverride(new Brightness(10, 10));
 		for (int k = 0; k < 8; k++) {
-			double x = cx - 0.54 + (k % 4) * 0.36, z = -28.6 + (k / 4) * 0.3;
-			Display.BlockDisplay d = fx(block(l, KEY_BLOCKS[keyColor[k]].defaultBlockState(), new Vec3(x - 0.15, 64.74, z - 0.12), new Vector3f(0.3f, 0.07f, 0.24f)));
+			double x = cx + 0.54 - (k % 4) * 0.36, z = -28.6 + (k / 4) * 0.3;
+			Display.ItemDisplay d = fx(item(l, "room2_key_" + keyColor[k], new Vec3(x, KEY_Y, z), new Quaternionf(), 0.3f));
 			d.setBrightnessOverride(new Brightness(11, 11));
 			keyDisp[k] = d;
-			keyHit[k] = fx(hitbox(l, new Vec3(x, 64.72, z), 0.29f, 0.12f));
+			keyHit[k] = fx(hitbox(l, new Vec3(x, 64.80, z), 0.29f, 0.12f));
 		}
 	}
 
-	/** Плакат «звук → цвет» — текст видит только тот, у кого «Глаза». В кабинке с клавишами — на боковой стенке. */
+	private static final double KEY_Y = 64.852;
+
+	/** Плакат «Азбука Вадима» (макет): лист видят все, цветные кружки у звуков — только «Глаза». Вместе с клавишами — на боковой стенке. */
 	private static void spawnPoster(ServerLevel l, int i, boolean side) {
 		double cx = BX[i] + 1.5;
 		UUID viewer = boothPlayer[i];
+		final float sc = 1.4f;
 		Vec3 at;
 		Quaternionf rot;
 		if (side) {
-			double wx = BX[i] + 2.9;
-			fx(block(l, Blocks.SPRUCE_PLANKS.defaultBlockState(), new Vec3(wx + 0.02, 64.45, -29.45), new Vector3f(0.05f, 1.5f, 1.3f)));
-			at = new Vec3(wx, 64.6, -28.8);
-			rot = new Quaternionf().rotateY((float) (-Math.PI / 2));
+			at = new Vec3(BX[i] + 2.93, 65.25, -28.8);
+			rot = new Quaternionf().rotateY((float) (Math.PI / 2));   // лицом на −X, к стулу
 		} else {
-			fx(block(l, Blocks.SPRUCE_PLANKS.defaultBlockState(), new Vec3(cx - 0.7, 64.45, -28.15), new Vector3f(1.4f, 1.5f, 0.05f)));
-			fx(block(l, Blocks.DARK_OAK_FENCE.defaultBlockState(), new Vec3(cx - 0.1, 64.0, -28.12), new Vector3f(0.2f, 0.5f, 0.2f)));
-			at = new Vec3(cx, 64.6, -28.18);
-			rot = new Quaternionf().rotateY((float) Math.PI);
+			at = new Vec3(cx, 65.25, -28.17);
+			rot = new Quaternionf();   // лицом на −Z, к стулу
+			fx(block(l, Blocks.DARK_OAK_FENCE.defaultBlockState(), new Vec3(cx - 0.1, 64.0, -28.1), new Vector3f(0.2f, 0.6f, 0.2f)));
+			fx(block(l, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState(), new Vec3(cx - 0.55, 64.52, -28.12), new Vector3f(1.1f, 1.45f, 0.04f)));
 		}
-		MutableComponent t = Component.literal("АЗБУКА ВАДИМА\n").withColor(0xE0505A);
+		fx(item(l, "room2_poster", at, rot, sc)).setBrightnessOverride(new Brightness(12, 12));
 		for (int s = 0; s < 8; s++) {
-			t.append(Component.literal("■ ").withColor(COLORS[colorOf[s]]));
-			t.append(Component.literal(SOUND_NAMES[s] + (s < 7 ? "\n" : "")).withColor(0xEFE6D6));
+			// кольцо на текстуре: центр u=196, v=83+20s (из 256)
+			Vector3f off = new Vector3f(-(196f / 256f - 0.5f) * sc, (0.5f - (83f + 20f * s) / 256f) * sc, -0.012f);
+			rot.transform(off);
+			Display.ItemDisplay d = EntityType.ITEM_DISPLAY.create(l, EntitySpawnReason.TRIGGERED);
+			ItemStack st = new ItemStack(Items.PAPER);
+			st.set(DataComponents.ITEM_MODEL, VadimNaTrone.id("room2_dot_" + colorOf[s]));
+			d.setItemStack(st);
+			d.setItemTransform(ItemDisplayContext.NONE);
+			d.setPos(at.x + off.x, at.y + off.y, at.z + off.z);
+			d.setTransformation(new Transformation(null, rot, new Vector3f(sc * 15f / 256f), null));
+			d.setBrightnessOverride(new Brightness(12, 12));
+			d.setViewRange(1f);
+			d.addTag(SECRET);
+			if (viewer != null) secretViewer.put(d, viewer);
+			add(l, d);
+			fx(d);
 		}
-		Display.TextDisplay d = EntityType.TEXT_DISPLAY.create(l, EntitySpawnReason.TRIGGERED);
-		d.setPos(at.x, at.y, at.z);
-		d.setTransformation(new Transformation(null, rot, new Vector3f(0.42f), null));
-		d.setBackgroundColor(0xF0201814);
-		d.setBrightnessOverride(new Brightness(13, 13));
-		d.setText(t);
-		d.setLineWidth(240);
-		d.setViewRange(1f);
-		d.addTag(SECRET);
-		if (viewer != null) secretViewer.put(d, viewer);
-		add(l, d);
-		fx(d);
 	}
 
-	/** Магнитофон с рычагом «прослушать запись». Один в кабинке — по центру; вместе с клавишами (тест одному) — сбоку справа. */
+	/** Магнитофон «Вадим-203» с рубильником (макет, вариант A). Один в кабинке — по центру; вместе с клавишами (тест) — сбоку. */
 	private static void spawnTape(ServerLevel l, int i, boolean side) {
-		double cx = side ? BX[i] + 0.35 : BX[i] + 1.5;
-		double z = side ? -28.6 : -28.45;
-		double w = side ? 0.6 : 1.4;
-		fx(block(l, Blocks.DARK_OAK_PLANKS.defaultBlockState(), new Vec3(cx - w / 2, 64.0, z - 0.3), new Vector3f((float) w, 0.72f, 0.6f)));
-		// корпус магнитофона, окошко с катушками, лампа «ВОСПР.»
-		double rx = side ? cx - 0.25 : cx - 0.55, rw = side ? 0.5 : 0.8, rz = side ? z - 0.28 : z - 0.22;
-		fx(block(l, Blocks.SMOOTH_SANDSTONE.defaultBlockState(), new Vec3(rx, 64.72, rz), new Vector3f((float) rw, 0.34f, side ? 0.3f : 0.42f)));
-		fx(block(l, Blocks.BLACK_CONCRETE.defaultBlockState(), new Vec3(rx + 0.05, 64.86, rz - 0.01), new Vector3f((float) rw - 0.1f, 0.16f, 0.02f)));
-		lampDisp = fx(block(l, Blocks.REDSTONE_LAMP.defaultBlockState(), new Vec3(rx + 0.04, 65.06, rz + 0.04), new Vector3f(0.1f)));
-		// рычаг: модель рычага по центру своего блока
-		double lx = side ? cx : cx + 0.45, lz = side ? z + 0.15 : z;
-		leverDisp = fx(block(l, Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE, AttachFace.FLOOR), new Vec3(lx - 0.5, 64.72, lz - 0.5), new Vector3f(1f)));
-		leverHit = fx(hitbox(l, new Vec3(side ? cx : cx + 0.1, 64.7, z), side ? 0.6f : 1.15f, 0.6f));
+		double k = side ? 0.6 : 1.0;
+		double cx = side ? BX[i] + 0.35 : BX[i] + 1.5, z = side ? -28.7 : -28.45, w = side ? 0.6 : 1.4;
+		fx(block(l, ru.vadim.block.StudioBlocks.WALNUT.defaultBlockState(), new Vec3(cx - w / 2, 64.0, z - 0.3), new Vector3f((float) w, 0.72f, 0.6f)));
+		double tx = side ? cx : cx - 0.25, tz = side ? z - 0.05 : z;
+		fx(item(l, "room2_tape", new Vec3(tx, 64.72 + 0.225 * k * 0.9 / 0.9, tz), new Quaternionf(), (float) (0.9 * k))).setBrightnessOverride(new Brightness(11, 11));
+		// рубильник: эбонитовая панель, нож на оси, лампа «ВОСПР.»
+		double sx = side ? cx : cx + 0.48, sz = side ? z + 0.2 : z, ss = 0.6 * k;
+		double py = 64.72 + 0.225 * k;
+		fx(item(l, "room2_switch", new Vec3(sx, py, sz), new Quaternionf(), (float) ss)).setBrightnessOverride(new Brightness(10, 10));
+		knifeScale = (float) ss;
+		knife = fx(item(l, "room2_knife", new Vec3(sx, py + 0.225 * k - 0.31 * k, sz - 0.07 * k), new Quaternionf(), (float) ss));
+		knife.setBrightnessOverride(new Brightness(11, 11));
+		lampDisp = fx(item(l, "room2_lamp_off", new Vec3(sx - 0.1 * k, py + 0.19 * k, sz - 0.06 * k), new Quaternionf(), (float) (0.4 * k)));
+		leverHit = fx(hitbox(l, new Vec3(sx, 64.72, sz), (float) (0.5 * k + 0.05), (float) (0.55 * k)));
+		leverState(false);
 	}
 
 	private static void leverState(boolean on) {
-		if (leverDisp != null) leverDisp.setBlockState(Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE, AttachFace.FLOOR).setValue(LeverBlock.POWERED, on));
+		if (knife != null) {
+			knife.setTransformationInterpolationDelay(0);
+			knife.setTransformationInterpolationDuration(3);
+			float sc = knifeScale;
+			knife.setTransformation(new Transformation(null, new Quaternionf().rotateX(on ? -1.15f : 0.25f), new Vector3f(sc), null));
+		}
 		if (lampDisp != null) {
-			lampDisp.setBlockState(Blocks.REDSTONE_LAMP.defaultBlockState().setValue(RedstoneLampBlock.LIT, on));
-			lampDisp.setBrightnessOverride(on ? new Brightness(15, 15) : null);
+			setModel(lampDisp, on ? "room2_lamp_on" : "room2_lamp_off");
+			lampDisp.setBrightnessOverride(on ? new Brightness(15, 15) : new Brightness(9, 9));
 		}
 	}
 
@@ -885,6 +942,7 @@ public final class Room2 {
 		playUntil = REC_TICKS[rec];
 		listener = p.getUUID();
 		leverState(true);
+		if (knife != null) l.sendParticles(ParticleTypes.ELECTRIC_SPARK, knife.getX(), knife.getY() + 0.1, knife.getZ() - 0.05, 6, 0.04, 0.04, 0.04, 0.05);
 		// запись слышит только тот, кто в этой кабинке
 		p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ModSounds.ROOM2_REC[rec]),
 				SoundSource.MASTER, p.getX(), p.getEyeY(), p.getZ(), 1f, 1f, l.getRandom().nextLong()));
@@ -920,21 +978,21 @@ public final class Room2 {
 	}
 
 	private static void keyDown(int k) {
-		Display.BlockDisplay d = keyDisp[k];
+		Display.ItemDisplay d = keyDisp[k];
 		if (d == null) return;
 		d.setTransformationInterpolationDelay(0);
 		d.setTransformationInterpolationDuration(1);
-		d.setTransformation(new Transformation(new Vector3f(0, -0.04f, 0), null, new Vector3f(0.3f, 0.07f, 0.24f), null));
+		d.setTransformation(new Transformation(new Vector3f(0, -0.035f, 0), null, new Vector3f(0.3f), null));
 		d.setBrightnessOverride(new Brightness(15, 15));
 		keyAnim[k] = 5;
 	}
 
 	private static void keyUp(int k) {
-		Display.BlockDisplay d = keyDisp[k];
+		Display.ItemDisplay d = keyDisp[k];
 		if (d == null) return;
 		d.setTransformationInterpolationDelay(0);
 		d.setTransformationInterpolationDuration(2);
-		d.setTransformation(new Transformation(null, null, new Vector3f(0.3f, 0.07f, 0.24f), null));
+		d.setTransformation(new Transformation(null, null, new Vector3f(0.3f), null));
 		d.setBrightnessOverride(new Brightness(11, 11));
 	}
 
@@ -1079,11 +1137,11 @@ public final class Room2 {
 		String[] g = {"seg_" + (sec / 60 % 10), "seg_colon", "seg_" + (sec % 60 / 10), "seg_" + (sec % 10)};
 		for (int k = 0; k < 4; k++) setModel(digits[k], showTime && phase != P_BREAK ? "room1_" + g[k] : null);
 		if (roundText != null) roundText.setText(phase >= P_READY && phase <= P_LOST
-				? Component.literal("РАУНД\n" + Math.min(round, 3) + "/3").withColor(0xFF3B2F) : Component.empty());
+				? Component.literal(Math.min(round, 3) + "/3").withColor(0xFF3B2F) : Component.empty());
 		for (int k = 0; k < 3; k++) if (lifeLamp[k] != null) {
 			boolean on = k < lives && phase >= P_READY && phase <= P_LOST;
-			lifeLamp[k].setBlockState(on ? Blocks.OCHRE_FROGLIGHT.defaultBlockState() : Blocks.BLACK_CONCRETE.defaultBlockState());
-			lifeLamp[k].setBrightnessOverride(on ? new Brightness(15, 15) : new Brightness(3, 3));
+			setModel(lifeLamp[k], on ? "room2_bulb_on" : "room2_bulb_off");
+			lifeLamp[k].setBrightnessOverride(on ? new Brightness(15, 15) : new Brightness(6, 6));
 		}
 		if (phase != P_TITLE && phase != P_BREAK && phase != P_LOST && phase != P_WON && message != null) message.setText(Component.empty());
 	}

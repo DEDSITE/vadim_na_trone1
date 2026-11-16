@@ -1,0 +1,77 @@
+{
+ "textures": {
+  "t": "vadim_na_trone:item/room2/vega_top",
+  "w": "vadim_na_trone:item/room2/walnut",
+  "particle": "vadim_na_trone:item/room2/vega_top"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    4,
+    1
+   ],
+   "to": [
+    16,
+    9,
+    15
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#t"
+    },
+    "north": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    },
+    "south": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#w"
+    }
+   }
+  }
+ ]
+}
