@@ -108,7 +108,9 @@ public final class Room2 {
 	static final double PLATE_UP = 67.0, PLATE_DOWN = 64.0;
 	public static final Vec3 STUDIO_SPAWN = new Vec3(-2.5, 64, -14.5);
 	public static final Vec3 ROOM3_SPAWN = new Vec3(44.5, 64, 0.5);
-	static final Vec3 BOARD = new Vec3(-2.5, 68.6, -21.0);
+	static final Vec3 BOARD = new Vec3(-2.5, 68.0, -21.0);
+	/** На сколько опускается табло на время раунда (центр ≈ на уровне глаз сидящих). */
+	static final double BOARD_DROP = 2.1;
 	static final Vec3 BUTTON = new Vec3(-2.5, 64, -18.5);
 	static final BlockPos JUKEBOX = new BlockPos(5, 64, -16);
 	static final Vec3 RECORD_AT = new Vec3(-9.5, 64.03, -16.0);
@@ -141,6 +143,12 @@ public final class Room2 {
 	private static final Display.ItemDisplay[] digits = new Display.ItemDisplay[4];
 	private static Display.TextDisplay roundText, message;
 	private static final Display.BlockDisplay[] lifeLamp = new Display.BlockDisplay[3];
+	private static final List<Display> boardParts = new ArrayList<>();
+	private static boolean boardDown = false;
+	/** Кто сейчас слушает запись (чтобы остановить её рычагом или в конце раунда). */
+	private static UUID listener;
+	private static final Map<UUID, Integer> flash = new HashMap<>(), flashLeft = new HashMap<>();
+	public static final int H_FIND_RECORD = 41, H_LISTEN = 42;
 
 	private Room2() {}
 
@@ -280,8 +288,10 @@ public final class Room2 {
 		secretViewer.clear();
 		clearFixtures();
 		playUntil = -1;
+		listener = null;
 		restartHint = 0;
 		pos = 0;
+		flashLeft.clear();
 		State st = state(l.getServer());
 		// стулья
 		for (int i = 0; i < 3; i++) {
@@ -292,32 +302,34 @@ public final class Room2 {
 			chairs[i] = ch;
 			chairHit[i] = hitbox(l, new Vec3(c.x, 64.0, c.z - 0.05), 0.75f, 0.8f);   // низкий — сидящему не мешает жать клавиши
 		}
-		// табло
-		Display.BlockDisplay back = block(l, Blocks.BLACK_CONCRETE.defaultBlockState(), new Vec3(BOARD.x - 3.8, BOARD.y - 1.0, BOARD.z + 0.05), new Vector3f(7.6f, 2.1f, 0.1f));
+		// табло (смотрит на север, к кабинкам: для зрителя слева — это +X). Опускается на время раунда.
+		boardParts.clear();
+		boardDown = false;
+		Display.BlockDisplay back = bpart(block(l, Blocks.BLACK_CONCRETE.defaultBlockState(), new Vec3(BOARD.x - 3.8, BOARD.y - 1.0, BOARD.z + 0.05), new Vector3f(7.6f, 2.1f, 0.1f)));
 		back.setViewRange(3f);
-		Display.BlockDisplay rim = block(l, Blocks.DARK_OAK_PLANKS.defaultBlockState(), new Vec3(BOARD.x - 3.9, BOARD.y - 1.1, BOARD.z + 0.12), new Vector3f(7.8f, 2.3f, 0.1f));
+		Display.BlockDisplay rim = bpart(block(l, Blocks.DARK_OAK_PLANKS.defaultBlockState(), new Vec3(BOARD.x - 3.9, BOARD.y - 1.1, BOARD.z + 0.12), new Vector3f(7.8f, 2.3f, 0.1f)));
 		rim.setViewRange(3f);
-		for (int x : new int[]{-5, 0}) {   // цепи до потолка
-			Display.BlockDisplay c = block(l, Blocks.IRON_CHAIN.defaultBlockState(), new Vec3(x + 0.0, BOARD.y + 1.05, BOARD.z - 0.4), new Vector3f(1f, 1.4f, 1f));
+		for (int x : new int[]{-5, 0}) for (int k = 0; k < 5; k++) {   // цепи до потолка (верх уходит в потолок)
+			Display.BlockDisplay c = bpart(block(l, Blocks.IRON_CHAIN.defaultBlockState(), new Vec3(x + 0.0, BOARD.y + 1.2 + k, BOARD.z - 0.4), new Vector3f(1f)));
 			c.setViewRange(3f);
 		}
 		for (int k = 0; k < 4; k++) {
-			Display.ItemDisplay d = item(l, "room1_seg_0", new Vec3(BOARD.x - 1.1 + k * 0.62 - (k >= 2 ? 0.05 : 0), BOARD.y + 0.05, BOARD.z - 0.02), new Quaternionf(), 0.8f);
+			Display.ItemDisplay d = bpart(item(l, "room1_seg_0", new Vec3(BOARD.x + 0.95 - k * 0.62 + (k >= 2 ? 0.05 : 0), BOARD.y + 0.05, BOARD.z - 0.02), new Quaternionf(), 0.8f));
 			d.setBrightnessOverride(new Brightness(15, 15));
 			d.setViewRange(3f);
 			digits[k] = d;
 		}
-		roundText = text(l, new Vec3(BOARD.x - 2.85, BOARD.y - 0.45, BOARD.z - 0.02), 0.7f);
-		message = text(l, new Vec3(BOARD.x, BOARD.y - 0.35, BOARD.z - 0.03), 1.6f);
+		roundText = bpart(text(l, new Vec3(BOARD.x + 2.85, BOARD.y - 0.45, BOARD.z - 0.02), 0.7f));
+		message = bpart(text(l, new Vec3(BOARD.x, BOARD.y - 0.35, BOARD.z - 0.03), 1.6f));
 		for (int k = 0; k < 3; k++) {
-			Display.BlockDisplay d = block(l, Blocks.OCHRE_FROGLIGHT.defaultBlockState(), new Vec3(BOARD.x + 2.2 + k * 0.45, BOARD.y - 0.15, BOARD.z - 0.1), new Vector3f(0.32f));
+			Display.BlockDisplay d = bpart(block(l, Blocks.OCHRE_FROGLIGHT.defaultBlockState(), new Vec3(BOARD.x - 2.52 - k * 0.45, BOARD.y - 0.15, BOARD.z - 0.1), new Vector3f(0.32f)));
 			d.setBrightnessOverride(new Brightness(15, 15));
 			d.setViewRange(3f);
 			lifeLamp[k] = d;
 		}
-		Display.TextDisplay livesLabel = text(l, new Vec3(BOARD.x + 2.65, BOARD.y + 0.3, BOARD.z - 0.02), 0.4f);
+		Display.TextDisplay livesLabel = bpart(text(l, new Vec3(BOARD.x - 2.81, BOARD.y + 0.3, BOARD.z - 0.02), 0.4f));
 		livesLabel.setText(Component.literal("ЖИЗНИ").withColor(0x7A2A24));
-		Display.TextDisplay timeLabel = text(l, new Vec3(BOARD.x - 0.1, BOARD.y + 0.55, BOARD.z - 0.02), 0.4f);
+		Display.TextDisplay timeLabel = bpart(text(l, new Vec3(BOARD.x + 0.05, BOARD.y + 0.55, BOARD.z - 0.02), 0.4f));
 		timeLabel.setText(Component.literal("ВРЕМЯ").withColor(0x7A2A24));
 		// кнопка «НАЧАТЬ ИГРУ»
 		block(l, Blocks.GRAY_CONCRETE.defaultBlockState(), new Vec3(BUTTON.x - 0.3, 64.0, BUTTON.z - 0.3), new Vector3f(0.6f, 0.9f, 0.6f));
@@ -348,6 +360,24 @@ public final class Room2 {
 		if (!st.won) putRecord(l);
 		showBoard();
 		VadimNaTrone.LOG.info("[room2] готова (вошли: {}, пройдена: {})", st.entered, st.won);
+	}
+
+	private static <T extends Display> T bpart(T d) {
+		boardParts.add(d);
+		return d;
+	}
+
+	/** Табло вниз (раунд) / наверх: плавно за 1,5 с, лязг цепей. */
+	private static void moveBoard(ServerLevel l, boolean down) {
+		if (boardDown == down) return;
+		boardDown = down;
+		double dy = down ? -BOARD_DROP : BOARD_DROP;
+		for (Display d : boardParts) {
+			d.setPosRotInterpolationDuration(30);
+			d.teleportTo(d.getX(), d.getY() + dy, d.getZ());
+		}
+		l.playSound(null, BOARD.x, BOARD.y + 1, BOARD.z, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1f, 0.5f);
+		l.playSound(null, BOARD.x, BOARD.y + 1, BOARD.z, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 1f, 0.6f);
 	}
 
 	static Vec3 chairPos(int i) { return new Vec3(BX[i] + 1.5, 64.5, BOOTH_Z0 + 0.5); }
@@ -536,7 +566,7 @@ public final class Room2 {
 			}
 		}
 		for (int k = 0; k < 8; k++) if (keyAnim[k] > 0 && --keyAnim[k] == 0) keyUp(k);
-		if (playUntil >= 0 && --playUntil <= 0) { playUntil = -1; leverState(false); }
+		if (playUntil >= 0 && --playUntil <= 0) { playUntil = -1; listener = null; leverState(false); }
 		if (restartHint > 0) restartHint--;
 
 		switch (phase) {
@@ -663,12 +693,19 @@ public final class Room2 {
 		}
 		l.playSound(null, BUTTON.x, 65, BUTTON.z, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS, 1f, 0.6f);
 		capUp = 6;
+		if (phase == P_IN) { flash(p, H_FIND_RECORD); return; }
+		if (phase == P_RULES) { flash(p, H_LISTEN); return; }
 		if (phase != P_READY) return;
 		startSeat(l);
 		VadimNaTrone.LOG.info("[room2] кнопка: кабинки открыты ({})", p.getName().getString());
 	}
 
 	private static int capUp = 0;
+
+	private static void flash(ServerPlayer p, int hint) {
+		flash.put(p.getUUID(), hint);
+		flashLeft.put(p.getUUID(), 60);
+	}
 
 	private static void startSeat(ServerLevel l) {
 		for (int i = 0; i < 3; i++) { boothPlayer[i] = null; boothRole[i] = 0; }
@@ -692,6 +729,7 @@ public final class Room2 {
 
 	private static void startTitle(ServerLevel l) {
 		doors(l, false);
+		moveBoard(l, true);
 		for (int i = 0; i < 3; i++) setLamp(l, i, true);
 		boardBlink = 0;
 		setPhase(P_TITLE);
@@ -838,13 +876,30 @@ public final class Room2 {
 		if (phase != P_ROUND) return;
 		int b = boothOf(p.getUUID());
 		if (b < 0 || (boothRole[b] & ROLE_EAR) == 0) return;
-		if (playUntil > 0) return;
+		long now = l.getGameTime();
+		Long last = lastPress.get(p.getUUID());
+		if (last != null && now - last < 8) return;   // зажатая ПКМ не щёлкает туда-сюда
+		lastPress.put(p.getUUID(), now);
+		l.playSound(null, p.getX(), p.getY() + 1, p.getZ(), SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6f, playUntil > 0 ? 0.5f : 0.6f);
+		if (playUntil > 0) { stopRecording(l); return; }
 		playUntil = REC_TICKS[rec];
+		listener = p.getUUID();
 		leverState(true);
-		l.playSound(null, p.getX(), p.getY() + 1, p.getZ(), SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.6f, 0.6f);
 		// запись слышит только тот, кто в этой кабинке
 		p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ModSounds.ROOM2_REC[rec]),
 				SoundSource.MASTER, p.getX(), p.getEyeY(), p.getZ(), 1f, 1f, l.getRandom().nextLong()));
+	}
+
+	/** Рычаг назад / конец раунда: запись замолкает. */
+	private static void stopRecording(ServerLevel l) {
+		if (listener != null && rec >= 0) {
+			ServerPlayer p = l.getServer().getPlayerList().getPlayer(listener);
+			if (p != null) p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
+					BuiltInRegistries.SOUND_EVENT.getKey(ModSounds.ROOM2_REC[rec]), SoundSource.MASTER));
+		}
+		listener = null;
+		playUntil = -1;
+		leverState(false);
 	}
 
 	private static void pressKey(ServerLevel l, ServerPlayer p, int k) {
@@ -911,12 +966,13 @@ public final class Room2 {
 		l.playSound(null, BOARD.x, BOARD.y, BOARD.z, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.2f, 1.26f);
 		l.playSound(null, BOARD.x, BOARD.y, BOARD.z, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.2f, 1.5f);
 		VadimNaTrone.LOG.info("[room2] раунд {} пройден, осталось {} с", round, timeLeft / 20);
+		stopRecording(l);
 		clearFixtures();
-		playUntil = -1;
 		if (round >= 3) { win(l); return; }
 		round++;
 		for (int i = 0; i < 3; i++) setLamp(l, i, false);
 		doors(l, true);
+		moveBoard(l, false);
 		stable = 0;
 		someoneLeft = false;
 		setPhase(P_BREAK);
@@ -936,8 +992,8 @@ public final class Room2 {
 	}
 
 	private static void lose(ServerLevel l) {
+		stopRecording(l);
 		clearFixtures();
-		playUntil = -1;
 		setPhase(P_LOST);
 		showBoard();
 		message.setText(Component.literal("ВЫ ТРУПЫ").withColor(0xFF3B2F));
@@ -952,6 +1008,7 @@ public final class Room2 {
 		round = 1;
 		usedRec.clear();
 		message.setText(Component.empty());
+		moveBoard(l, false);
 		setPhase(P_READY);
 		showBoard();
 	}
@@ -1056,6 +1113,8 @@ public final class Room2 {
 		for (ServerPlayer p : ps) {
 			int b = boothOf(p.getUUID());
 			int hint = restartHint > 0 && b >= 0 && (boothRole[b] & ROLE_HANDS) != 0 ? H_RESTART : 0;
+			Integer fl = flashLeft.get(p.getUUID());
+			if (fl != null && fl > 0) { flashLeft.put(p.getUUID(), fl - 1); hint = flash.get(p.getUUID()); }
 			Long last = lastHint.get(p.getUUID());
 			if (last != null && last == hint && now % 40 != 0) continue;
 			lastHint.put(p.getUUID(), (long) hint);
