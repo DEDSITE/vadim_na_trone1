@@ -17,8 +17,20 @@ public abstract class NewsCameraMixin {
 	@Shadow protected abstract void setRotation(float yRot, float xRot);
 	@Shadow protected abstract void setPosition(Vec3 pos);
 
+	/** Камера наблюдения цеха (CctvFeed) тоже зовёт setup для своей Camera — ей наши эффекты и Camera Overhaul не нужны. */
+	@Inject(method = "setup", at = @At("HEAD"))
+	private void vadim$markOther(Level level, Entity entity, boolean detached, boolean mirror, float partial, CallbackInfo ci) {
+		ru.vadim.client.zavod.CctvBridge.otherCamera = !vadim$isMain();
+	}
+
+	private boolean vadim$isMain() {
+		return (Object) this == net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();
+	}
+
 	@Inject(method = "setup", at = @At("TAIL"))
 	private void vadim$news(Level level, Entity entity, boolean detached, boolean mirror, float partial, CallbackInfo ci) {
+		ru.vadim.client.zavod.CctvBridge.otherCamera = false;
+		if (!vadim$isMain()) return;
 		double drop = ru.vadim.client.zavod.ZavodFinalClient.cameraDrop(partial);
 		if (drop > 0) setPosition(((net.minecraft.client.Camera) (Object) this).position().add(0, -drop, 0));
 		ru.vadim.client.room.Room1Client.Look look = ru.vadim.client.room.Room1Client.camera(partial);

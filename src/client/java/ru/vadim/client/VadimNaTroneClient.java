@@ -39,6 +39,9 @@ public class VadimNaTroneClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		HorrorPost.init();
 		WorldRenderEvents.END_MAIN.register(ctx -> FlashlightLights.captureDepth());
+		// мультик Вадима на мониторе комнаты 1 (этап 4б)
+		WorldRenderEvents.AFTER_ENTITIES.register(ru.vadim.client.room.Room1Video::render);
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room1Video::tick);
 		ParticleFactoryRegistry.getInstance().register(ModParticles.DUST, DustMoteParticle.Provider::new);
 
 		EntityRendererRegistry.register(ModEntities.BARMAN, BarmanRenderer::new);

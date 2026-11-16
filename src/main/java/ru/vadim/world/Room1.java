@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -70,7 +69,7 @@ public final class Room1 {
 	public static final int P_NONE = 0, P_WAIT = 1, P_INTRO = 2, P_GAME = 3, P_LOST = 4, P_WON = 5;
 	/** Вступление (тики): правила на мониторе → ракеты спускаются → Вадим ржёт → игра. В 4б — по длине мультика. */
 	public static final int INTRO_ROCKETS = 724, INTRO_MOCK = 800, INTRO_END = 1040;
-	/** Реплики вступления: тик старта, длина (тики), звук, текст на мониторе (пока нет мультика 4б). */
+	/** Реплики вступления: тик старта, длина (тики), звук, текст (для справки; на мониторе — мультик Room1Video). */
 	private record Line(int at, int len, net.minecraft.sounds.SoundEvent snd, String text) {}
 	private static final Line[] LINES = {
 			new Line(20, 114, ModSounds.R1_01, "Ну здравствуйте, дегенераты.\nУзнали? Это я. Вадим."),
@@ -652,8 +651,8 @@ public final class Room1 {
 				if (phaseTick == INTRO_ROCKETS + 4)
 					l.playSound(null, CX, 69.5, CZ, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1f, 0.5f);
 				for (Line ln : LINES) if (phaseTick == ln.at) say(l, ln.snd);
-				introText();
-				if (phaseTick >= INTRO_END) { setPhase(P_GAME); monitorText.setText(Component.empty()); }
+				// на мониторе — мультик Вадима (клиент, Room1Video), без субтитров (решение Димы)
+				if (phaseTick >= INTRO_END) { setPhase(P_GAME); showTimer(); }
 			}
 			case P_GAME -> gameTick(l, ps, now);
 			case P_LOST -> {
@@ -729,14 +728,6 @@ public final class Room1 {
 			p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(null, SoundSource.RECORDS));
 	}
 
-	/** Пока нет мультика (4б) — текст реплики на мониторе. */
-	private static void introText() {
-		if (monitorText == null) return;
-		String t = "";
-		for (Line ln : LINES) if (phaseTick >= ln.at && phaseTick < ln.at + ln.len + 10) t = ln.text;
-		monitorText.setText(Component.literal(t).withStyle(phaseTick >= INTRO_MOCK ? ChatFormatting.RED : ChatFormatting.WHITE));
-	}
-
 	private static void gameTick(ServerLevel l, List<ServerPlayer> ps, long now) {
 		timeLeft--;
 		int elapsed = TOTAL - timeLeft;
@@ -770,7 +761,12 @@ public final class Room1 {
 		if (timeLeft <= 0) lose(l, ps);
 	}
 
+	/** Цифры таймера на мониторе. Во вступлении спрятаны — там идёт мультик. */
 	private static void showTimer() {
+		if (phase == P_INTRO) {
+			for (Display.ItemDisplay d : timerDigits) if (d != null) d.setItemStack(ItemStack.EMPTY);
+			return;
+		}
 		int sec = Math.max(0, (timeLeft + 19) / 20);
 		int m = sec / 60, s = sec % 60;
 		String[] g = {"seg_" + (m / 10), "seg_" + (m % 10), "seg_colon", "seg_" + (s / 10), "seg_" + (s % 10)};

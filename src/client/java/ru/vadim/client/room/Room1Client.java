@@ -107,6 +107,12 @@ public final class Room1Client {
 
 	private static boolean here() { return ClientZone.rooms(); }
 
+	/** Время вступления в тиках (= кадр мультика при 20 к/с) или −1, если вступления нет. */
+	public static float introTime(float pt) {
+		if (!here() || phase != Room1.P_INTRO) return -1f;
+		return t(pt);
+	}
+
 	private static float t(float pt) { return (ticks - phaseStart + pt); }
 
 	private static int left() { return (int) Math.max(0, timeLeft - (phase == Room1.P_GAME ? ticks - timeAt : 0)); }

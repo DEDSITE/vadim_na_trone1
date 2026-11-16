@@ -3,6 +3,7 @@
 	"package": "ru.vadim.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"CameraOverhaulGuardMixin",
 		"CctvCameraInvoker",
 		"CctvGameRendererAccessor",
 		"CctvMinecraftMixin",

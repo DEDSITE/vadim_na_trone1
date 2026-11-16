@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public final class Zavod {
 	/** Поменял планировку — увеличь, и при следующем запуске двор пересоберётся. */
-	public static final int VERSION = 6;
+	public static final int VERSION = 8;   // 8: снова ЭЛТ с живой картинкой (мод камер убран)
 	public static final String TAG = "vadim_zavod";
 	public static final String CAM_TAG = "vadim_zavod_cam";
 	public static final String LETTER_TAG = "vadim_zavod_letter";
