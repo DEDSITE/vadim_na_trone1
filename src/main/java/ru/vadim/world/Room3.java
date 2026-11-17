@@ -106,8 +106,8 @@ public final class Room3 {
 	static final int PER_SOURCE = 10;
 	/** Скелет после смерти появляется снова через 15 с. */
 	static final int SKELETON_RESPAWN = 15 * 20;
-	/** …и ещё по 2 с за каждого Говнозавра на поле: чем их больше, тем реже скелет. */
-	static final int SKELETON_PER_MOB = 2 * 20;
+	/** …и с ходом таймера реже: к концу 7 минут — раз в 100 с. */
+	static final int SKELETON_RESPAWN_END = 100 * 20;
 	/** Дерево растёт только тут; ствол 7 блоков — дотянуться: досягаемость по блокам в комнате 3 больше. */
 	static final int TRUNK = 7;
 	public static final double REACH = 7.0, REACH_DEFAULT = 4.5;
@@ -751,7 +751,10 @@ public final class Room3 {
 
 	private static void keepSkeleton(ServerLevel l) {
 		if (skeleton != null && skeleton.isAlive() && !skeleton.isRemoved()) { skeletonDue = 0; return; }
-		if (skeletonDue == 0) skeletonDue = SKELETON_RESPAWN + SKELETON_PER_MOB * mobs.size();   // только что убит: 15 с + 2 с за моба
+		if (skeletonDue == 0) {   // только что убит: 15 с в начале → 100 с к концу таймера
+			float prog = phase == P_GAME ? 1f - timeLeft / (float) TOTAL : 0f;
+			skeletonDue = Math.round(SKELETON_RESPAWN + (SKELETON_RESPAWN_END - SKELETON_RESPAWN) * prog);
+		}
 		if (--skeletonDue > 0) return;
 		spawnSkeleton(l);
 		l.sendParticles(ParticleTypes.POOF, SKELETON.x, SKELETON.y + 1, SKELETON.z, 12, 0.3, 0.6, 0.3, 0.02);
