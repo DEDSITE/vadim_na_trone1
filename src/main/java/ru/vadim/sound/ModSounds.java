@@ -67,6 +67,9 @@ public final class ModSounds {
 		for (int i = 0; i < 13; i++) ROOM2_REC[i] = register(String.format("room2_rec_%02d", i + 1));
 	}
 
+	/** Комната 3 «Мини-мир» (этап 6): музыка мира — трек от Димы (Effectoid — Mizuna Steps 5), по кругу. */
+	public static final SoundEvent ROOM3_MUSIC = register("room3_music");
+
 	private ModSounds() {}
 
 	private static SoundEvent register(String name) {

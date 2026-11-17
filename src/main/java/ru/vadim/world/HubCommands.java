@@ -121,6 +121,38 @@ public final class HubCommands {
 					c.getSource().sendSuccess(() -> Component.literal(info), false);
 					return 1;
 				})))
+				.then(Commands.literal("room3").executes(c -> {
+					Room3.restart(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Комната 3: все в мини-мире, ждём первого действия"), true);
+					return 1;
+				}).then(Commands.literal("start").executes(c -> {
+					Room3.forceStart(c.getSource().getServer());
+					return 1;
+				})).then(Commands.literal("fill").executes(c -> {
+					Room3.fill(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Комната 3: в машине 127/128 брёвен и 63/64 говна"), true);
+					return 1;
+				})).then(Commands.literal("win").executes(c -> {
+					Room3.forceWin(c.getSource().getServer());
+					return 1;
+				})).then(Commands.literal("zombie").executes(c -> {
+					Room3.zombie(c.getSource().getServer());
+					return 1;
+				})).then(Commands.literal("kit").executes(c -> {
+					Room3.kit(c.getSource().getPlayerOrException());
+					return 1;
+				})).then(Commands.literal("time").then(Commands.argument("sec", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 600)).executes(c -> {
+					Room3.setTime(com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "sec"));
+					return 1;
+				}))).then(Commands.literal("reset").executes(c -> {
+					Room3.reset(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Комната 3 сброшена и отстроена заново"), true);
+					return 1;
+				})).then(Commands.literal("info").executes(c -> {
+					String info = Room3.debug();
+					c.getSource().sendSuccess(() -> Component.literal(info), false);
+					return 1;
+				})))
 				.then(Commands.literal("menushot").executes(c -> {
 					var p = c.getSource().getPlayerOrException();
 					p.teleportTo(Places.hub(c.getSource().getServer()), 0.5, 64, -5.2, java.util.Set.of(), 0f, 4f, true);

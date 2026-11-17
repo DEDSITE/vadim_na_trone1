@@ -47,6 +47,11 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModEntities.BARMAN, BarmanRenderer::new);
 		EntityRendererRegistry.register(ModEntities.CAR, CarRenderer::new);
 		EntityRendererRegistry.register(ModEntities.VAN, VanCarRenderer::new);
+		// комната 3: мини-Говнозавр и скелет с ракетой
+		net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry.registerModelLayer(ru.vadim.client.render.GovnozavrModel.LAYER,
+				ru.vadim.client.render.GovnozavrModel::createBodyLayer);
+		EntityRendererRegistry.register(ModEntities.GOVNOZAVR, ru.vadim.client.render.GovnozavrRenderer::new);
+		EntityRendererRegistry.register(ModEntities.ROCKET_SKELETON, net.minecraft.client.renderer.entity.SkeletonRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.NOTES_BE, NotesBoardRenderer::new);
 		BlockEntityRenderers.register(ModBlocks.TV_BE, TvRenderer::new);
 		BlockEntityRenderers.register(ru.vadim.block.ZavodBlocks.CRT_FEED_BE, ru.vadim.client.render.CrtFeedRenderer::new);
@@ -104,6 +109,9 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Room2State.TYPE, (p, ctx) -> ru.vadim.client.room.Room2Client.onState(p));
 		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room2Client::tick);
 		HudRenderCallback.EVENT.register(ru.vadim.client.room.Room2Client::render);
+		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Room3State.TYPE, (p, ctx) -> ru.vadim.client.room.Room3Client.onState(p));
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room3Client::tick);
+		HudRenderCallback.EVENT.register(ru.vadim.client.room.Room3Client::render);
 
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Countdown.TYPE, (p, ctx) -> Countdown.show(p.n()));
 		HudRenderCallback.EVENT.register(Countdown::render);

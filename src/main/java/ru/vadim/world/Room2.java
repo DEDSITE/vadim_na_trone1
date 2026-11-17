@@ -67,7 +67,7 @@ import java.util.UUID;
  * В кабинках случайно появляется своё: у «Уха» — магнитофон с рычагом (запись из 8 звуков слышит только он),
  * у «Рук» — 8 цветных клавиш, у «Глаз» — плакат «звук → цвет» (видит только он). Ухо называет звук, Глаза — цвет,
  * Руки жмут. Ошибка — током всех, «последовательность заново», минус жизнь (3 на всю игру; на последней — сердце).
- * Время вышло или жизни кончились — смерть (чернота), снова кнопка. 3 раунда: 1:30 / 1:00 / 0:50. Победа — газ,
+ * Время вышло или жизни кончились — смерть (чернота), снова кнопка. 3 раунда: 1:20 / 0:50 / 0:40, потом «рофл»-раунд 4 на 10 с (пройти нельзя). Конец 4-го — газ,
  * все падают и просыпаются в заглушке комнаты 3. Вдвоём: Ухо + (Глаза и Руки у одного). Один (тест) — всё у одного.
  */
 public final class Room2 {
@@ -77,7 +77,9 @@ public final class Room2 {
 			P_LOST = 8, P_WON = 9, P_DONE = 10;
 	public static final int LOST_LEN = 170;
 	private static final int RULES_LEN = 935, TITLE_LEN = 60, WIN_GAS = 120, WIN_MOVE = WIN_GAS + 260;
-	private static final int[] ROUND_TIME = {90 * 20, 60 * 20, 50 * 20};
+	/** Раунды 1–3 и «рофл»-раунд 4 (10 с — пройти нельзя; по времени — газ, как победа). */
+	private static final int[] ROUND_TIME = {80 * 20, 50 * 20, 40 * 20, 10 * 20};
+	static final int LAST_ROUND = 4;
 	public static final int ROLE_EAR = 1, ROLE_HANDS = 2, ROLE_EYES = 4;
 	public static final int H_RESTART = 40;
 
@@ -107,8 +109,10 @@ public final class Room2 {
 	static final int PLATE_Z = -11;
 	static final double PLATE_UP = 67.0, PLATE_DOWN = 64.0;
 	public static final Vec3 STUDIO_SPAWN = new Vec3(-2.5, 64, -14.5);
-	public static final Vec3 ROOM3_SPAWN = new Vec3(44.5, 64, 0.5);
-	static final Vec3 BOARD = new Vec3(-2.5, 68.0, -21.0);
+	/** Куда просыпаются после газа: комната 3 «Мини-мир». */
+	public static final Vec3 ROOM3_SPAWN = Room3.SPAWN;
+	/** Табло у входа (3 блока от двери): видно из всех трёх кабинок. */
+	static final Vec3 BOARD = new Vec3(-2.5, 68.0, -15.0);
 	/** На сколько опускается табло на время раунда (центр ≈ на уровне глаз сидящих). */
 	static final double BOARD_DROP = 2.1;
 	static final Vec3 BUTTON = new Vec3(-2.5, 64, -18.5);
@@ -255,15 +259,6 @@ public final class Room2 {
 			if (l.getBlockState(new BlockPos(x, 69, z)).isAir()) set(l, x, 69, z, b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 11));
 		set(l, X0, 64, Z0 + 5, b(Blocks.COBWEB));
 		set(l, X1, 70, Z1, b(Blocks.COBWEB));
-		// заглушка комнаты 3 (x 40..48, z −4..4)
-		for (int x = 38; x <= 50; x++) for (int z = -6; z <= 6; z++) for (int y = 62; y <= 70; y++)
-			set(l, x, y, z, (x == 38 || x == 50 || z == -6 || z == 6 || y == 62 || y == 70) ? b(Blocks.GRAY_CONCRETE) : b(Blocks.AIR));
-		for (int x = 39; x <= 49; x++) for (int z = -5; z <= 5; z++) {
-			set(l, x, 63, z, b(Blocks.SMOOTH_STONE));
-			if (x == 39 || x == 49 || z == -5 || z == 5) for (int y = 64; y <= 69; y++) set(l, x, y, z, b(Blocks.GRAY_CONCRETE));
-		}
-		set(l, 44, 68, 0, b(Blocks.LANTERN).setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
-		set(l, 44, 69, 0, b(Blocks.IRON_CHAIN));
 	}
 
 	/** Лампы под абажурами (x, z). */
@@ -825,7 +820,7 @@ public final class Room2 {
 			if ((m & ROLE_EYES) != 0) spawnPoster(l, i, combo);
 			if ((m & ROLE_EAR) != 0) spawnTape(l, i, combo);
 		}
-		timeLeft = ROUND_TIME[Math.min(2, round - 1)];
+		timeLeft = ROUND_TIME[Math.min(LAST_ROUND - 1, round - 1)];
 		setPhase(P_ROUND);
 		message.setText(Component.empty());
 		showBoard();
@@ -1009,7 +1004,7 @@ public final class Room2 {
 	/** Удар током всех сидящих. timeout — время вышло (сразу смерть). */
 	private static void shock(ServerLevel l, boolean timeout) {
 		shocks++;
-		lives = timeout ? 0 : Math.max(0, lives - 1);
+		if (round < LAST_ROUND) lives = timeout ? 0 : Math.max(0, lives - 1);   // в раунде 4 жизни не тратятся
 		for (int i = 0; i < 3; i++) {
 			UUID u = boothPlayer[i];
 			if (u == null) continue;
@@ -1036,7 +1031,7 @@ public final class Room2 {
 		VadimNaTrone.LOG.info("[room2] раунд {} пройден, осталось {} с", round, timeLeft / 20);
 		stopRecording(l);
 		clearFixtures();
-		if (round >= 3) { win(l); return; }
+		if (round >= LAST_ROUND) { win(l); return; }
 		round++;
 		for (int i = 0; i < 3; i++) setLamp(l, i, false);
 		doors(l, true);
@@ -1056,7 +1051,14 @@ public final class Room2 {
 			if (sec <= 10 && sec > 0) l.playSound(null, BOARD.x, BOARD.y, BOARD.z, SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.BLOCKS, 1.4f, 1.2f);
 		}
 		if (sec <= 10 && timeLeft % 20 == 10) for (Display.ItemDisplay d : digits) setModel(d, null);
-		if (timeLeft <= 0) shock(l, true);
+		if (timeLeft <= 0) {
+			if (round >= LAST_ROUND) {   // рофл-раунд: время вышло — газ
+				stopRecording(l);
+				clearFixtures();
+				VadimNaTrone.LOG.info("[room2] раунд 4 — время вышло, газ");
+				win(l);
+			} else shock(l, true);
+		}
 	}
 
 	private static void lose(ServerLevel l) {
@@ -1088,7 +1090,6 @@ public final class Room2 {
 	}
 
 	private static void wonTick(ServerLevel l, MinecraftServer server) {
-		if (phaseTick == 10) say(l, ModSounds.ROOM2_WIN);
 		List<ServerPlayer> all = new ArrayList<>();
 		for (ServerPlayer p : l.players()) if (!p.isSpectator() && inStudio(p.getX(), p.getZ())) all.add(p);
 		int g = phaseTick - WIN_GAS;
@@ -1127,7 +1128,7 @@ public final class Room2 {
 		ServerLevel l = Places.rooms(p.level().getServer());
 		if (l == null) return;
 		if (p.isPassenger()) p.stopRiding();
-		p.teleportTo(l, ROOM3_SPAWN.x, ROOM3_SPAWN.y, ROOM3_SPAWN.z, Set.of(), 180f, 0f, true);
+		p.teleportTo(l, ROOM3_SPAWN.x, ROOM3_SPAWN.y, ROOM3_SPAWN.z, Set.of(), Room3.SPAWN_YAW, 0f, true);
 		p.fallDistance = 0;
 		if (ServerPlayNetworking.canSend(p, HubPayloads.ZavodFinal.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.ZavodFinal(3, 0));
 	}
@@ -1140,14 +1141,14 @@ public final class Room2 {
 
 	private static void showBoard() {
 		if (digits[0] == null) return;
-		int t = phase == P_ROUND ? timeLeft : ROUND_TIME[Math.min(2, round - 1)];
+		int t = phase == P_ROUND ? timeLeft : ROUND_TIME[Math.min(LAST_ROUND - 1, round - 1)];
 		boolean showTime = phase == P_ROUND || phase == P_READY || phase == P_SEAT || phase == P_BREAK;
-		if (phase == P_BREAK) t = ROUND_TIME[Math.min(2, round - 1)];
+		if (phase == P_BREAK) t = ROUND_TIME[Math.min(LAST_ROUND - 1, round - 1)];
 		int sec = Math.max(0, (t + 19) / 20);
 		String[] g = {"seg_" + (sec / 60 % 10), "seg_colon", "seg_" + (sec % 60 / 10), "seg_" + (sec % 10)};
 		for (int k = 0; k < 4; k++) setModel(digits[k], showTime && phase != P_BREAK ? "room1_" + g[k] : null);
 		if (roundText != null) roundText.setText(phase >= P_READY && phase <= P_LOST
-				? Component.literal(Math.min(round, 3) + "/3").withColor(0xFF3B2F) : Component.empty());
+				? Component.literal(round + "/3").withColor(0xFF3B2F) : Component.empty());
 		for (int k = 0; k < 3; k++) if (lifeLamp[k] != null) {
 			boolean on = k < lives && phase >= P_READY && phase <= P_LOST;
 			setModel(lifeLamp[k], on ? "room2_bulb_on" : "room2_bulb_off");
@@ -1214,6 +1215,15 @@ public final class Room2 {
 	public static boolean won(MinecraftServer s) { return state(s).won; }
 
 	public static boolean entered(MinecraftServer s) { return state(s).entered; }
+
+	/** Для отладки комнаты 3: студия считается пройденной. */
+	public static void markWon(MinecraftServer s) {
+		State st = state(s);
+		st.entered = true;
+		st.won = true;
+		st.setDirty();
+		phase = P_DONE;
+	}
 
 	/** /vadim room2 [skip] — всех в студию, плита внизу, всё заново (skip — без пластинки, сразу кнопка). */
 	public static void restart(MinecraftServer server, boolean skip) {

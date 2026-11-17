@@ -27,10 +27,10 @@ import java.util.Set;
 
 /**
  * Комнаты Вадима (измерение vadim_na_trone:rooms): комната 1 «Стулья», коридор, студия (комната 2, Room2.build),
- * заглушка комнаты 3. Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
+ * комната 3 «Мини-мир» (Room3.build) и заглушка комнаты 4. Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
  */
 public final class Rooms {
-	public static final int VERSION = 7;
+	public static final int VERSION = 8;
 	public static final String TAG = "vadim_rooms";
 
 	private Rooms() {}
@@ -130,6 +130,8 @@ public final class Rooms {
 		door(l, Room1.EXIT_DOOR, Direction.NORTH);
 		// коридор, студия (комната 2) и заглушка комнаты 3 — Room2.build
 		Room2.build(l);
+		// комната 3 «Мини-мир» и заглушка комнаты 4 — Room3.build
+		Room3.build(l);
 		// лампы дневного света на потолке: одна моргает, одна почти мёртвая, одна в кладовке (Room1.lampsTick)
 		for (BlockPos t : Room1.TUBES) l.setBlock(t, ru.vadim.block.ZavodBlocks.TUBE.defaultBlockState()
 				.setValue(ru.vadim.block.ZavodBlocks.Deco.FACING, Direction.EAST).setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, true), Block.UPDATE_CLIENTS);
@@ -170,8 +172,10 @@ public final class Rooms {
 		var server = p.level().getServer();
 		boolean won = Room1.won(server);
 		// куда: заглушка комнаты 3 (комната 2 пройдена) → студия (плита уже упала) → у выхода из комнаты 1 → на стул
-		Vec3 s = Room2.won(server) ? Room2.ROOM3_SPAWN : Room2.entered(server) ? Room2.STUDIO_SPAWN : won ? Room1.AFTER_WIN_SPAWN : Places.ROOMS_SPAWN;
-		p.teleportTo(l, s.x, s.y, s.z, Set.of(), 180f, 0f, true);
+		Vec3 s = Room3.won(server) ? Room3.ROOM4_SPAWN : Room2.won(server) ? Room2.ROOM3_SPAWN : Room2.entered(server) ? Room2.STUDIO_SPAWN
+				: won ? Room1.AFTER_WIN_SPAWN : Places.ROOMS_SPAWN;
+		float yaw = Room3.won(server) ? 180f : Room2.won(server) ? Room3.SPAWN_YAW : 180f;
+		p.teleportTo(l, s.x, s.y, s.z, Set.of(), yaw, 0f, true);
 		p.fallDistance = 0;
 		// очнулись: на стуле (elapsed = 1 — пробуждение сидя) или у выхода, если комната уже пройдена
 		if (ServerPlayNetworking.canSend(p, HubPayloads.ZavodFinal.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.ZavodFinal(3, won ? 0 : 1));

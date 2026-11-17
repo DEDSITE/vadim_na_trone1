@@ -451,5 +451,13 @@
         "stream": true
       }
     ]
+  },
+  "room3_music": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room3_music",
+        "stream": true
+      }
+    ]
   }
 }

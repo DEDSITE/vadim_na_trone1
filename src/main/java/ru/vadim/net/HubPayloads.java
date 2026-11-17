@@ -125,4 +125,13 @@ public final class HubPayloads {
 				ByteBufCodecs.BOOL, Room2State::locked, ByteBufCodecs.VAR_INT, Room2State::shocks, Room2State::new);
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/** Комната 3 «Мини-мир»: фаза, тик фазы, сколько осталось (тики). */
+	public record Room3State(int phase, int phaseTick, int timeLeft) implements CustomPacketPayload {
+		public static final Type<Room3State> TYPE = new Type<>(VadimNaTrone.id("room3_state"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room3State> CODEC = StreamCodec.composite(
+				ByteBufCodecs.VAR_INT, Room3State::phase, ByteBufCodecs.VAR_INT, Room3State::phaseTick, ByteBufCodecs.VAR_INT, Room3State::timeLeft,
+				Room3State::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

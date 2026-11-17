@@ -32,5 +32,11 @@
   "item.vadim_na_trone.crowbar": "Crowbar",
   "item.vadim_na_trone.scissors": "Nail scissors",
   "item.vadim_na_trone.cutters": "Bolt cutter",
-  "item.vadim_na_trone.record_vadim": "Vadim's record"
+  "item.vadim_na_trone.record_vadim": "Vadim's record",
+  "block.vadim_na_trone.govno": "Govno",
+  "block.vadim_na_trone.room3_sky": "Sky",
+  "block.vadim_na_trone.room3_cloud": "Cloud",
+  "block.vadim_na_trone.room3_sun": "Sun",
+  "entity.vadim_na_trone.govnozavr": "Mini Govnozavr",
+  "entity.vadim_na_trone.rocket_skeleton": "Rocket Skeleton"
 }

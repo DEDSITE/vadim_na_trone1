@@ -32,5 +32,11 @@
   "item.vadim_na_trone.crowbar": "Лом",
   "item.vadim_na_trone.scissors": "Маникюрные ножницы",
   "item.vadim_na_trone.cutters": "Болторез",
-  "item.vadim_na_trone.record_vadim": "Пластинка Вадима"
+  "item.vadim_na_trone.record_vadim": "Пластинка Вадима",
+  "block.vadim_na_trone.govno": "Говно",
+  "block.vadim_na_trone.room3_sky": "Небо",
+  "block.vadim_na_trone.room3_cloud": "Облако",
+  "block.vadim_na_trone.room3_sun": "Солнце",
+  "entity.vadim_na_trone.govnozavr": "Мини-Говнозавр",
+  "entity.vadim_na_trone.rocket_skeleton": "Скелет с ракетой"
 }

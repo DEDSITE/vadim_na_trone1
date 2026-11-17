@@ -65,8 +65,10 @@ public final class Hub {
 		});
 		// в баре никого не бьют и никто не умирает
 		// (заброшка пока заглушка — там тоже без урона)
+		// в комнате 3 «Мини-мир» — урон только во время игры (Говнозавры, скелет, игроки)
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> (e.level().dimension() != Places.HUB && e.level().dimension() != Places.ZAVOD && e.level().dimension() != Places.ROOMS)
-				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY));
+				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)
+				|| (e.level().dimension() == Places.ROOMS && Room3.damageAllowed(e)));
 		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
 			if (level.dimension() == Places.ZAVOD) {
@@ -80,7 +82,7 @@ public final class Hub {
 			if (level.dimension() == Places.ROOMS) {
 				if (Room1.onItemLoad(e)) return;   // выброшенные ножницы/болторез
 				if (Room2.onItemLoad(e)) return;   // выброшенная пластинка
-				if (Room1.isStale(e) || Room2.isStale(e)) e.discard();
+				if (Room1.isStale(e) || Room2.isStale(e) || Room3.isStale(e)) e.discard();
 				return;
 			}
 			if (level.dimension() != Places.HUB) return;
@@ -98,7 +100,8 @@ public final class Hub {
 			if (level.dimension() == Places.ZAVOD && !player.isCreative())
 				return Zavod.usable(hit.getBlockPos()) ? InteractionResult.PASS : InteractionResult.FAIL;
 			// в комнатах ничего не трогаем руками (двери открывает игра, кровать — операционный стол)
-			if (level.dimension() == Places.ROOMS && !player.isCreative()) return InteractionResult.FAIL;
+			// (в комнате 3 можно сажать саженцы и растить их костной мукой — Room3.useBlock)
+			if (level.dimension() == Places.ROOMS && !player.isCreative()) return Room3.useBlock(player, level, hand, hit);
 			if (level.dimension() != Places.HUB || player.isCreative()) return InteractionResult.PASS;
 			BlockState s = level.getBlockState(hit.getBlockPos());
 			if (s.is(ModBlocks.READY)) return InteractionResult.PASS;
@@ -133,7 +136,7 @@ public final class Hub {
 		ServerLevel zavod = Places.zavod(server);
 		if (zavod != null) Zavod.ensure(zavod, false);
 		ServerLevel rooms = Places.rooms(server);
-		if (rooms != null) { Rooms.ensure(rooms); Room1.setup(rooms); Room2.setup(rooms); }
+		if (rooms != null) { Rooms.ensure(rooms); Room1.setup(rooms); Room2.setup(rooms); Room3.setup(rooms); }
 	}
 
 	public static void rebuildZavod(MinecraftServer server) {
@@ -225,7 +228,7 @@ public final class Hub {
 		}
 		List<ServerPlayer> all = everyone(server);
 		// сытость и здоровье в баре
-		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (p.level().dimension() == Places.ZAVOD || p.level().dimension() == Places.ROOMS) {
+		if (server.getTickCount() % 20 == 0) for (ServerPlayer p : all) if (p.level().dimension() == Places.ZAVOD || (p.level().dimension() == Places.ROOMS && !Room3.managesFood(p))) {
 			p.getFoodData().setFoodLevel(20);
 			p.getFoodData().setSaturation(5f);
 		}

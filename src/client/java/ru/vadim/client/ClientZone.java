@@ -22,6 +22,12 @@ public final class ClientZone {
 		return mc.level != null && mc.level.dimension() == Places.ZAVOD;
 	}
 
+	/** Комната 3 «Мини-мир» (светлый мир 40×40, x 41..80). */
+	public static boolean room3() {
+		var mc = net.minecraft.client.Minecraft.getInstance();
+		return rooms() && mc.player != null && ru.vadim.world.Room3.inRoom3(mc.player.getX(), mc.player.getZ());
+	}
+
 	/** Студия (комната 2): в измерении комнат и внутри зала студии. */
 	public static boolean studio() {
 		var mc = net.minecraft.client.Minecraft.getInstance();

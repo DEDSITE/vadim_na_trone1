@@ -37,7 +37,7 @@ public final class MenuAudio {
 			boolean on = Minecraft.getInstance().level == null;
 			fade = Math.min(1f, fade + (on ? 0.01f : -0.05f));
 			if (fade <= 0f && !on) { stop(); return; }
-			volume = Math.max(0.001f, 0.55f * fade);
+			volume = Math.max(0.001f, 0.8f * fade);   // на 20 % тише оригинала
 		}
 
 		@Override public boolean canStartSilent() { return true; }
