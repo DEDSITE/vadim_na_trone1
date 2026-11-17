@@ -106,9 +106,12 @@ public final class Room3 {
 	static final int PER_SOURCE = 10;
 	/** Скелет после смерти появляется снова через 15 с. */
 	static final int SKELETON_RESPAWN = 15 * 20;
+	/** …и ещё по 2 с за каждого Говнозавра на поле: чем их больше, тем реже скелет. */
+	static final int SKELETON_PER_MOB = 2 * 20;
 	/** Дерево растёт только тут; ствол 7 блоков — дотянуться: досягаемость по блокам в комнате 3 больше. */
 	static final int TRUNK = 7;
 	public static final double REACH = 7.0, REACH_DEFAULT = 4.5;
+	static final int TREE_MARK_EVERY = 10;
 	static final Vec3 SKELETON = new Vec3(42.5, 64, 17.5);
 	static final BlockPos TREE = new BlockPos(52, 64, -2);
 	static final int STREAM_Z = 8;
@@ -140,6 +143,8 @@ public final class Room3 {
 	private static Display.ItemDisplay machine, record;
 	private static Interaction machineHit;
 	private static double boardY = BOARD_UP;
+	/** Сколько тиков ещё едет табло (лязг цепей каждому игроку). */
+	private static int boardMoving = 0;
 	private static float recordAngle = 0f;
 
 	private Room3() {}
@@ -316,6 +321,10 @@ public final class Room3 {
 		for (int x = 48; x <= 69; x++) path(l, x, 4);
 		for (int z = -8; z <= 4; z++) path(l, 47, z);
 		for (int z = 3; z <= 4; z++) path(l, 69, z);
+		// место под саженец: подзол в кольце из тропинки — видно издалека
+		for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+			if (dx != 0 || dz != 0) set(l, TREE.getX() + dx, FLOOR, TREE.getZ() + dz, b(Blocks.DIRT_PATH));
+		set(l, TREE.getX(), FLOOR, TREE.getZ(), b(Blocks.PODZOL));
 		// дома деревни
 		for (int[] h : HOUSES) house(l, h[0], h[1]);
 		// трава и цветы
@@ -646,6 +655,21 @@ public final class Room3 {
 			if (a.getBaseValue() != want && (a.getBaseValue() == REACH || a.getBaseValue() == REACH_DEFAULT)) a.setBaseValue(want);
 		}
 		spinRecord();
+		// табло едет: цепи лязгают, в конце — удар
+		if (boardMoving > 0) {
+			boardMoving--;
+			for (ServerPlayer p : here) {
+				if (boardMoving % 4 == 0) hear(p, SoundEvents.CHAIN_STEP, 0.9f, 0.55f + l.getRandom().nextFloat() * 0.15f);
+				if (boardMoving % 12 == 6) hear(p, SoundEvents.CHAIN_HIT, 0.7f, 0.5f);
+				if (boardMoving == 0) {
+					hear(p, SoundEvents.ANVIL_LAND, 0.45f, 0.6f);
+					hear(p, SoundEvents.CHAIN_PLACE, 1f, 0.4f);
+				}
+			}
+		}
+		// место под саженец, пока дерева нет, — зелёные искорки
+		if (TREE_MARK_EVERY > 0 && phaseTick % TREE_MARK_EVERY == 0 && (phase == P_WAIT || phase == P_GAME) && l.getBlockState(TREE).isAir())
+			l.sendParticles(ParticleTypes.HAPPY_VILLAGER, TREE.getX() + 0.5, TREE.getY() + 0.3, TREE.getZ() + 0.5, 6, 0.35, 0.2, 0.35, 0.0);
 		switch (phase) {
 			case P_WAIT -> waitTick(l, alive);
 			case P_GAME -> gameTick(l, here, alive);
@@ -727,7 +751,7 @@ public final class Room3 {
 
 	private static void keepSkeleton(ServerLevel l) {
 		if (skeleton != null && skeleton.isAlive() && !skeleton.isRemoved()) { skeletonDue = 0; return; }
-		if (skeletonDue == 0) skeletonDue = SKELETON_RESPAWN;   // только что убит — следующий через 15 с
+		if (skeletonDue == 0) skeletonDue = SKELETON_RESPAWN + SKELETON_PER_MOB * mobs.size();   // только что убит: 15 с + 2 с за моба
 		if (--skeletonDue > 0) return;
 		spawnSkeleton(l);
 		l.sendParticles(ParticleTypes.POOF, SKELETON.x, SKELETON.y + 1, SKELETON.z, 12, 0.3, 0.6, 0.3, 0.02);
@@ -782,7 +806,6 @@ public final class Room3 {
 	private static void startReset(ServerLevel l, String why) {
 		setPhase(P_RESET);
 		for (GovnozavrEntity m : mobs) m.setTarget(null);
-		message.setText(Component.literal("ЗАНОВО").withColor(0xFF3B2F));
 		VadimNaTrone.LOG.info("[room3] заново: {}", why);
 	}
 
@@ -896,7 +919,6 @@ public final class Room3 {
 			l.playSound(null, MACHINE.x, MACHINE.y, MACHINE.z, SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 1.5f, 1.5f);
 			setPhase(P_WON);
 			updatePanel();
-			message.setText(Component.literal("ГОТОВО").withColor(0xFF3B2F));
 			moveBoard(l, false);
 			shakeAll(l);
 			VadimNaTrone.LOG.info("[room3] пластинка готова — победа");
@@ -996,6 +1018,12 @@ public final class Room3 {
 		}
 	}
 
+	/** Звук «у уха» конкретному игроку (табло видно издалека — слышно всем одинаково). */
+	private static void hear(ServerPlayer p, net.minecraft.sounds.SoundEvent snd, float vol, float pitch) {
+		p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(snd),
+				SoundSource.BLOCKS, p.getX(), p.getEyeY(), p.getZ(), vol, pitch, p.getRandom().nextLong()));
+	}
+
 	private static void shakeAll(ServerLevel l) {
 		for (ServerPlayer p : here(l))
 			if (ServerPlayNetworking.canSend(p, HubPayloads.ZavodFinal.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.ZavodFinal(1, 0));
@@ -1012,8 +1040,11 @@ public final class Room3 {
 			d.setPosRotInterpolationDuration(50);
 			d.teleportTo(d.getX(), d.getY() + dy, d.getZ());
 		}
-		l.playSound(null, BOARD_X, 84, BOARD_Z + 2, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 3f, 0.5f);
-		l.playSound(null, BOARD_X, 84, BOARD_Z + 2, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 3f, 0.6f);
+		boardMoving = 50;
+		for (ServerPlayer p : here(l)) {
+			hear(p, SoundEvents.PISTON_EXTEND, 0.9f, 0.5f);
+			hear(p, SoundEvents.CHAIN_PLACE, 1f, 0.5f);
+		}
 	}
 
 	private static void moveBoardInstant(double to) {
