@@ -628,6 +628,7 @@ public final class Room3 {
 		for (ServerPlayer p : alive(l)) players.add(p.getUUID());
 		timeLeft = TOTAL;
 		nextMob = 7 * 20;
+		scanDoors(l);
 		setPhase(P_GAME);
 		moveBoard(l, true);
 		shakeAll(l);
@@ -737,8 +738,36 @@ public final class Room3 {
 		if (timeLeft <= 0) startReset(l, "время вышло");
 	}
 
+	/** Где выходят мобы: перед каждой дверью в мире (свои двери домов + любые, что поставлены руками), снаружи дома. */
+	private static final List<Vec3> doorSpots = new ArrayList<>();
+
+	private static void scanDoors(ServerLevel l) {
+		doorSpots.clear();
+		for (int x = X0; x <= X1; x++) for (int z = Z0; z <= Z1; z++) for (int y = FLOOR + 1; y <= FLOOR + 3; y++) {
+			BlockPos p = new BlockPos(x, y, z);
+			BlockState s = l.getBlockState(p);
+			if (!(s.getBlock() instanceof DoorBlock) || s.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER) continue;
+			Direction f = s.getValue(DoorBlock.FACING);
+			BlockPos a = p.relative(f), b = p.relative(f.getOpposite());
+			// снаружи — та сторона, где в 3 блоках от двери уже небо (внутри дома там ещё крыша)
+			boolean aOut = !roofed(l, p.relative(f, 3)), bOut = !roofed(l, p.relative(f.getOpposite(), 3));
+			BlockPos out = aOut && !bOut ? a : bOut && !aOut ? b : open(l, a) ? a : b;
+			doorSpots.add(new Vec3(out.getX() + 0.5, out.getY(), out.getZ() + 0.5));
+		}
+		VadimNaTrone.LOG.info("[room3] дверей для мобов: {}", doorSpots.size());
+	}
+
+	private static boolean open(ServerLevel l, BlockPos p) {
+		return !l.getBlockState(p).isSolid() && !l.getBlockState(p.above()).isSolid();
+	}
+
+	private static boolean roofed(ServerLevel l, BlockPos p) {
+		for (int y = p.getY() + 2; y < SKY; y++) if (!l.getBlockState(new BlockPos(p.getX(), y, p.getZ())).isAir()) return true;
+		return false;
+	}
+
 	private static void spawnMob(ServerLevel l) {
-		Vec3 d = houseDoor(l.getRandom().nextInt(HOUSES.length));
+		Vec3 d = doorSpots.isEmpty() ? houseDoor(l.getRandom().nextInt(HOUSES.length)) : doorSpots.get(l.getRandom().nextInt(doorSpots.size()));
 		GovnozavrEntity m = ModEntities.GOVNOZAVR.create(l, EntitySpawnReason.MOB_SUMMONED);
 		if (m == null) return;
 		m.snapTo(d.x, d.y, d.z, 0f, 0f);
