@@ -21,4 +21,10 @@ public final class ClientZone {
 		Minecraft mc = Minecraft.getInstance();
 		return mc.level != null && mc.level.dimension() == Places.ZAVOD;
 	}
+
+	/** Студия (комната 2): в измерении комнат и внутри зала студии. */
+	public static boolean studio() {
+		var mc = net.minecraft.client.Minecraft.getInstance();
+		return rooms() && mc.player != null && ru.vadim.world.Room2.inStudio(mc.player.getX(), mc.player.getZ());
+	}
 }

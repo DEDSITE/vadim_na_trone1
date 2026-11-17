@@ -22,7 +22,7 @@ public final class ClientAtmo {
 
 	public static boolean active() { return ClientZone.hub() || ClientZone.zavod() || ClientZone.rooms(); }
 	/** 0..1 — насколько темно (для пост-эффекта: виньетка, зерно). */
-	public static float darkness() { return ClientZone.hub() ? 0.55f : ClientZone.zavod() ? 0.5f : ClientZone.rooms() ? 0.6f : 0f; }
+	public static float darkness() { return ClientZone.hub() ? 0.55f : ClientZone.zavod() ? 0.5f : ClientZone.rooms() ? (ClientZone.studio() ? 0.35f : 0.6f) : 0f; }
 	public static float chase() { return 0f; }
 	/** 1 — уютная сцена (бар): цвета не приглушаем, виньетка мягче. */
 	public static float cozy() { return ClientZone.hub() ? 1f : 0f; }
@@ -45,11 +45,11 @@ public final class ClientAtmo {
 		return c;
 	}
 	public static float fogStart() {
-		float base = ClientZone.hub() ? 18f : ClientZone.rooms() ? 2f : 6f;
+		float base = ClientZone.hub() ? 18f : ClientZone.studio() ? 8f : ClientZone.rooms() ? 2f : 6f;
 		return base * (1f - ru.vadim.client.zavod.ZavodFinalClient.green());
 	}
 	public static float fogEnd() {
-		float base = ClientZone.hub() ? 72f : ClientZone.rooms() ? 30f : 84f;
+		float base = ClientZone.hub() ? 72f : ClientZone.studio() ? 44f : ClientZone.rooms() ? 30f : 84f;
 		return base + (7f - base) * ru.vadim.client.zavod.ZavodFinalClient.green();
 	}
 }

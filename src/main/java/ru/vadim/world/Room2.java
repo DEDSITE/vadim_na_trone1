@@ -246,6 +246,8 @@ public final class Room2 {
 		// лампы под абажурами: цепь + свет (сам абажур — модель)
 		for (int[] a : SHADES) {
 			set(l, a[0], 70, a[1], b(Blocks.IRON_CHAIN));
+			// фонарь под абажуром — шейдер даёт от него тёплый конус света вниз (LampLights, режим 1)
+			set(l, a[0], 69, a[1], b(Blocks.LANTERN).setValue(net.minecraft.world.level.block.LanternBlock.HANGING, true));
 			set(l, a[0], 68, a[1], b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 15));
 			set(l, a[0], 66, a[1], b(Blocks.LIGHT).setValue(net.minecraft.world.level.block.LightBlock.LEVEL, 13));
 		}
@@ -410,7 +412,7 @@ public final class Room2 {
 		for (int k = 0; k < 3; k++) item(l, g[k], new Vec3(X0 + 0.04, 65.7, -26 + k * 4.0), east.get(new Quaternionf()).rotateZ(0.06f * (k - 1)), 1.6f).setViewRange(2f);
 		for (double[] g2 : new double[][]{{-5.5, 0.08}, {0.5, -0.08}}) {
 			item(l, g2[1] > 0 ? "room2_guitar_red" : "room2_guitar_acoustic", new Vec3(g2[0], 64.74, -28.6), south.get(new Quaternionf()).rotateZ((float) g2[1]), 1.35f).setViewRange(2f);
-			block(l, Blocks.DARK_OAK_FENCE.defaultBlockState(), new Vec3(g2[0] - 0.15, 64.06, -28.45), new Vector3f(0.3f, 0.5f, 0.3f));
+			block(l, Blocks.DARK_OAK_FENCE.defaultBlockState(), new Vec3(g2[0] - 0.15, 64.06, -29.1), new Vector3f(0.3f, 0.9f, 0.3f));   // стойка сзади гитары
 		}
 		// плакаты альбомов и платиновый диск — восточная стена (смотрят на запад)
 		String[] a = {"room2_album_1", "room2_album_2", "room2_album_3", "room2_album_4", "room2_platinum"};
@@ -426,7 +428,7 @@ public final class Room2 {
 		item(l, "room2_tape", new Vec3(4.5, 65.22, Z1 + 0.5), new Quaternionf().rotateY((float) Math.PI), 0.9f).setViewRange(2f);
 		// абажуры
 		for (int[] s : SHADES) {
-			Display.ItemDisplay d = item(l, "room2_shade", new Vec3(s[0] + 0.5, 69.45, s[1] + 0.5), new Quaternionf(), 1.1f);
+			Display.ItemDisplay d = item(l, "room2_shade", new Vec3(s[0] + 0.5, 69.78, s[1] + 0.5), new Quaternionf(), 1.1f);
 			d.setBrightnessOverride(new Brightness(13, 13));
 			d.setViewRange(2f);
 		}
