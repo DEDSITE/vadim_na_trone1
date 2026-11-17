@@ -280,7 +280,7 @@ public final class Room2 {
 		for (int x = x0; x <= x1; x++) for (int z = BOOTH_Z0; z <= BOOTH_FRONT; z++) {
 			boolean edgeX = x == x0 || x == x1, front = z == BOOTH_FRONT;
 			for (int y = 64; y <= 66; y++) {
-				if (edgeX && front) set(l, x, y, z, b(Blocks.STRIPPED_DARK_OAK_LOG));
+				if (edgeX && front) set(l, x, y, z, b(Blocks.GLASS_PANE));   // будка целиком стеклянная (крыша — орех)
 				else if (edgeX || front) set(l, x, y, z, b(Blocks.GLASS_PANE));
 				else set(l, x, y, z, b(Blocks.AIR));
 			}
