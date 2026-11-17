@@ -145,6 +145,13 @@ public final class Room3 {
 	private static double boardY = BOARD_UP;
 	/** Сколько тиков ещё едет табло (лязг цепей каждому игроку). */
 	private static int boardMoving = 0;
+	private static double boardFrom = BOARD_UP;
+
+	/** Где сейчас табло по высоте (пока едет) — звук цепей идёт от него; выше неба не поднимаем, чтобы было слышно. */
+	private static double boardSoundY() {
+		double k = 1.0 - boardMoving / 50.0;
+		return Math.min(SKY - 2.0, boardFrom + (boardY - boardFrom) * k);
+	}
 	private static float recordAngle = 0f;
 
 	private Room3() {}
@@ -326,7 +333,7 @@ public final class Room3 {
 			if (dx != 0 || dz != 0) set(l, TREE.getX() + dx, FLOOR, TREE.getZ() + dz, b(Blocks.DIRT_PATH));
 		set(l, TREE.getX(), FLOOR, TREE.getZ(), b(Blocks.PODZOL));
 		// дома деревни
-		for (int[] h : HOUSES) house(l, h[0], h[1]);
+		for (int i = 0; i < HOUSES.length; i++) house(l, HOUSES[i][0], HOUSES[i][1], i == 0);
 		// трава и цветы
 		for (int x = X0; x <= X1; x++) for (int z = Z0; z <= Z1; z++) {
 			if (!l.getBlockState(new BlockPos(x, FLOOR, z)).is(Blocks.GRASS_BLOCK) || !l.getBlockState(new BlockPos(x, FLOOR + 1, z)).isAir()) continue;
@@ -370,7 +377,7 @@ public final class Room3 {
 	}
 
 	/** Домик деревни равнин 7×7: булыжник понизу, доски, брёвна по углам, окна, дверь на юг, крыша ступеньками. */
-	private static void house(ServerLevel l, int x0, int z0) {
+	private static void house(ServerLevel l, int x0, int z0, boolean northDoor) {
 		int x1 = x0 + 6, z1 = z0 + 6, doorX = x0 + 3;
 		for (int x = x0; x <= x1; x++) for (int z = z0; z <= z1; z++) {
 			set(l, x, FLOOR, z, b(Blocks.COBBLESTONE));
@@ -403,6 +410,13 @@ public final class Room3 {
 				.setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
 		set(l, doorX, FLOOR + 1, z1, lo);
 		set(l, doorX, FLOOR + 2, z1, lo.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
+		// правый дом (со спавна, лицом к машине) — ещё дверь на северной стене: оттуда тоже выходят мобы
+		if (northDoor) {
+			BlockState n = lo.setValue(DoorBlock.FACING, Direction.NORTH);
+			set(l, doorX, FLOOR + 1, z0, n);
+			set(l, doorX, FLOOR + 2, z0, n.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER));
+			set(l, doorX, FLOOR, z0 - 1, b(Blocks.COBBLESTONE_SLAB));
+		}
 		// внутри: кровать, верстак, бочка
 		set(l, x0 + 1, FLOOR + 1, z0 + 1, b(Blocks.CRAFTING_TABLE));
 		set(l, x1 - 1, FLOOR + 1, z0 + 1, b(Blocks.BARREL));
@@ -659,13 +673,12 @@ public final class Room3 {
 		// табло едет: цепи лязгают, в конце — удар
 		if (boardMoving > 0) {
 			boardMoving--;
-			for (ServerPlayer p : here) {
-				if (boardMoving % 4 == 0) hear(p, SoundEvents.CHAIN_STEP, 0.9f, 0.55f + l.getRandom().nextFloat() * 0.15f);
-				if (boardMoving % 12 == 6) hear(p, SoundEvents.CHAIN_HIT, 0.7f, 0.5f);
-				if (boardMoving == 0) {
-					hear(p, SoundEvents.ANVIL_LAND, 0.45f, 0.6f);
-					hear(p, SoundEvents.CHAIN_PLACE, 1f, 0.4f);
-				}
+			double y = boardSoundY();
+			if (boardMoving % 4 == 0) l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 3f, 0.55f + l.getRandom().nextFloat() * 0.15f);
+			if (boardMoving % 12 == 6) l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.CHAIN_HIT, SoundSource.BLOCKS, 2.5f, 0.5f);
+			if (boardMoving == 0) {
+				l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 1.5f, 0.6f);
+				l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 3f, 0.4f);
 			}
 		}
 		// место под саженец, пока дерева нет, — зелёные искорки
@@ -1073,10 +1086,9 @@ public final class Room3 {
 			d.teleportTo(d.getX(), d.getY() + dy, d.getZ());
 		}
 		boardMoving = 50;
-		for (ServerPlayer p : here(l)) {
-			hear(p, SoundEvents.PISTON_EXTEND, 0.9f, 0.5f);
-			hear(p, SoundEvents.CHAIN_PLACE, 1f, 0.5f);
-		}
+		boardFrom = boardY - dy;
+		l.playSound(null, BOARD_X, boardSoundY(), BOARD_Z + 1, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 3f, 0.5f);
+		l.playSound(null, BOARD_X, boardSoundY(), BOARD_Z + 1, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 3f, 0.5f);
 	}
 
 	private static void moveBoardInstant(double to) {
