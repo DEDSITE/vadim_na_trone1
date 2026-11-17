@@ -38,5 +38,6 @@
   "block.vadim_na_trone.room3_cloud": "Cloud",
   "block.vadim_na_trone.room3_sun": "Sun",
   "entity.vadim_na_trone.govnozavr": "Mini Govnozavr",
-  "entity.vadim_na_trone.rocket_skeleton": "Rocket Skeleton"
+  "entity.vadim_na_trone.rocket_skeleton": "Rocket Skeleton",
+  "block.vadim_na_trone.room3_rocket": "Vadim's Rocket"
 }

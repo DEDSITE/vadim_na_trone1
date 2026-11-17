@@ -101,9 +101,16 @@ public final class Room3 {
 	static final double FRONT_Z = -11.0;
 	/** Табло на северной стене: прячется за небом-потолком, опускается до BOARD_DOWN. */
 	public static final double BOARD_X = 60.5, BOARD_Z = -19.4, BOARD_UP = 96.0, BOARD_DOWN = 77.0;
-	static final BlockPos POOP = new BlockPos(78, 64, -18);
+	/** Три источника говна (углы, кроме угла скелета): работает один, 10 говна — и он пуст, на следующем встаёт ракета. */
+	static final BlockPos[] SOURCES = {new BlockPos(78, 64, -18), new BlockPos(43, 64, -18), new BlockPos(78, 64, 17)};
+	static final int PER_SOURCE = 10;
+	/** Скелет после смерти появляется снова через 15 с. */
+	static final int SKELETON_RESPAWN = 15 * 20;
+	/** Дерево растёт только тут; ствол 7 блоков — дотянуться: досягаемость по блокам в комнате 3 больше. */
+	static final int TRUNK = 7;
+	public static final double REACH = 7.0, REACH_DEFAULT = 4.5;
 	static final Vec3 SKELETON = new Vec3(42.5, 64, 17.5);
-	static final BlockPos TREE = new BlockPos(52, 64, -3);
+	static final BlockPos TREE = new BlockPos(52, 64, -2);
 	static final int STREAM_Z = 8;
 	/** Дома: x0, z0 (угол), дверь на южной стене; мобы выходят из дверей. */
 	static final int[][] HOUSES = {{66, -4}, {44, -16}};
@@ -113,6 +120,8 @@ public final class Room3 {
 	private static int phase = P_WAIT, phaseTick = 0, timeLeft = TOTAL;
 	private static int logs = 0, poop = 0;
 	private static int nextMob = 0;
+	private static int src = 0, srcLeft = PER_SOURCE, skeletonDue = 0;
+	private static boolean srcRocket = false;
 	private static final Set<UUID> dead = new HashSet<>(), players = new HashSet<>();
 	private static String toolsKey = "";
 	private static final List<Tree> trees = new ArrayList<>();
@@ -155,20 +164,22 @@ public final class Room3 {
 			if (level.dimension() != Places.ROOMS || player.isCreative()) return true;
 			if (!inRoom3(pos.getX() + 0.5, pos.getZ() + 0.5)) return false;
 			if (phase != P_WAIT && phase != P_GAME) return false;
-			return state.is(Blocks.OAK_LOG) || state.is(Blocks.OAK_LEAVES) || state.is(Blocks.OAK_SAPLING) || state.is(Room3Blocks.GOVNO);
+			return state.is(Blocks.OAK_LOG) || state.is(Blocks.OAK_LEAVES) || state.is(Blocks.OAK_SAPLING) || state.is(Room3Blocks.GOVNO) || state.is(Room3Blocks.ROCKET);
 		});
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, be) -> {
 			if (level.dimension() != Places.ROOMS || !(level instanceof ServerLevel l) || !inRoom3(pos.getX() + 0.5, pos.getZ() + 0.5)) return;
 			if (state.is(Room3Blocks.GOVNO)) {
-				l.setBlock(pos, Room3Blocks.GOVNO.defaultBlockState(), Block.UPDATE_ALL);   // новое — сразу
+				govnoBroken(l, pos);
 				startIfWaiting(l, "говно");
+			} else if (state.is(Room3Blocks.ROCKET)) {
+				rocketBroken(l, pos);
 			} else if (state.is(Blocks.OAK_LOG)) {
 				logBroken(l, pos);
 				startIfWaiting(l, "бревно");
 			}
 		});
 		AttackEntityCallback.EVENT.register((player, level, hand, e, hit) -> {
-			if (level.dimension() == Places.ROOMS && e instanceof RocketSkeleton && level instanceof ServerLevel l && !player.isCreative())
+			if (level.dimension() == Places.ROOMS && e instanceof RocketSkeleton && level instanceof ServerLevel l && !player.isCreative() && hasSword(player))
 				startIfWaiting(l, "скелет");
 			return InteractionResult.PASS;
 		});
@@ -187,9 +198,20 @@ public final class Room3 {
 		return e.level().dimension() == Places.ROOMS && inRoom3(e.getX(), e.getZ());
 	}
 
-	/** Урон в комнате 3 — только во время игры (игроки, Говнозавры, скелет). */
-	public static boolean damageAllowed(Entity e) {
-		return phase == P_GAME && inRoom3(e);
+	/**
+	 * Урон в комнате 3 — только во время игры. Бить (мобов и игроков, ПвП) может только тот, у кого меч;
+	 * с киркой и топором — никого. Меч перешёл после смерти — теперь бьёт новый хозяин.
+	 */
+	public static boolean damageAllowed(Entity e, net.minecraft.world.damagesource.DamageSource src) {
+		if (phase != P_GAME || !inRoom3(e)) return false;
+		if (src.getEntity() instanceof Player p && !p.isCreative()) return hasSword(p);
+		return true;
+	}
+
+	public static boolean hasSword(Player p) {
+		var inv = p.getInventory();
+		for (int i = 0; i < inv.getContainerSize(); i++) if (inv.getItem(i).is(Items.NETHERITE_SWORD)) return true;
+		return false;
 	}
 
 	/** Сытость без регена: еда 17 (бегать можно, здоровье само не растёт). */
@@ -215,7 +237,7 @@ public final class Room3 {
 		ItemStack st = player.getItemInHand(hand);
 		BlockState s = level.getBlockState(pos);
 		if (st.is(Items.BONE_MEAL)) {
-			if (!s.is(Blocks.OAK_SAPLING)) return InteractionResult.FAIL;
+			if (!s.is(Blocks.OAK_SAPLING) || !pos.equals(TREE)) return InteractionResult.FAIL;
 			if (level instanceof ServerLevel l) {
 				if (!player.isCreative()) st.shrink(1);
 				l.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -226,8 +248,9 @@ public final class Room3 {
 			}
 			return InteractionResult.SUCCESS;
 		}
-		if (st.is(Items.OAK_SAPLING) && hit.getDirection() == Direction.UP && (s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.DIRT))
-				&& pos.getX() >= X0 && pos.getX() <= X1 && pos.getZ() >= Z0 && pos.getZ() <= Z1) return InteractionResult.PASS;
+		// сажать — только на одно место, где стоит дерево (и если его сейчас нет)
+		if (st.is(Items.OAK_SAPLING) && hit.getDirection() == Direction.UP && pos.equals(TREE.below()) && level.getBlockState(TREE).isAir())
+			return InteractionResult.PASS;
 		return InteractionResult.FAIL;
 	}
 
@@ -299,7 +322,9 @@ public final class Room3 {
 		for (int x = X0; x <= X1; x++) for (int z = Z0; z <= Z1; z++) {
 			if (!l.getBlockState(new BlockPos(x, FLOOR, z)).is(Blocks.GRASS_BLOCK) || !l.getBlockState(new BlockPos(x, FLOOR + 1, z)).isAir()) continue;
 			if (Math.abs(x - 60.5) < 4 && z > -15 && z < -9) continue;   // у машины чисто
-			if (Math.abs(x - POOP.getX()) < 3 && Math.abs(z - POOP.getZ()) < 3) continue;
+			boolean nearSrc = false;
+			for (BlockPos sp : SOURCES) if (Math.abs(x - sp.getX()) < 3 && Math.abs(z - sp.getZ()) < 3) nearSrc = true;
+			if (nearSrc) continue;
 			if (Math.abs(x - SKELETON.x) < 2 && Math.abs(z - SKELETON.z) < 2) continue;
 			if (Math.abs(x - TREE.getX()) < 4 && Math.abs(z - TREE.getZ()) < 4) continue;
 			int k = r.nextInt(100);
@@ -309,7 +334,7 @@ public final class Room3 {
 			else if (k < 14) set(l, x, FLOOR + 1, z, b(Blocks.OXEYE_DAISY));
 		}
 		// пара кустов и забор у машины для уюта
-		for (int[] a : new int[][]{{43, -18}, {79, 17}, {52, 18}, {75, -6}}) set(l, a[0], FLOOR + 1, a[1], b(Blocks.AZALEA));
+		for (int[] a : new int[][]{{52, 18}, {75, -6}, {64, -18}}) set(l, a[0], FLOOR + 1, a[1], b(Blocks.AZALEA));
 		// заглушка комнаты 4
 		for (int x = 118; x <= 130; x++) for (int z = -6; z <= 6; z++) for (int y = 62; y <= 70; y++)
 			set(l, x, y, z, (x == 118 || x == 130 || z == -6 || z == 6 || y == 62 || y == 70) ? b(Blocks.GRAY_CONCRETE) : air);
@@ -470,14 +495,18 @@ public final class Room3 {
 				|| e instanceof net.minecraft.world.entity.ExperienceOrb)) e.discard();
 		mobs.clear();
 		skeleton = null;
-		for (int x = X0; x <= X1; x++) for (int z = Z0; z <= Z1; z++) for (int y = FLOOR + 1; y <= FLOOR + 14; y++) {
+		for (int x = X0; x <= X1; x++) for (int z = Z0; z <= Z1; z++) for (int y = FLOOR + 1; y <= FLOOR + 16; y++) {
 			BlockPos p = new BlockPos(x, y, z);
 			BlockState s = l.getBlockState(p);
 			if (s.is(Blocks.OAK_LOG) || s.is(Blocks.OAK_LEAVES) || s.is(Blocks.OAK_SAPLING)) l.setBlock(p, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
 		}
 		trees.clear();
 		growTree(l, TREE);
-		l.setBlock(POOP, Room3Blocks.GOVNO.defaultBlockState(), Block.UPDATE_ALL);
+		for (BlockPos sp : SOURCES) l.setBlock(sp, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+		src = 0;
+		srcLeft = PER_SOURCE;
+		srcRocket = false;
+		l.setBlock(SOURCES[0], Room3Blocks.GOVNO.defaultBlockState(), Block.UPDATE_ALL);
 		spawnSkeleton(l);
 		logs = poop = 0;
 		timeLeft = TOTAL;
@@ -495,27 +524,30 @@ public final class Room3 {
 
 	// ======================================================================= дерево
 
-	/** Дуб 2×2: ствол 4 блока (8 брёвен — всё достаётся с земли), крона выше ствола. */
+	/**
+	 * Классический дуб, всегда одинаковый: ствол 7 блоков, крона как у ванильного дуба — два слоя 5×5 без углов,
+	 * слой 3×3 без углов и «плюс» на верхушке.
+	 */
 	private static void growTree(ServerLevel l, BlockPos at) {
 		Tree t = new Tree(at);
 		BlockState log = b(Blocks.OAK_LOG), leaf = b(Blocks.OAK_LEAVES).setValue(LeavesBlock.PERSISTENT, true);
-		for (int dy = 0; dy < 4; dy++) for (int dx = 0; dx <= 1; dx++) for (int dz = 0; dz <= 1; dz++) {
-			BlockPos p = at.offset(dx, dy, dz);
+		for (int dy = 0; dy < TRUNK; dy++) {
+			BlockPos p = at.above(dy);
 			BlockState s = l.getBlockState(p);
 			if (s.isAir() || s.canBeReplaced() || s.is(Blocks.OAK_SAPLING) || s.is(Blocks.OAK_LEAVES)) {
 				l.setBlock(p, log, Block.UPDATE_ALL);
 				t.logs.add(p);
 			}
 		}
-		double cx = at.getX() + 1.0, cz = at.getZ() + 1.0;
-		double[] rad = {2.6, 2.9, 2.1, 1.2};
-		for (int k = 0; k < 4; k++) {
-			int y = at.getY() + 4 + k;
-			for (int x = at.getX() - 3; x <= at.getX() + 4; x++) for (int z = at.getZ() - 3; z <= at.getZ() + 4; z++) {
-				double d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
-				if (d > rad[k]) continue;
-				if (x < X0 || x > X1 || z < Z0 || z > Z1 || y >= SKY) continue;
-				BlockPos p = new BlockPos(x, y, z);
+		int top = at.getY() + TRUNK - 1;
+		int[][] layers = {{top - 2, 2}, {top - 1, 2}, {top, 1}, {top + 1, 0}};
+		for (int[] ly : layers) {
+			int y = ly[0], r = ly[1];
+			for (int dx = -Math.max(1, r); dx <= Math.max(1, r); dx++) for (int dz = -Math.max(1, r); dz <= Math.max(1, r); dz++) {
+				boolean corner = Math.abs(dx) == Math.max(1, r) && Math.abs(dz) == Math.max(1, r);
+				if (corner) continue;   // углы срезаны
+				if (r == 0 && Math.abs(dx) + Math.abs(dz) > 1) continue;   // верхушка — плюс
+				BlockPos p = new BlockPos(at.getX() + dx, y, at.getZ() + dz);
 				if (!l.getBlockState(p).isAir()) continue;
 				l.setBlock(p, leaf, Block.UPDATE_ALL);
 				t.leaves.add(p);
@@ -545,6 +577,34 @@ public final class Room3 {
 		}
 	}
 
+	// ======================================================================= источники говна
+
+	/** Сломали говно: на рабочем источнике — новое сразу, пока не кончатся 10; потом на следующем встаёт ракета. */
+	private static void govnoBroken(ServerLevel l, BlockPos pos) {
+		if (srcRocket || !pos.equals(SOURCES[src])) return;
+		if (--srcLeft > 0) {
+			l.setBlock(pos, Room3Blocks.GOVNO.defaultBlockState(), Block.UPDATE_ALL);
+			return;
+		}
+		src = (src + 1) % SOURCES.length;
+		srcRocket = true;
+		BlockPos next = SOURCES[src];
+		l.setBlock(next, Room3Blocks.ROCKET.defaultBlockState(), Block.UPDATE_ALL);
+		l.sendParticles(ParticleTypes.POOF, next.getX() + 0.5, next.getY() + 1, next.getZ() + 0.5, 15, 0.3, 0.6, 0.3, 0.02);
+		l.playSound(null, next, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 1.2f, 0.6f);
+		VadimNaTrone.LOG.info("[room3] источник говна кончился, ракета на источнике {}", src + 1);
+	}
+
+	/** Сломали ракету — источник заработал: 10 говна. */
+	private static void rocketBroken(ServerLevel l, BlockPos pos) {
+		if (!srcRocket || !pos.equals(SOURCES[src])) return;
+		srcRocket = false;
+		srcLeft = PER_SOURCE;
+		l.setBlock(pos, Room3Blocks.GOVNO.defaultBlockState(), Block.UPDATE_ALL);
+		l.playSound(null, pos, SoundEvents.MUD_PLACE, SoundSource.BLOCKS, 1.2f, 0.8f);
+		VadimNaTrone.LOG.info("[room3] источник {} заработал", src + 1);
+	}
+
 	// ======================================================================= ход игры
 
 	private static void setPhase(int p) {
@@ -558,7 +618,7 @@ public final class Room3 {
 		players.clear();
 		for (ServerPlayer p : alive(l)) players.add(p.getUUID());
 		timeLeft = TOTAL;
-		nextMob = 20 * 20;
+		nextMob = 7 * 20;
 		setPhase(P_GAME);
 		moveBoard(l, true);
 		shakeAll(l);
@@ -578,6 +638,13 @@ public final class Room3 {
 			p.getFoodData().setSaturation(0f);
 		}
 		for (ServerPlayer p : here) if (p.isSpectator() && phase != P_WON) clampSpectator(p);
+		// досягаемость по блокам: в комнате 3 длиннее (верх ствола), везде — обычная
+		if (server.getTickCount() % 10 == 0) for (ServerPlayer p : server.getPlayerList().getPlayers()) {
+			var a = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE);
+			if (a == null) continue;
+			double want = p.level() == l && inRoom3(p.getX(), p.getZ()) && phase != P_DONE ? REACH : REACH_DEFAULT;
+			if (a.getBaseValue() != want && (a.getBaseValue() == REACH || a.getBaseValue() == REACH_DEFAULT)) a.setBaseValue(want);
+		}
 		spinRecord();
 		switch (phase) {
 			case P_WAIT -> waitTick(l, alive);
@@ -637,9 +704,10 @@ public final class Room3 {
 		mobs.removeIf(m -> !m.isAlive());
 		float prog = 1f - timeLeft / (float) TOTAL;
 		if (--nextMob <= 0) {
-			int max = prog < 0.5f ? 3 : 4;
+			// втрое больше, чем было: каждые 10 → 4 с, до 9 (после половины — 12) одновременно
+			int max = prog < 0.5f ? 9 : 12;
 			if (mobs.size() < max) spawnMob(l);
-			nextMob = (int) (20 * (30 - 18 * prog)) + l.getRandom().nextInt(60);
+			nextMob = (int) (20 * (30 - 18 * prog) / 3) + l.getRandom().nextInt(20);
 		}
 		if (alive.isEmpty() && !here.isEmpty()) { startReset(l, "все умерли"); return; }
 		if (timeLeft <= 0) startReset(l, "время вышло");
@@ -658,8 +726,11 @@ public final class Room3 {
 	}
 
 	private static void keepSkeleton(ServerLevel l) {
-		if (skeleton != null && skeleton.isAlive() && !skeleton.isRemoved()) return;
+		if (skeleton != null && skeleton.isAlive() && !skeleton.isRemoved()) { skeletonDue = 0; return; }
+		if (skeletonDue == 0) skeletonDue = SKELETON_RESPAWN;   // только что убит — следующий через 15 с
+		if (--skeletonDue > 0) return;
 		spawnSkeleton(l);
+		l.sendParticles(ParticleTypes.POOF, SKELETON.x, SKELETON.y + 1, SKELETON.z, 12, 0.3, 0.6, 0.3, 0.02);
 	}
 
 	private static void spawnSkeleton(ServerLevel l) {
@@ -670,6 +741,7 @@ public final class Room3 {
 		s.setYBodyRot(-135f);
 		s.addTag(TAG);
 		skeleton = s;
+		skeletonDue = 0;
 		l.addFreshEntity(s);
 	}
 
@@ -1063,6 +1135,7 @@ public final class Room3 {
 
 	public static String debug() {
 		return "фаза " + phase + ", тик " + phaseTick + ", осталось " + timeLeft / 20 + " с, брёвна " + logs + "/" + NEED_LOGS + ", говно " + poop + "/" + NEED_POOP
+				+ ", источник " + (src + 1) + (srcRocket ? " (ракета)" : " (осталось " + srcLeft + ")")
 				+ ", мобов " + mobs.size() + ", мёртвых " + dead.size() + ", деревьев " + trees.size();
 	}
 

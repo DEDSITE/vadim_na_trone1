@@ -38,5 +38,6 @@
   "block.vadim_na_trone.room3_cloud": "Облако",
   "block.vadim_na_trone.room3_sun": "Солнце",
   "entity.vadim_na_trone.govnozavr": "Мини-Говнозавр",
-  "entity.vadim_na_trone.rocket_skeleton": "Скелет с ракетой"
+  "entity.vadim_na_trone.rocket_skeleton": "Скелет с ракетой",
+  "block.vadim_na_trone.room3_rocket": "Ракета Вадима"
 }
