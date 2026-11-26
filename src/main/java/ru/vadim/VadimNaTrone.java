@@ -38,6 +38,8 @@ public class VadimNaTrone implements ModInitializer {
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room1State.TYPE, HubPayloads.Room1State.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room1Keypad.TYPE, HubPayloads.Room1Keypad.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room1Code.TYPE, HubPayloads.Room1Code.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.Room4Panel.TYPE, HubPayloads.Room4Panel.CODEC);
+		PayloadTypeRegistry.playC2S().register(HubPayloads.Room4PanelAct.TYPE, HubPayloads.Room4PanelAct.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room1Skip.TYPE, HubPayloads.Room1Skip.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room2State.TYPE, HubPayloads.Room2State.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room3State.TYPE, HubPayloads.Room3State.CODEC);
@@ -58,6 +60,7 @@ public class VadimNaTrone implements ModInitializer {
 		ru.vadim.world.Room2.register();
 		ru.vadim.world.Room3.register();
 		ru.vadim.world.Room4.register();
+		ru.vadim.world.Room4Power.register();
 		HubCommands.register();
 		LOG.info("Вадим сел на трон. Хочешь сыграть в игру?");
 	}

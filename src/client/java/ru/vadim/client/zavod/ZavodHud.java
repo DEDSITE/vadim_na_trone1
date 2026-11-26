@@ -56,6 +56,16 @@ public final class ZavodHud {
 			case ZavodDoor.H_DONE -> new Line("ГОТОВО", GOLD, null, "Цепь сбита. Дверь открыта", false);
 			// комната 1 «Стулья» (тексты — артборд «Подсказки» макета «Комната 1 — ассеты»)
 			// комната 2 «Студия» (макет «Комната 2 — ассеты», артборд «Подсказка»)
+			case ru.vadim.world.Room4Power.H_ROLE_E -> new Line("ТЫ — ЭЛЕКТРИК", GOLD, null, "Дай ток в 3 сектора. Предохранители разбросаны по лабиринту", false);
+			case ru.vadim.world.Room4Power.H_ROLE_S -> new Line("ТЫ — СВЯЗИСТ", GOLD, null, "Телефоны оживут, когда в секторах будет ток", false);
+			case ru.vadim.world.Room4Power.H_ROLE_O -> new Line("ТЫ — ОПЕРАТОР", GOLD, null, "Твоя камера видит то, чего не видят другие", false);
+			case ru.vadim.world.Room4Power.H_NOT_YOURS -> new Line("НЕЛЬЗЯ", RED, null, "Это не твоя работа", false);
+			case ru.vadim.world.Room4Power.H_FUSE -> new Line("РЯДОМ", GOLD, "ПКМ", "взять предохранитель", false);
+			case ru.vadim.world.Room4Power.H_FUSE_GOT -> new Line("ПРЕДОХРАНИТЕЛЬ", GOLD, null, "Неси к щитку. В каждый щиток — три", false);
+			case ru.vadim.world.Room4Power.H_BOX -> new Line("ЩИТОК", GOLD, "ПКМ", "открыть щиток", false);
+			case ru.vadim.world.Room4Power.H_BOX_NEED -> new Line("ЩИТОК", RED, null, "Не хватает предохранителей — нужно три", false);
+			case ru.vadim.world.Room4Power.H_POWERED -> new Line("ТОК ЕСТЬ", GOLD, null, "Сектор запитан — там теперь светло", false);
+			case ru.vadim.world.Room4Power.H_SHORT -> new Line("ЗАМЫКАНИЕ", RED, null, "Свет в секторе погас. Беги туда, где светло", false);
 			case ru.vadim.world.Room2.H_RESTART -> new Line("ОШИБКА", RED, null, "Последовательность заново", false);
 			case ru.vadim.world.Room2.H_FIND_RECORD -> new Line("ПЛАСТИНКА", RED, null, "Сначала найдите пластинку", false);
 			case ru.vadim.world.Room2.H_LISTEN -> new Line("ПЛАСТИНКА", GOLD, null, "Сначала дослушайте пластинку", false);

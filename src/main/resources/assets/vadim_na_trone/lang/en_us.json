@@ -55,5 +55,7 @@
   "block.vadim_na_trone.room4_ceiling": "Ceiling",
   "block.vadim_na_trone.room4_ceiling2": "Ceiling2",
   "block.vadim_na_trone.room4_vent": "Vent",
-  "block.vadim_na_trone.room4_lamp": "Lamp"
+  "block.vadim_na_trone.room4_lamp": "Lamp",
+  "block.vadim_na_trone.room4_fusebox": "Fuse box",
+  "item.vadim_na_trone.room4_fuse": "Fuse"
 }

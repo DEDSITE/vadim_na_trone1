@@ -26,6 +26,10 @@ public final class ModItems {
 	public static final Item RECORD = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("record_vadim"),
 			new Item(Ids.item("record_vadim").stacksTo(1)));
 
+	/** Комната 4 (7б): предохранитель для щитка — подбирает только электрик. */
+	public static final Item FUSE = Registry.register(BuiltInRegistries.ITEM, VadimNaTrone.id("room4_fuse"),
+			new Item(Ids.item("room4_fuse").stacksTo(9)));
+
 	private ModItems() {}
 
 	private static Item reg(String name) {

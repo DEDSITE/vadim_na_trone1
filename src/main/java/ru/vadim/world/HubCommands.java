@@ -173,12 +173,34 @@ public final class HubCommands {
 					Room4.resetSectors(c.getSource().getServer());
 					c.getSource().sendSuccess(() -> Component.literal("Комната 4: сектора игроков сброшены"), true);
 					return 1;
+				})).then(Commands.literal("power").then(Commands.argument("sector", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3)).executes(c -> {
+					Room4Power.power(Places.rooms(c.getSource().getServer()), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "sector") - 1, true);
+					return 1;
+				}))).then(Commands.literal("blackout").then(Commands.argument("sector", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3)).executes(c -> {
+					Room4Power.blackout(Places.rooms(c.getSource().getServer()), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "sector") - 1, 200);
+					return 1;
+				}))).then(Commands.literal("role").then(Commands.argument("role", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3)).executes(c -> {
+					Room4Power.setRole(c.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "role") - 1);
+					return 1;
+				}))).then(Commands.literal("fuses").executes(c -> {
+					c.getSource().getPlayerOrException().getInventory().add(new net.minecraft.world.item.ItemStack(ru.vadim.item.ModItems.FUSE, 3));
+					return 1;
+				})).then(Commands.literal("box").then(Commands.argument("sector", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3)).executes(c -> {
+					var p = c.getSource().getPlayerOrException();
+					var l = Places.rooms(c.getSource().getServer());
+					var b = Room4Power.box(l, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "sector") - 1);
+					if (b != null) p.teleportTo(l, b.getX() + 0.5, Room4.FLOOR + 1, b.getZ() + 0.5, java.util.Set.of(), 0f, 0f, true);
+					return 1;
+				}))).then(Commands.literal("resetpower").executes(c -> {
+					Room4Power.resetAll(Places.rooms(c.getSource().getServer()));
+					c.getSource().sendSuccess(() -> Component.literal("Комната 4: ток, предохранители и роли сброшены"), true);
+					return 1;
 				})).then(Commands.literal("map").executes(c -> {
 					String r = Room4.dumpMap(Places.rooms(c.getSource().getServer()));
 					c.getSource().sendSuccess(() -> Component.literal(r), false);
 					return 1;
 				})).then(Commands.literal("info").executes(c -> {
-					String info = Room4.debug(c.getSource().getServer());
+					String info = Room4.debug(c.getSource().getServer()) + "\n" + Room4Power.debug(c.getSource().getServer());
 					c.getSource().sendSuccess(() -> Component.literal(info), false);
 					return 1;
 				})))

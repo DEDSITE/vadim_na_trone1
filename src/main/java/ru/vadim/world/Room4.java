@@ -252,6 +252,7 @@ public final class Room4 {
 		for (BlockPos v : lay.vents) l.setBlock(v, Room4Blocks.VENT.defaultBlockState(), Block.UPDATE_CLIENTS);
 		for (BlockPos p : lay.lamps) l.setBlock(p, Room4Blocks.LAMP.defaultBlockState().setValue(Room4Blocks.Lamp.LIT, !lay.broken.contains(p)), Block.UPDATE_CLIENTS);
 		buildLift(l);
+		Room4Power.placeBoxes(l);
 		VadimNaTrone.LOG.info("[room4] лабиринт построен за {} мс: ламп {}, мёртвых {}, моргают {}", System.currentTimeMillis() - t0,
 				lay.lamps.size(), lay.broken.size(), lay.flicker.size());
 	}
@@ -292,6 +293,7 @@ public final class Room4 {
 			st.setDirty();
 		}
 		spawnAt(l, p, s);
+		Room4Power.assignRole(p);
 	}
 
 	public static void spawnAt(ServerLevel l, ServerPlayer p, int sector) {
@@ -336,6 +338,8 @@ public final class Room4 {
 		layout(l);
 		Random r = new Random();
 		for (Flicker f : flickers) {
+			int sec = Room4.sector(Math.min(N - 1, (f.pos.getX() - X0) / CELL), Math.min(N - 1, (f.pos.getZ() - Z0) / CELL));
+			if (f.step < 0 && (Room4Power.powered(server, sec) || Room4Power.blackedOut(server, sec))) continue;   // с током — ровный свет
 			if (f.step < 0) {
 				if (--f.wait > 0) continue;
 				boolean near = false;
@@ -352,7 +356,7 @@ public final class Room4 {
 				BlockState s = l.getBlockState(f.pos);
 				if (s.is(Room4Blocks.LAMP) && !s.getValue(Room4Blocks.Lamp.LIT)) toggle(l, f.pos);
 				f.step = -1;
-				f.wait = 200 + r.nextInt(900);
+				f.wait = 120 + r.nextInt(600);
 			}
 		}
 	}

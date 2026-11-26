@@ -34,7 +34,24 @@ public final class Room4Blocks {
 			new Lamp(Ids.block("room4_lamp").mapColor(MapColor.SNOW).strength(-1f, 3600000f).sound(SoundType.GLASS)
 					.lightLevel(s -> s.getValue(Lamp.LIT) ? 15 : 0)));
 
+	/** Щиток на стене (7б): FACING — куда смотрит дверца, POWERED — сектор запитан (огонёк зелёный). */
+	public static final Block FUSEBOX = Registry.register(BuiltInRegistries.BLOCK, VadimNaTrone.id("room4_fusebox"),
+			new FuseBox(Ids.block("room4_fusebox").mapColor(MapColor.METAL).strength(-1f, 3600000f).sound(SoundType.METAL)));
+
 	private Room4Blocks() {}
+
+	public static final class FuseBox extends Block {
+		public static final net.minecraft.world.level.block.state.properties.EnumProperty<net.minecraft.core.Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
+		public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
+		FuseBox(Properties p) {
+			super(p);
+			registerDefaultState(defaultBlockState().setValue(FACING, net.minecraft.core.Direction.NORTH).setValue(POWERED, false));
+		}
+
+		@Override
+		protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) { b.add(FACING, POWERED); }
+	}
 
 	public static final class Lamp extends Block {
 		public static final BooleanProperty LIT = BlockStateProperties.LIT;

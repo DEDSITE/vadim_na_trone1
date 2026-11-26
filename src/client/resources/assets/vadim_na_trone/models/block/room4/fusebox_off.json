@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/orientable", "textures": {"top": "vadim_na_trone:block/room4/wall", "side": "vadim_na_trone:block/room4/wall", "front": "vadim_na_trone:block/room4/fusebox_off"}}

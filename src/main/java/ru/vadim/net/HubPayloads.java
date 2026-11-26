@@ -134,4 +134,25 @@ public final class HubPayloads {
 				Room3State::new);
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/**
+	 * Комната 4 (7б): экран щитка. sector — 0..2, values — сила тока 5 рубильников, mask — какие включены,
+	 * zoneMin..zoneMax — зелёная зона, result: 0 — открыть/обновить, 1 — короткое замыкание, 2 — ток подан.
+	 */
+	public record Room4Panel(int sector, java.util.List<Integer> values, int mask, int zoneMin, int zoneMax, int result) implements CustomPacketPayload {
+		public static final Type<Room4Panel> TYPE = new Type<>(VadimNaTrone.id("room4_panel"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room4Panel> CODEC = StreamCodec.composite(
+				ByteBufCodecs.VAR_INT, Room4Panel::sector, ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(8)), Room4Panel::values,
+				ByteBufCodecs.VAR_INT, Room4Panel::mask, ByteBufCodecs.VAR_INT, Room4Panel::zoneMin, ByteBufCodecs.VAR_INT, Room4Panel::zoneMax,
+				ByteBufCodecs.VAR_INT, Room4Panel::result, Room4Panel::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
+
+	/** Комната 4 (7б), клиент → сервер: рубильники щитка (mask) и «ПОДАТЬ ТОК» (supply). */
+	public record Room4PanelAct(int sector, int mask, boolean supply) implements CustomPacketPayload {
+		public static final Type<Room4PanelAct> TYPE = new Type<>(VadimNaTrone.id("room4_panel_act"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room4PanelAct> CODEC = StreamCodec.composite(
+				ByteBufCodecs.VAR_INT, Room4PanelAct::sector, ByteBufCodecs.VAR_INT, Room4PanelAct::mask, ByteBufCodecs.BOOL, Room4PanelAct::supply, Room4PanelAct::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

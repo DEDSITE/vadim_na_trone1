@@ -55,5 +55,7 @@
   "block.vadim_na_trone.room4_ceiling": "Потолочная плитка",
   "block.vadim_na_trone.room4_ceiling2": "Потолочная плитка",
   "block.vadim_na_trone.room4_vent": "Вентиляция",
-  "block.vadim_na_trone.room4_lamp": "Лампа"
+  "block.vadim_na_trone.room4_lamp": "Лампа",
+  "block.vadim_na_trone.room4_fusebox": "Щиток",
+  "item.vadim_na_trone.room4_fuse": "Предохранитель"
 }

@@ -68,7 +68,8 @@ public final class Hub {
 		// в комнате 3 «Мини-мир» — урон только во время игры (Говнозавры, скелет, игроки)
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> (e.level().dimension() != Places.HUB && e.level().dimension() != Places.ZAVOD && e.level().dimension() != Places.ROOMS)
 				|| src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)
-				|| (e.level().dimension() == Places.ROOMS && Room3.damageAllowed(e, src)));
+				|| (e.level().dimension() == Places.ROOMS && Room3.damageAllowed(e, src))
+				|| Room4Power.in(e));   // бэкрумс: улыбаки и разлучник бьют
 		// старые таблички из сохранения подгружаются уже после старта сервера — убираем дубли при загрузке
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((e, level) -> {
 			if (level.dimension() == Places.ZAVOD) {
