@@ -69,6 +69,8 @@ public final class ModSounds {
 
 	/** Комната 3 «Мини-мир» (этап 6): музыка мира — трек от Димы (Effectoid — Mizuna Steps 5), по кругу. */
 	public static final SoundEvent ROOM3_MUSIC = register("room3_music");
+	/** Табло комнаты 3 едет (вниз и вверх): два звука Димы, сведены в один моно-файл (Power Down Serpentine + лязг), стартуют вместе. */
+	public static final SoundEvent ROOM3_BOARD = register("room3_board");
 
 	private ModSounds() {}
 

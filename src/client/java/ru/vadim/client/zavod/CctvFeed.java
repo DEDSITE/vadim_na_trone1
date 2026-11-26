@@ -48,6 +48,9 @@ public final class CctvFeed {
 	private static float yaw = IDLE, pitch = -20f, oYaw = IDLE, oPitch = -20f;
 	private static int ticks;
 
+	/** Живая картинка выключена (26.11, решение Димы): на мониторах цеха только помехи, мир второй раз не рисуем. */
+	public static final boolean ENABLED = false;
+
 	private CctvFeed() {}
 
 	/** Есть свежая картинка с камеры (иначе на экране остаются помехи). */
@@ -86,7 +89,7 @@ public final class CctvFeed {
 
 	/** Из GameRenderer.renderLevel (до основного кадра): при необходимости нарисовать кадр камеры. */
 	public static void render(DeltaTracker dt) {
-		if (broken || rendering) return;
+		if (!ENABLED || broken || rendering) return;
 		Minecraft mc = Minecraft.getInstance();
 		if (!ClientZone.zavod() || mc.level == null || mc.player == null
 				|| mc.player.distanceToSqr(WALL) > 22 * 22

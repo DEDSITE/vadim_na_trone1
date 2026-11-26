@@ -459,5 +459,12 @@
         "stream": true
       }
     ]
+  },
+  "room3_board": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room3_board"
+      }
+    ]
   }
 }

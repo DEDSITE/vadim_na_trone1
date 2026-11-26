@@ -145,6 +145,8 @@ public final class Room3 {
 	private static double boardY = BOARD_UP;
 	/** Сколько тиков ещё едет табло (лязг цепей каждому игроку). */
 	private static int boardMoving = 0;
+	/** Громкость звука табло: в MC радиус слышимости = 16 × громкость (2.2 → ~35 блоков, линейно затихает). */
+	private static final float BOARD_VOL = 2.2f;
 	private static double boardFrom = BOARD_UP;
 
 	/** Где сейчас табло по высоте (пока едет) — звук цепей идёт от него; выше неба не поднимаем, чтобы было слышно. */
@@ -673,13 +675,7 @@ public final class Room3 {
 		// табло едет: цепи лязгают, в конце — удар
 		if (boardMoving > 0) {
 			boardMoving--;
-			double y = boardSoundY();
-			if (boardMoving % 4 == 0) l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.CHAIN_STEP, SoundSource.BLOCKS, 3f, 0.55f + l.getRandom().nextFloat() * 0.15f);
-			if (boardMoving % 12 == 6) l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.CHAIN_HIT, SoundSource.BLOCKS, 2.5f, 0.5f);
-			if (boardMoving == 0) {
-				l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 1.5f, 0.6f);
-				l.playSound(null, BOARD_X, y, BOARD_Z + 1, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 3f, 0.4f);
-			}
+			// весь звук — один файл room3_board на старте (moveBoard); ванильные цепи убраны
 		}
 		// место под саженец, пока дерева нет, — зелёные искорки
 		if (TREE_MARK_EVERY > 0 && phaseTick % TREE_MARK_EVERY == 0 && (phase == P_WAIT || phase == P_GAME) && l.getBlockState(TREE).isAir())
@@ -1087,8 +1083,8 @@ public final class Room3 {
 		}
 		boardMoving = 50;
 		boardFrom = boardY - dy;
-		l.playSound(null, BOARD_X, boardSoundY(), BOARD_Z + 1, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 3f, 0.5f);
-		l.playSound(null, BOARD_X, boardSoundY(), BOARD_Z + 1, SoundEvents.CHAIN_PLACE, SoundSource.BLOCKS, 3f, 0.5f);
+		// звук Димы от табло: громкость 2.2 → слышно ~35 блоков, вблизи громко, в дальнем углу тихо
+		l.playSound(null, BOARD_X, boardSoundY(), BOARD_Z + 1, ru.vadim.sound.ModSounds.ROOM3_BOARD, SoundSource.BLOCKS, BOARD_VOL, 1f);
 	}
 
 	private static void moveBoardInstant(double to) {

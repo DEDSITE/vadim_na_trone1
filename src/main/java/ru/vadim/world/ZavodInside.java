@@ -294,13 +294,13 @@ public final class ZavodInside {
 		for (int z = -60; z <= -51; z++)
 			for (int x = -17; x <= -15; x++) set(x, 64, z, facing(ZavodBlocks.CABLES, z == -54 || z == -55 ? Direction.EAST : Direction.NORTH));
 		// стена мониторов на перегородке (смотрят на восток): ЭЛТ на ящиках по бокам проёма.
-		// (−17,65,−58) и (−17,66,−58) — живая картинка с камеры над стеной, (−17,65,−52) — «Хочешь сыграть в игру?»
+		// все — помехи (живую картинку с камеры убрали по просьбе Димы, 26.11), (−17,65,−52) — «Хочешь сыграть в игру?»
 		for (int z : new int[]{-59, -58, -57, -52, -51})
 			set(-17, 64, z, "minecraft:barrel[facing=up]");
 		for (int z : new int[]{-59, -58, -57, -52, -51}) {
-			Block b = z == -58 ? ZavodBlocks.CRT_FEED : z == -52 ? ZavodBlocks.CRT_PLAY : ZavodBlocks.CRT;
+			Block b = z == -52 ? ZavodBlocks.CRT_PLAY : ZavodBlocks.CRT;
 			set(-17, 65, z, facing(b, Direction.EAST));
-			if (z != -57 && z != -52) set(-17, 66, z, facing(z == -58 ? ZavodBlocks.CRT_FEED : ZavodBlocks.CRT, Direction.EAST));
+			if (z != -57 && z != -52) set(-17, 66, z, facing(ZavodBlocks.CRT, Direction.EAST));
 		}
 		// стойка у проёма
 		set(-17, 64, -60, facing(ZavodBlocks.RACK, Direction.EAST));
