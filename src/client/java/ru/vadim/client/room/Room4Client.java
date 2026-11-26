@@ -27,7 +27,11 @@ public final class Room4Client {
 	private static final Identifier VIGNETTE = VadimNaTrone.id("textures/gui/room4/vignette.png");
 	/** Сбой картинки 0..1 (выставляет логика разлучника/ударов). */
 	public static float glitch = 0f;
-	private static int ticks = -1, cam = 1, ambWait = 600;
+	private static int ticks = -1, cam = 1, ambWait = 600, scream = 0;
+	private static final Identifier SMILER = VadimNaTrone.id("textures/item/room4/smiler.png");
+
+	/** Скример улыбаки: лицо на весь экран ~0,8 с с тряской и сбоем картинки. */
+	public static void onFx(ru.vadim.net.HubPayloads.Room4Fx p) { if (p.kind() == 1) scream = 16; }
 	private static SoundInstance amb;
 	private static final java.util.Random rnd = new java.util.Random();
 
@@ -51,6 +55,7 @@ public final class Room4Client {
 			ticks = 0;
 		}
 		ticks++;
+		if (scream > 0) scream--;
 		// фоновые треки: раз в 40–120 с, если ничего не играет
 		if (amb != null && !mc.getSoundManager().isActive(amb)) amb = null;
 		if (amb == null && --ambWait <= 0) {
@@ -65,7 +70,7 @@ public final class Room4Client {
 		Minecraft mc = Minecraft.getInstance();
 		int w = g.guiWidth(), h = g.guiHeight();
 		float k = h / 720f;
-		float gl = Math.max(0f, Math.min(1f, glitch));
+		float gl = Math.max(0f, Math.min(1f, scream > 0 ? 1f : glitch));
 		// тон плёнки и развёртка
 		g.fill(0, 0, w, h, 0x18302810);
 		for (int y = 0; y < h; y += 2) g.fill(0, y, w, y + 1, 0x24000000);
@@ -83,6 +88,13 @@ public final class Room4Client {
 			}
 			int ny = Math.round(h * 0.78f);
 			for (int x = 0; x < w; x += 3) if (r.nextFloat() < 0.5f) g.fill(x, ny, x + 2, ny + Math.round(16 * k), ((int) (gl * 110) << 24) | 0xE0E0E0);
+		}
+		if (scream > 0) {   // лицо улыбаки во весь экран, дёргается
+			java.util.Random r = new java.util.Random(ticks);
+			int size = Math.round(h * (1.25f + (16 - scream) * 0.03f));
+			int sx = (w - size) / 2 + r.nextInt(31) - 15, sy = (h - size) / 2 + r.nextInt(31) - 15;
+			g.fill(0, 0, w, h, (scream % 3 == 0 ? 0xC0FFFFFF : 0xE0000000));
+			g.blit(RenderPipelines.GUI_TEXTURED, SMILER, sx, sy, 0f, 0f, size, size, 64, 64, 64, 64);
 		}
 		g.blit(RenderPipelines.GUI_TEXTURED, VIGNETTE, 0, 0, 0f, 0f, w, h, 256, 144, 256, 144);
 		// надписи

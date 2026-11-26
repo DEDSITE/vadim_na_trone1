@@ -155,4 +155,11 @@ public final class HubPayloads {
 				ByteBufCodecs.VAR_INT, Room4PanelAct::sector, ByteBufCodecs.VAR_INT, Room4PanelAct::mask, ByteBufCodecs.BOOL, Room4PanelAct::supply, Room4PanelAct::new);
 		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 	}
+
+	/** Комната 4: эффект на экране игрока. kind 1 — скример улыбаки. */
+	public record Room4Fx(int kind) implements CustomPacketPayload {
+		public static final Type<Room4Fx> TYPE = new Type<>(VadimNaTrone.id("room4_fx"));
+		public static final StreamCodec<RegistryFriendlyByteBuf, Room4Fx> CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Room4Fx::kind, Room4Fx::new);
+		@Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+	}
 }

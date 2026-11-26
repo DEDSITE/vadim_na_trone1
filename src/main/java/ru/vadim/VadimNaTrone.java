@@ -39,6 +39,7 @@ public class VadimNaTrone implements ModInitializer {
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room1Keypad.TYPE, HubPayloads.Room1Keypad.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room1Code.TYPE, HubPayloads.Room1Code.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room4Panel.TYPE, HubPayloads.Room4Panel.CODEC);
+		PayloadTypeRegistry.playS2C().register(HubPayloads.Room4Fx.TYPE, HubPayloads.Room4Fx.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room4PanelAct.TYPE, HubPayloads.Room4PanelAct.CODEC);
 		PayloadTypeRegistry.playC2S().register(HubPayloads.Room1Skip.TYPE, HubPayloads.Room1Skip.CODEC);
 		PayloadTypeRegistry.playS2C().register(HubPayloads.Room2State.TYPE, HubPayloads.Room2State.CODEC);

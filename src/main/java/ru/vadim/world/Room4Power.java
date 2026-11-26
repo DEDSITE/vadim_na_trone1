@@ -87,6 +87,7 @@ public final class Room4Power {
 	static final class Smiler {
 		Display.ItemDisplay d;
 		int darkTicks, cd, age;
+		boolean screamed;
 		Vec3 pos;
 	}
 
@@ -478,14 +479,20 @@ public final class Room4Power {
 			Vec3 eye = p.getEyePosition();
 			Vec3 to = eye.subtract(sm.pos);
 			double dist = to.length();
-			if (dist > 1.2) sm.pos = sm.pos.add(to.normalize().scale(Math.min(0.11, dist - 1.2)));
+			if (dist > 1.2) sm.pos = sm.pos.add(to.normalize().scale(Math.min(0.2, dist - 1.2)));   // ~4 бл/с: шагом не уйти, бегом — можно
 			if (dist > 24) { dissolve(l, p.getUUID(), p); continue; }
 			if (sm.age % 2 == 0) {
 				double bob = Math.sin(sm.age * 0.12) * 0.08;
 				sm.d.setPosRotInterpolationDuration(2);
 				sm.d.teleportTo(sm.pos.x, sm.pos.y - 0.8 + bob, sm.pos.z);
 			}
-			if (dist < 1.7 && sm.cd == 0) {
+			if (dist < 2.0 && sm.cd == 0) {
+				if (!sm.screamed) {   // первый удар — скример на весь экран
+					sm.screamed = true;
+					if (ServerPlayNetworking.canSend(p, HubPayloads.Room4Fx.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.Room4Fx(1));
+					p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ModSounds.ROOM4_SW_JUMPSCARE),
+							SoundSource.MASTER, p.getX(), p.getEyeY(), p.getZ(), 1f, 1.1f, l.getRandom().nextLong()));
+				}
 				p.hurtServer(l, l.damageSources().magic(), 4f);   // 2 сердца
 				sm.cd = 25;
 				l.sendParticles(new DustParticleOptions(0xF3EEDC, 1.2f), sm.pos.x, sm.pos.y - 0.2, sm.pos.z, 8, 0.3, 0.3, 0.3, 0.0);
@@ -506,6 +513,7 @@ public final class Room4Power {
 		sm.pos = at;
 		sm.age = 0;
 		sm.cd = 20;
+		sm.screamed = false;
 		Display.ItemDisplay d = EntityType.ITEM_DISPLAY.create(l, EntitySpawnReason.TRIGGERED);
 		ItemStack st = new ItemStack(Items.PAPER);
 		st.set(DataComponents.ITEM_MODEL, VadimNaTrone.id("room4_smiler"));
@@ -514,7 +522,7 @@ public final class Room4Power {
 		d.setBillboardConstraints(Display.BillboardConstraints.CENTER);
 		d.setBrightnessOverride(new Brightness(15, 15));
 		d.setPos(at.x, at.y - 0.8, at.z);
-		d.setTransformation(new Transformation(new Vector3f(0, 0.8f, 0), null, new Vector3f(1.6f), null));
+		d.setTransformation(new Transformation(new Vector3f(0, 0.8f, 0), null, new Vector3f(2.6f), null));
 		d.setViewRange(1.5f);
 		d.addTag(TAG);
 		d.addTag(SMILER_TAG);

@@ -102,6 +102,8 @@ public final class Hub {
 				return Zavod.usable(hit.getBlockPos()) ? InteractionResult.PASS : InteractionResult.FAIL;
 			// в комнатах ничего не трогаем руками (двери открывает игра, кровать — операционный стол)
 			// (в комнате 3 можно сажать саженцы и растить их костной мукой — Room3.useBlock)
+			// щиток бэкрумса (комната 4) — его обрабатывает Room4Power
+			if (level.dimension() == Places.ROOMS && level.getBlockState(hit.getBlockPos()).is(ru.vadim.block.Room4Blocks.FUSEBOX)) return InteractionResult.PASS;
 			if (level.dimension() == Places.ROOMS && !player.isCreative()) return Room3.useBlock(player, level, hand, hit);
 			if (level.dimension() != Places.HUB || player.isCreative()) return InteractionResult.PASS;
 			BlockState s = level.getBlockState(hit.getBlockPos());
