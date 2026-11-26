@@ -189,6 +189,15 @@ public final class Room4 {
 
 	static boolean inside(int i, int j, int i0, int i1, int j0, int j1) { return i >= i0 && i <= i1 && j >= j0 && j <= j1; }
 
+	/** Отладка: центр клетки тёмной зоны n (1..4), не островок света. */
+	public static Vec3 darkSpot(ServerLevel l, int n) {
+		Layout lay = layout(l);
+		int[] z = DARK_ZONES[Math.floorMod(n - 1, DARK_ZONES.length)];
+		for (int i = z[0]; i <= z[1]; i++) for (int j = z[2]; j <= z[3]; j++)
+			if (lay.dark[i][j] == 1 && i > z[0] && j > z[2]) return new Vec3(X0 + i * CELL + 5.5, FLOOR + 1, Z0 + j * CELL + 5.5);
+		return new Vec3(X0 + z[0] * CELL + 5.5, FLOOR + 1, Z0 + z[2] * CELL + 5.5);
+	}
+
 	/** Тёмная зона с улыбаками в точке (x, z)? (островки света и тёмные углы — нет). */
 	public static boolean smilerZone(ServerLevel l, double x, double z) {
 		int i = (int) Math.floor((x - X0) / CELL), j = (int) Math.floor((z - Z0) / CELL);

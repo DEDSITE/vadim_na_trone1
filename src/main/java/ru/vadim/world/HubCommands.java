@@ -161,6 +161,12 @@ public final class HubCommands {
 					var p = c.getSource().getPlayerOrException();
 					Room4.spawnAt(Places.rooms(c.getSource().getServer()), p, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "sector") - 1);
 					return 1;
+				}))).then(Commands.literal("dark").then(Commands.argument("zone", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 4)).executes(c -> {
+					var p = c.getSource().getPlayerOrException();
+					var l = Places.rooms(c.getSource().getServer());
+					var at = Room4.darkSpot(l, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "zone"));
+					p.teleportTo(l, at.x, at.y, at.z, java.util.Set.of(), p.getYRot(), 0f, true);
+					return 1;
 				}))).then(Commands.literal("lift").executes(c -> {
 					var p = c.getSource().getPlayerOrException();
 					p.teleportTo(Places.rooms(c.getSource().getServer()), Room4.LIFT.x, Room4.LIFT.y, Room4.LIFT.z + 4, java.util.Set.of(), 180f, 0f, true);
