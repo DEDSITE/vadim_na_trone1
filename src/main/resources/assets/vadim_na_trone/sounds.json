@@ -466,5 +466,53 @@
         "name": "vadim_na_trone:room3_board"
       }
     ]
+  },
+  "room4_exit": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4_exit",
+        "stream": true
+      }
+    ]
+  },
+  "room4_split": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4_split",
+        "stream": true
+      }
+    ]
+  },
+  "room4_dark": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4_dark",
+        "stream": true
+      }
+    ]
+  },
+  "room4_amb1": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4_amb1",
+        "stream": true
+      }
+    ]
+  },
+  "room4_amb2": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4_amb2",
+        "stream": true
+      }
+    ]
+  },
+  "room4_amb3": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4_amb3",
+        "stream": true
+      }
+    ]
   }
 }

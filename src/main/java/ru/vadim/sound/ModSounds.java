@@ -71,6 +71,12 @@ public final class ModSounds {
 	public static final SoundEvent ROOM3_MUSIC = register("room3_music");
 	/** Табло комнаты 3 едет (вниз и вверх): два звука Димы, сведены в один моно-файл (Power Down Serpentine + лязг), стартуют вместе. */
 	public static final SoundEvent ROOM3_BOARD = register("room3_board");
+	/** Комната 4 «Бэкрумс» (этап 7), файлы Димы: выход активирован (до кода), сработал разлучник, игрок в темноте с улыбаками,
+	 *  три фоновых «иногда включается» (тихо). */
+	public static final SoundEvent ROOM4_EXIT = register("room4_exit");
+	public static final SoundEvent ROOM4_SPLIT = register("room4_split");
+	public static final SoundEvent ROOM4_DARK = register("room4_dark");
+	public static final SoundEvent[] ROOM4_AMB = {register("room4_amb1"), register("room4_amb2"), register("room4_amb3")};
 
 	private ModSounds() {}
 

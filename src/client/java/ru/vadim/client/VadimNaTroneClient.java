@@ -106,6 +106,8 @@ public class VadimNaTroneClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Room1Keypad.TYPE, (p, ctx) -> ru.vadim.client.room.KeypadScreen.onResult(p));
 		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room1Client::tick);
 		HudRenderCallback.EVENT.register(ru.vadim.client.room.Room1Client::render);
+		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room4Client::tick);
+		HudRenderCallback.EVENT.register(ru.vadim.client.room.Room4Client::render);
 		ClientPlayNetworking.registerGlobalReceiver(HubPayloads.Room2State.TYPE, (p, ctx) -> ru.vadim.client.room.Room2Client.onState(p));
 		ClientTickEvents.END_CLIENT_TICK.register(ru.vadim.client.room.Room2Client::tick);
 		HudRenderCallback.EVENT.register(ru.vadim.client.room.Room2Client::render);
