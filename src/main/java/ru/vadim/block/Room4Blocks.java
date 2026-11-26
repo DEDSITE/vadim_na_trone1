@@ -23,9 +23,12 @@ public final class Room4Blocks {
 	public static final Block WALL_S = deco("room4_wall_s", MapColor.SAND);
 	public static final Block WALL_S_BASE = deco("room4_wall_s_base", MapColor.SAND);
 	public static final Block[] WALL_STAIN = {deco("room4_wall_stain1", MapColor.SAND), deco("room4_wall_stain2", MapColor.SAND), deco("room4_wall_stain3", MapColor.SAND)};
-	public static final Block CARPET = deco("room4_carpet", MapColor.TERRACOTTA_YELLOW, SoundType.WOOL);
-	public static final Block[] CARPET_DIRTY = {deco("room4_carpet2", MapColor.TERRACOTTA_YELLOW, SoundType.WOOL), deco("room4_carpet3", MapColor.TERRACOTTA_YELLOW, SoundType.WOOL),
-			deco("room4_carpet4", MapColor.TERRACOTTA_YELLOW, SoundType.WOOL), deco("room4_carpet5", MapColor.TERRACOTTA_YELLOW, SoundType.WOOL)};
+	/** Ковёр: шаги — звуки ковра из SP-Backrooms (12 вариантов). */
+	static final SoundType CARPET_SOUND = new SoundType(1f, 1f, net.minecraft.sounds.SoundEvents.WOOL_BREAK, ru.vadim.sound.ModSounds.ROOM4_CARPET,
+			net.minecraft.sounds.SoundEvents.WOOL_PLACE, net.minecraft.sounds.SoundEvents.WOOL_HIT, net.minecraft.sounds.SoundEvents.WOOL_FALL);
+	public static final Block CARPET = deco("room4_carpet", MapColor.TERRACOTTA_YELLOW, CARPET_SOUND);
+	public static final Block[] CARPET_DIRTY = {deco("room4_carpet2", MapColor.TERRACOTTA_YELLOW, CARPET_SOUND), deco("room4_carpet3", MapColor.TERRACOTTA_YELLOW, CARPET_SOUND),
+			deco("room4_carpet4", MapColor.TERRACOTTA_YELLOW, CARPET_SOUND), deco("room4_carpet5", MapColor.TERRACOTTA_YELLOW, CARPET_SOUND)};
 	public static final Block CEILING = deco("room4_ceiling", MapColor.SAND);
 	public static final Block CEILING2 = deco("room4_ceiling2", MapColor.SAND);
 	public static final Block VENT = deco("room4_vent", MapColor.METAL);

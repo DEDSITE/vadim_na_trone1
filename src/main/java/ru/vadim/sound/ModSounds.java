@@ -77,6 +77,20 @@ public final class ModSounds {
 	public static final SoundEvent ROOM4_SPLIT = register("room4_split");
 	public static final SoundEvent ROOM4_DARK = register("room4_dark");
 	public static final SoundEvent[] ROOM4_AMB = {register("room4_amb1"), register("room4_amb2"), register("room4_amb3")};
+	/** Комната 4: звуки из мода SP-Backrooms Revamped (одобрены Димой 26.11): свет гаснет/включается, мигание ламп (8 вариантов),
+	 *  гудение ламп ×2, тревога (лифт открылся после кода), скинволкер-разлучник (заметил, погоня, скример, выдох, шаги), шаги по ковру. */
+	public static final SoundEvent ROOM4_LIGHTS_OUT = register("room4_lights_out");
+	public static final SoundEvent ROOM4_LIGHTS_ON = register("room4_lights_on");
+	public static final SoundEvent ROOM4_BLINK = register("room4_blink");
+	public static final SoundEvent ROOM4_HUM1 = register("room4_hum1");
+	public static final SoundEvent ROOM4_HUM2 = register("room4_hum2");
+	public static final SoundEvent ROOM4_ALARM = register("room4_alarm");
+	public static final SoundEvent ROOM4_SW_NOTICE = register("room4_sw_notice");
+	public static final SoundEvent ROOM4_SW_CHASE = register("room4_sw_chase");
+	public static final SoundEvent ROOM4_SW_JUMPSCARE = register("room4_sw_jumpscare");
+	public static final SoundEvent ROOM4_SW_RELEASE = register("room4_sw_release");
+	public static final SoundEvent ROOM4_SW_STEP = register("room4_sw_step");
+	public static final SoundEvent ROOM4_CARPET = register("room4_carpet");
 
 	private ModSounds() {}
 

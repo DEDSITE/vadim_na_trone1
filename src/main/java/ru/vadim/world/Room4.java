@@ -348,10 +348,12 @@ public final class Room4 {
 				int k = r.nextInt(PATTERNS.length);
 				f.pattern = PATTERNS[k];
 				f.step = 0;
-				l.playSound(null, f.pos.getX() + 0.5, f.pos.getY() - 0.5, f.pos.getZ() + 0.5, FLICK_SOUNDS[k], SoundSource.BLOCKS, 0.7f, 1f);
 			}
 			int t = f.step++;
-			for (int tt : f.pattern) if (tt == t) toggle(l, f.pos);
+			for (int tt : f.pattern) if (tt == t) {
+				toggle(l, f.pos);
+				l.playSound(null, f.pos.getX() + 0.5, f.pos.getY() - 0.5, f.pos.getZ() + 0.5, ModSounds.ROOM4_BLINK, SoundSource.BLOCKS, 0.7f, 0.9f + r.nextFloat() * 0.2f);
+			}
 			if (t >= f.pattern[f.pattern.length - 1]) {
 				BlockState s = l.getBlockState(f.pos);
 				if (s.is(Room4Blocks.LAMP) && !s.getValue(Room4Blocks.Lamp.LIT)) toggle(l, f.pos);

@@ -320,8 +320,8 @@ public final class Room4Power {
 			BlockState b = l.getBlockState(boxes[s]);
 			if (b.is(Room4Blocks.FUSEBOX)) l.setBlock(boxes[s], b.setValue(Room4Blocks.FuseBox.POWERED, on), Block.UPDATE_CLIENTS);
 			if (on) {
-				l.playSound(null, boxes[s], SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1.2f, 0.8f);
-				l.playSound(null, boxes[s], ModSounds.ZAVOD_LAMP_CYCLE, SoundSource.BLOCKS, 0.8f, 1f);
+				l.playSound(null, boxes[s], SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 1f, 0.6f);
+				sectorSound(l, s, ModSounds.ROOM4_LIGHTS_ON, 1f);
 			}
 		}
 		setSectorLamps(l, s, true);
@@ -342,8 +342,14 @@ public final class Room4Power {
 	public static void blackout(ServerLevel l, int s, int ticks) {
 		blackoutUntil[s] = l.getServer().getTickCount() + ticks;
 		setSectorLamps(l, s, false);
+		sectorSound(l, s, ModSounds.ROOM4_LIGHTS_OUT, 0.9f);
+	}
+
+	/** Звук всем, кто в секторе (без позиции — гаснет/зажигается весь сектор вокруг). */
+	private static void sectorSound(ServerLevel l, int s, net.minecraft.sounds.SoundEvent ev, float vol) {
 		for (ServerPlayer p : l.players()) if (in(p) && sectorOf(p) == s)
-			l.playSound(null, p.getX(), p.getY() + 3, p.getZ(), ModSounds.ZAVOD_LAMP_FLICKER3, SoundSource.BLOCKS, 0.6f, 0.7f);
+			p.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(ev), SoundSource.MASTER,
+					p.getX(), p.getEyeY(), p.getZ(), vol, 1f, l.getRandom().nextLong()));
 	}
 
 	private static void setSectorLamps(ServerLevel l, int s, boolean lit) {
@@ -391,6 +397,7 @@ public final class Room4Power {
 			if (blackoutUntil[s] != 0 && blackoutUntil[s] <= now) {
 				blackoutUntil[s] = 0;
 				setSectorLamps(l, s, true);
+				sectorSound(l, s, ModSounds.ROOM4_LIGHTS_ON, 0.8f);
 			}
 			if (st.powered.get(s) != 0) continue;
 			boolean someone = false;

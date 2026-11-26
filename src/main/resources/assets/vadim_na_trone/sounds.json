@@ -514,5 +514,112 @@
         "stream": true
       }
     ]
+  },
+  "room4_lights_out": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/lights_out"
+      }
+    ]
+  },
+  "room4_lights_on": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/lights_on"
+      }
+    ]
+  },
+  "room4_blink": {
+    "sounds": [
+      "vadim_na_trone:room4/blink1",
+      "vadim_na_trone:room4/blink2",
+      "vadim_na_trone:room4/blink3",
+      "vadim_na_trone:room4/blink4",
+      "vadim_na_trone:room4/blink5",
+      "vadim_na_trone:room4/blink6",
+      "vadim_na_trone:room4/blink7",
+      "vadim_na_trone:room4/blink8"
+    ]
+  },
+  "room4_hum1": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/hum1",
+        "stream": true
+      }
+    ]
+  },
+  "room4_hum2": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/hum2",
+        "stream": true
+      }
+    ]
+  },
+  "room4_alarm": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/alarm",
+        "stream": true
+      }
+    ]
+  },
+  "room4_sw_notice": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/sw_notice"
+      }
+    ]
+  },
+  "room4_sw_jumpscare": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/sw_jumpscare"
+      }
+    ]
+  },
+  "room4_sw_release": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/sw_release"
+      }
+    ]
+  },
+  "room4_sw_chase": {
+    "sounds": [
+      {
+        "name": "vadim_na_trone:room4/sw_chase",
+        "stream": true
+      }
+    ]
+  },
+  "room4_sw_step": {
+    "sounds": [
+      "vadim_na_trone:room4/sw_step1",
+      "vadim_na_trone:room4/sw_step2",
+      "vadim_na_trone:room4/sw_step3",
+      "vadim_na_trone:room4/sw_step4",
+      "vadim_na_trone:room4/sw_step5",
+      "vadim_na_trone:room4/sw_step6",
+      "vadim_na_trone:room4/sw_step7",
+      "vadim_na_trone:room4/sw_step8"
+    ]
+  },
+  "room4_carpet": {
+    "sounds": [
+      "vadim_na_trone:room4/carpet1",
+      "vadim_na_trone:room4/carpet2",
+      "vadim_na_trone:room4/carpet3",
+      "vadim_na_trone:room4/carpet4",
+      "vadim_na_trone:room4/carpet5",
+      "vadim_na_trone:room4/carpet6",
+      "vadim_na_trone:room4/carpet7",
+      "vadim_na_trone:room4/carpet8",
+      "vadim_na_trone:room4/carpet9",
+      "vadim_na_trone:room4/carpet10",
+      "vadim_na_trone:room4/carpet11",
+      "vadim_na_trone:room4/carpet12"
+    ]
   }
 }

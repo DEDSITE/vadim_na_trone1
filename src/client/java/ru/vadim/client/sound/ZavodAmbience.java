@@ -22,7 +22,7 @@ public final class ZavodAmbience {
 	/** В цеху: гул трансформаторов и вентиляция (фон), гул серверов от стоек. */
 	private static Bed hum, vent;
 	/** Бэкрумс: тихий гул серверной (как в цеху, без позиции) и гудение рабочих ламп. */
-	private static Bed bkServers, bkLamps;
+	private static Bed bkServers, bkLamps, bkLamps2;
 	private static Spot servers, monitors;
 	/** 0..1 — насколько слышен двор (1 — на улице, 0 — в цехе). */
 	private static float outdoor = 0f;
@@ -43,12 +43,15 @@ public final class ZavodAmbience {
 			vent.target = bk ? 0.3f : 0.26f;
 			if (bk) {
 				bkServers = ensure(mc, bkServers, ModSounds.ZAVOD_SERVERS);
-				bkLamps = ensure(mc, bkLamps, ModSounds.ZAVOD_LAMP_BUZZ);
+				bkLamps = ensure(mc, bkLamps, ModSounds.ROOM4_HUM1);
+				bkLamps2 = ensure(mc, bkLamps2, ModSounds.ROOM4_HUM2);
 				bkServers.target = 0.16f;
-				bkLamps.target = 0.14f;
+				bkLamps.target = 0.35f;
+				bkLamps2.target = 0.2f;
 			} else {
 				if (bkServers != null) bkServers.target = 0f;
 				if (bkLamps != null) bkLamps.target = 0f;
+				if (bkLamps2 != null) bkLamps2.target = 0f;
 			}
 			return;
 		}
@@ -106,7 +109,8 @@ public final class ZavodAmbience {
 		if (monitors != null) mc.getSoundManager().stop(monitors);
 		if (bkServers != null) mc.getSoundManager().stop(bkServers);
 		if (bkLamps != null) mc.getSoundManager().stop(bkLamps);
-		bkServers = bkLamps = null;
+		if (bkLamps2 != null) mc.getSoundManager().stop(bkLamps2);
+		bkServers = bkLamps = bkLamps2 = null;
 		wind = city = hum = vent = null;
 		factory = buzz = servers = monitors = null;
 	}
