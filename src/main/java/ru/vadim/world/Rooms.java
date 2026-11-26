@@ -30,7 +30,7 @@ import java.util.Set;
  * комната 3 «Мини-мир» (Room3.build) и заглушка комнаты 4. Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
  */
 public final class Rooms {
-	public static final int VERSION = 12;   // 12: комната 4 «Бэкрумс» (Room4.build)
+	public static final int VERSION = 13;   // 13: бэкрумс — больше тёмных зон, тёмные углы
 	public static final String TAG = "vadim_rooms";
 
 	private Rooms() {}

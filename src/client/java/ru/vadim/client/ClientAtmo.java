@@ -28,7 +28,7 @@ public final class ClientAtmo {
 	public static float cozy() { return ClientZone.hub() ? 1f : 0f; }
 
 	public static boolean fogApplies(Camera camera) {
-		if (!active()) return false;
+		if (!active() && !ClientZone.room4()) return false;   // бэкрумс: только чёрный туман, без пост-эффекта
 		if (camera.getFluidInCamera() != FogType.NONE) return false;
 		Entity e = camera.entity();
 		return !(e instanceof LivingEntity living
@@ -39,17 +39,18 @@ public final class ClientAtmo {
 	private static final float[] GAS_FOG = {0.10f, 0.20f, 0.05f};
 
 	public static float[] fogColor() {
+		if (ClientZone.room4()) return new float[]{0f, 0f, 0f};   // бэкрумс: чёрный туман, как в Стрипухоеде
 		float[] c = (ClientZone.hub() ? HUB_FOG : ZAVOD_FOG).clone();
 		float g = ru.vadim.client.zavod.ZavodFinalClient.green();
 		for (int i = 0; i < 3; i++) c[i] += (GAS_FOG[i] - c[i]) * g;
 		return c;
 	}
 	public static float fogStart() {
-		float base = ClientZone.hub() ? 18f : ClientZone.studio() ? 8f : ClientZone.rooms() ? 2f : 6f;
+		float base = ClientZone.room4() ? 6f : ClientZone.hub() ? 18f : ClientZone.studio() ? 8f : ClientZone.rooms() ? 2f : 6f;
 		return base * (1f - ru.vadim.client.zavod.ZavodFinalClient.green());
 	}
 	public static float fogEnd() {
-		float base = ClientZone.hub() ? 72f : ClientZone.studio() ? 44f : ClientZone.rooms() ? 30f : 84f;
+		float base = ClientZone.room4() ? 30f : ClientZone.hub() ? 72f : ClientZone.studio() ? 44f : ClientZone.rooms() ? 30f : 84f;
 		return base + (7f - base) * ru.vadim.client.zavod.ZavodFinalClient.green();
 	}
 }

@@ -46,7 +46,8 @@ public final class Room4 {
 	static final int[][] SPAWN_CELLS = {{2, 2}, {12, 2}, {7, 13}};
 	/** Зал с колоннами (клетки, включительно) и тёмный угол. */
 	static final int HALL_I0 = 0, HALL_I1 = 3, HALL_J0 = 5, HALL_J1 = 9;
-	static final int DARK_I0 = 11, DARK_I1 = 14, DARK_J0 = 9, DARK_J1 = 12;
+	/** Тёмные зоны с улыбаками (клетки i0, i1, j0, j1 включительно): по одной на сектор + ещё одна. В каждой 2 «островка» света. */
+	static final int[][] DARK_ZONES = {{11, 14, 9, 12}, {0, 2, 11, 14}, {5, 7, 0, 2}, {10, 13, 4, 6}};
 	/** Центр 3×3 клетки — зал выхода (лифт). */
 	static final int MID0 = 6, MID1 = 8;
 	public static final Vec3 LIFT = new Vec3(X0 + 75.5, 64, Z0 + 75.5);
@@ -71,6 +72,8 @@ public final class Room4 {
 		final List<BlockPos> lamps = new ArrayList<>();
 		final List<Integer> lampSector = new ArrayList<>();
 		final Set<BlockPos> broken = new HashSet<>(), vents = new HashSet<>();
+		/** dark[i][j]: 1 — тёмная зона с улыбаками, 2 — островок света в ней, 3 — просто тёмный угол (без улыбак). */
+		final int[][] dark = new int[N][N];
 		final List<BlockPos> flicker = new ArrayList<>();
 		final long seed;
 
@@ -118,7 +121,21 @@ public final class Room4 {
 				int w = full ? 9 : 2 + r.nextInt(3);
 				gapHW[i][j] = w; gapHOff[i][j] = full ? 1 : 1 + r.nextInt(10 - w);
 			}
-			// 5. лампы через 4 блока (не на линиях стен), мёртвые в тёмном углу и ~6 % по лабиринту, ~6 % моргают
+			// 5. тёмные зоны (с улыбаками) + в каждой 2 островка света; редкие тёмные углы (1 клетка, без улыбак)
+			for (int[] z : DARK_ZONES) {
+				for (int i = z[0]; i <= z[1]; i++) for (int j = z[2]; j <= z[3]; j++) dark[i][j] = 1;
+				for (int k = 0; k < 2; k++) dark[z[0] + r.nextInt(z[1] - z[0] + 1)][z[2] + r.nextInt(z[3] - z[2] + 1)] = 2;
+			}
+			for (int k = 0, tries = 0; k < 7 && tries < 400; tries++) {
+				int i = r.nextInt(N), j = r.nextInt(N);
+				if (dark[i][j] != 0 || inside(i, j, MID0, MID1, MID0, MID1) || inside(i, j, HALL_I0, HALL_I1, HALL_J0, HALL_J1)) continue;
+				boolean nearSpawn = false;
+				for (int[] s : SPAWN_CELLS) if (Math.abs(s[0] - i) <= 1 && Math.abs(s[1] - j) <= 1) nearSpawn = true;
+				if (nearSpawn) continue;
+				dark[i][j] = 3;
+				k++;
+			}
+			// 6. лампы через 4 блока (не на линиях стен), мёртвые в тёмных зонах/углах и ~6 % по лабиринту, ~6 % моргают
 			for (int dx = 2; dx < CELL * N; dx += 4) for (int dz = 2; dz < CELL * N; dz += 4) {
 				if (dx % CELL == 0 || dz % CELL == 0) continue;
 				BlockPos p = new BlockPos(X0 + dx, TOP, Z0 + dz);
@@ -126,9 +143,10 @@ public final class Room4 {
 				lamps.add(p);
 				lampSector.add(sector(ci, cj));
 				boolean mid = inside(ci, cj, MID0, MID1, MID0, MID1);
-				if (inside(ci, cj, DARK_I0, DARK_I1, DARK_J0, DARK_J1) || !mid && !inside(ci, cj, HALL_I0, HALL_I1, HALL_J0, HALL_J1) && r.nextFloat() < 0.06f)
+				int dk = dark[ci][cj];
+				if (dk == 1 || dk == 3 || dk == 0 && !mid && !inside(ci, cj, HALL_I0, HALL_I1, HALL_J0, HALL_J1) && r.nextFloat() < 0.06f)
 					broken.add(p);
-				else if (!mid && r.nextFloat() < 0.065f) flicker.add(p);
+				else if (dk == 0 && !mid && r.nextFloat() < 0.065f) flicker.add(p);
 			}
 			for (int dx = 4; dx < CELL * N; dx += 4) for (int dz = 4; dz < CELL * N; dz += 4)
 				if (dx % CELL != 0 && dz % CELL != 0 && r.nextFloat() < 0.04f) vents.add(new BlockPos(X0 + dx, TOP, Z0 + dz));
@@ -170,6 +188,13 @@ public final class Room4 {
 	}
 
 	static boolean inside(int i, int j, int i0, int i1, int j0, int j1) { return i >= i0 && i <= i1 && j >= j0 && j <= j1; }
+
+	/** Тёмная зона с улыбаками в точке (x, z)? (островки света и тёмные углы — нет). */
+	public static boolean smilerZone(ServerLevel l, double x, double z) {
+		int i = (int) Math.floor((x - X0) / CELL), j = (int) Math.floor((z - Z0) / CELL);
+		if (i < 0 || j < 0 || i >= N || j >= N) return false;
+		return layout(l).dark[i][j] == 1;
+	}
 
 	/** Сектор клетки: ближайший спавн; центр (выход) — −1. */
 	public static int sector(int i, int j) {
