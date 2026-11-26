@@ -39,5 +39,21 @@
   "block.vadim_na_trone.room3_sun": "Sun",
   "entity.vadim_na_trone.govnozavr": "Mini Govnozavr",
   "entity.vadim_na_trone.rocket_skeleton": "Rocket Skeleton",
-  "block.vadim_na_trone.room3_rocket": "Vadim's Rocket"
+  "block.vadim_na_trone.room3_rocket": "Vadim's Rocket",
+  "block.vadim_na_trone.room4_wall": "Wall",
+  "block.vadim_na_trone.room4_wall_base": "Wall Base",
+  "block.vadim_na_trone.room4_wall_s": "Wall S",
+  "block.vadim_na_trone.room4_wall_s_base": "Wall S Base",
+  "block.vadim_na_trone.room4_wall_stain1": "Wall Stain1",
+  "block.vadim_na_trone.room4_wall_stain2": "Wall Stain2",
+  "block.vadim_na_trone.room4_wall_stain3": "Wall Stain3",
+  "block.vadim_na_trone.room4_carpet": "Carpet",
+  "block.vadim_na_trone.room4_carpet2": "Carpet2",
+  "block.vadim_na_trone.room4_carpet3": "Carpet3",
+  "block.vadim_na_trone.room4_carpet4": "Carpet4",
+  "block.vadim_na_trone.room4_carpet5": "Carpet5",
+  "block.vadim_na_trone.room4_ceiling": "Ceiling",
+  "block.vadim_na_trone.room4_ceiling2": "Ceiling2",
+  "block.vadim_na_trone.room4_vent": "Vent",
+  "block.vadim_na_trone.room4_lamp": "Lamp"
 }

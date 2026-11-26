@@ -30,7 +30,7 @@ import java.util.Set;
  * комната 3 «Мини-мир» (Room3.build) и заглушка комнаты 4. Сюда попадают после газа на заводе (ZavodFinal) и при перезаходе после него.
  */
 public final class Rooms {
-	public static final int VERSION = 11;
+	public static final int VERSION = 12;   // 12: комната 4 «Бэкрумс» (Room4.build)
 	public static final String TAG = "vadim_rooms";
 
 	private Rooms() {}
@@ -132,6 +132,8 @@ public final class Rooms {
 		Room2.build(l);
 		// комната 3 «Мини-мир» и заглушка комнаты 4 — Room3.build
 		Room3.build(l);
+		// комната 4 «Бэкрумс» — лабиринт Level 0
+		Room4.build(l);
 		// лампы дневного света на потолке: одна моргает, одна почти мёртвая, одна в кладовке (Room1.lampsTick)
 		for (BlockPos t : Room1.TUBES) l.setBlock(t, ru.vadim.block.ZavodBlocks.TUBE.defaultBlockState()
 				.setValue(ru.vadim.block.ZavodBlocks.Deco.FACING, Direction.EAST).setValue(ru.vadim.block.ZavodBlocks.Tube.LIT, true), Block.UPDATE_CLIENTS);
@@ -170,6 +172,7 @@ public final class Rooms {
 		if (!p.isCreative()) p.setGameMode(GameType.ADVENTURE);
 		if (p.isPassenger()) p.stopRiding();
 		var server = p.level().getServer();
+		if (Room3.won(server)) { Room4.place(l, p); return; }   // комната 3 пройдена — в бэкрумс, в свой сектор
 		boolean won = Room1.won(server);
 		// куда: заглушка комнаты 3 (комната 2 пройдена) → студия (плита уже упала) → у выхода из комнаты 1 → на стул
 		Vec3 s = Room3.won(server) ? Room3.ROOM4_SPAWN : Room2.won(server) ? Room2.ROOM3_SPAWN : Room2.entered(server) ? Room2.STUDIO_SPAWN

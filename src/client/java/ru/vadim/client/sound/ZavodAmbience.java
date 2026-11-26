@@ -36,8 +36,9 @@ public final class ZavodAmbience {
 			factory = buzz = servers = monitors = null;
 			hum = ensure(mc, hum, ModSounds.ZAVOD_FACTORY);
 			vent = ensure(mc, vent, ModSounds.ZAVOD_VENT);
-			hum.target = 0.22f;
-			vent.target = 0.26f;
+			boolean bk = ClientZone.room4();   // бэкрумс: только гудение ламп (вентиляция с гулом света), без гула цеха
+			hum.target = bk ? 0f : 0.22f;
+			vent.target = bk ? 0.4f : 0.26f;
 			return;
 		}
 		if (!ClientZone.zavod() || mc.player == null) {

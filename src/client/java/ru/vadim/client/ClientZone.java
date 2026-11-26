@@ -28,6 +28,12 @@ public final class ClientZone {
 		return rooms() && mc.player != null && ru.vadim.world.Room3.inRoom3(mc.player.getX(), mc.player.getZ());
 	}
 
+	/** Комната 4 «Бэкрумс» (лабиринт Level 0, x 200..350). */
+	public static boolean room4() {
+		var mc = net.minecraft.client.Minecraft.getInstance();
+		return rooms() && mc.player != null && ru.vadim.world.Room4.inRoom4(mc.player.getX(), mc.player.getZ());
+	}
+
 	/** Студия (комната 2): в измерении комнат и внутри зала студии. */
 	public static boolean studio() {
 		var mc = net.minecraft.client.Minecraft.getInstance();

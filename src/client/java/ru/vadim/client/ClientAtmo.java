@@ -20,7 +20,7 @@ public final class ClientAtmo {
 
 	public static void tick() {}
 
-	public static boolean active() { return ClientZone.hub() || ClientZone.zavod() || (ClientZone.rooms() && !ClientZone.room3()); }
+	public static boolean active() { return ClientZone.hub() || ClientZone.zavod() || (ClientZone.rooms() && !ClientZone.room3() && !ClientZone.room4()); }
 	/** 0..1 — насколько темно (для пост-эффекта: виньетка, зерно). */
 	public static float darkness() { return ClientZone.hub() ? 0.55f : ClientZone.zavod() ? 0.5f : ClientZone.rooms() ? (ClientZone.studio() ? 0.35f : 0.6f) : 0f; }
 	public static float chase() { return 0f; }

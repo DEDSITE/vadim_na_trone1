@@ -48,6 +48,7 @@ public class VadimNaTrone implements ModInitializer {
 		ru.vadim.block.ZavodBlocks.init();
 		ru.vadim.block.StudioBlocks.init();
 		ru.vadim.block.Room3Blocks.init();
+		ru.vadim.block.Room4Blocks.init();
 		ModEntities.init();
 		Hub.register();
 		ru.vadim.world.News.register();
@@ -56,6 +57,7 @@ public class VadimNaTrone implements ModInitializer {
 		ru.vadim.world.Room1.register();
 		ru.vadim.world.Room2.register();
 		ru.vadim.world.Room3.register();
+		ru.vadim.world.Room4.register();
 		HubCommands.register();
 		LOG.info("Вадим сел на трон. Хочешь сыграть в игру?");
 	}

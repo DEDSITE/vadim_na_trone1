@@ -153,6 +153,35 @@ public final class HubCommands {
 					c.getSource().sendSuccess(() -> Component.literal(info), false);
 					return 1;
 				})))
+				.then(Commands.literal("room4").executes(c -> {
+					var p = c.getSource().getPlayerOrException();
+					Room4.place(Places.rooms(c.getSource().getServer()), p);
+					return 1;
+				}).then(Commands.literal("tp").then(Commands.argument("sector", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 3)).executes(c -> {
+					var p = c.getSource().getPlayerOrException();
+					Room4.spawnAt(Places.rooms(c.getSource().getServer()), p, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "sector") - 1);
+					return 1;
+				}))).then(Commands.literal("lift").executes(c -> {
+					var p = c.getSource().getPlayerOrException();
+					p.teleportTo(Places.rooms(c.getSource().getServer()), Room4.LIFT.x, Room4.LIFT.y, Room4.LIFT.z + 4, java.util.Set.of(), 180f, 0f, true);
+					return 1;
+				})).then(Commands.literal("rebuild").executes(c -> {
+					Room4.build(Places.rooms(c.getSource().getServer()));
+					c.getSource().sendSuccess(() -> Component.literal("Комната 4 отстроена заново"), true);
+					return 1;
+				})).then(Commands.literal("reset").executes(c -> {
+					Room4.resetSectors(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal("Комната 4: сектора игроков сброшены"), true);
+					return 1;
+				})).then(Commands.literal("map").executes(c -> {
+					String r = Room4.dumpMap(Places.rooms(c.getSource().getServer()));
+					c.getSource().sendSuccess(() -> Component.literal(r), false);
+					return 1;
+				})).then(Commands.literal("info").executes(c -> {
+					String info = Room4.debug(c.getSource().getServer());
+					c.getSource().sendSuccess(() -> Component.literal(info), false);
+					return 1;
+				})))
 				.then(Commands.literal("menushot").executes(c -> {
 					var p = c.getSource().getPlayerOrException();
 					p.teleportTo(Places.hub(c.getSource().getServer()), 0.5, 64, -5.2, java.util.Set.of(), 0f, 4f, true);

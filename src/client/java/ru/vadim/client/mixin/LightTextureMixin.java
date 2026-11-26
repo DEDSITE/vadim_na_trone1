@@ -16,6 +16,7 @@ public abstract class LightTextureMixin {
 		if (ClientZone.zavod()) return 0.35f;
 		if (ClientZone.studio()) return 0.45f;   // студия: тёплый свет абажуров
 		if (ClientZone.room3()) return original;   // мини-мир: обычная яркость
+		if (ClientZone.room4()) return 0.1f;   // бэкрумс: светят только лампы, без них — темно
 		if (ClientZone.rooms()) return 0.2f;   // на заводе чуть светлее: ночь, но дорогу видно
 		return ClientAtmo.active() ? 0.0f : original;
 	}

@@ -1049,13 +1049,11 @@ public final class Room3 {
 				if (p.isCreative()) continue;
 				p.getInventory().clearContent();
 				p.setGameMode(GameType.ADVENTURE);
-				p.teleportTo(l, ROOM4_SPAWN.x, ROOM4_SPAWN.y, ROOM4_SPAWN.z, Set.of(), 180f, 0f, true);
-				p.fallDistance = 0;
-				if (ServerPlayNetworking.canSend(p, HubPayloads.ZavodFinal.TYPE)) ServerPlayNetworking.send(p, new HubPayloads.ZavodFinal(3, 0));
+				Room4.place(l, p);   // в бэкрумс: каждому свой сектор, просыпается лёжа
 			}
 			dead.clear();
 			setPhase(P_DONE);
-			VadimNaTrone.LOG.info("[room3] пройдена — все в заглушке комнаты 4");
+			VadimNaTrone.LOG.info("[room3] пройдена — все в бэкрумсе (комната 4)");
 		}
 	}
 

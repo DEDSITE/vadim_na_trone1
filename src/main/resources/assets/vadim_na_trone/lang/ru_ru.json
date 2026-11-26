@@ -39,5 +39,21 @@
   "block.vadim_na_trone.room3_sun": "Солнце",
   "entity.vadim_na_trone.govnozavr": "Мини-Говнозавр",
   "entity.vadim_na_trone.rocket_skeleton": "Скелет с ракетой",
-  "block.vadim_na_trone.room3_rocket": "Ракета Вадима"
+  "block.vadim_na_trone.room3_rocket": "Ракета Вадима",
+  "block.vadim_na_trone.room4_wall": "Обои",
+  "block.vadim_na_trone.room4_wall_base": "Обои с плинтусом",
+  "block.vadim_na_trone.room4_wall_s": "Обои в полоску",
+  "block.vadim_na_trone.room4_wall_s_base": "Обои в полоску с плинтусом",
+  "block.vadim_na_trone.room4_wall_stain1": "Обои с пятном",
+  "block.vadim_na_trone.room4_wall_stain2": "Обои с пятном",
+  "block.vadim_na_trone.room4_wall_stain3": "Обои с пятном",
+  "block.vadim_na_trone.room4_carpet": "Мокрый ковёр",
+  "block.vadim_na_trone.room4_carpet2": "Грязный ковёр",
+  "block.vadim_na_trone.room4_carpet3": "Грязный ковёр",
+  "block.vadim_na_trone.room4_carpet4": "Грязный ковёр",
+  "block.vadim_na_trone.room4_carpet5": "Грязный ковёр",
+  "block.vadim_na_trone.room4_ceiling": "Потолочная плитка",
+  "block.vadim_na_trone.room4_ceiling2": "Потолочная плитка",
+  "block.vadim_na_trone.room4_vent": "Вентиляция",
+  "block.vadim_na_trone.room4_lamp": "Лампа"
 }
